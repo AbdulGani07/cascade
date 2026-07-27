@@ -7,8 +7,8 @@ CLI and a React dashboard.
 
 ## Requirements
 
-- Node.js 20 or newer
-- pnpm 10 or newer
+- Node.js 24 or newer
+- pnpm 11 or newer
 
 ## Development
 

@@ -2,6 +2,10 @@
   "name": "cascade-root",
   "private": true,
   "version": "1.0.0",
+  "packageManager": "pnpm@11.9.0",
+  "engines": {
+    "node": ">=24"
+  },
   "scripts": {
     "build": "pnpm -r build",
     "test": "pnpm -r test"
