@@ -28,6 +28,10 @@ export function toJson(result: AnalysisResult): string {
       id: toRelative(n.id),
       absolutePath: toRelative(n.absolutePath),
       relativePath: toRelative(n.relativePath || n.id),
+      diagnostics: n.diagnostics?.map((diagnostic) => ({
+        ...diagnostic,
+        file: toRelative(diagnostic.file),
+      })),
     })),
     edges: result.edges.map((e) => ({
       ...e,
@@ -36,7 +40,15 @@ export function toJson(result: AnalysisResult): string {
     })),
     cycles: result.cycles.map((c: string[]) => c.map(toRelative)),
     deadFiles: result.deadFiles.map(toRelative),
+    deadCodeFindings: result.deadCodeFindings?.map((finding) => ({
+      ...finding,
+      file: toRelative(finding.file),
+    })),
     entryPoints: result.entryPoints.map(toRelative),
+    entryPointEvidence: result.entryPointEvidence?.map((evidence) => ({
+      ...evidence,
+      file: toRelative(evidence.file),
+    })),
     impact: Object.fromEntries(
       Object.entries(result.impact).map(([key, val]) => [
         toRelative(key),
@@ -56,7 +68,12 @@ export function toJson(result: AnalysisResult): string {
       workspaces: project.workspaces.map((workspace) => ({
         ...workspace,
         path: toRelative(workspace.path),
+        relativePath: toRelative(workspace.relativePath),
         manifestPath: workspace.manifestPath ? toRelative(workspace.manifestPath) : undefined,
+      })),
+      modules: project.modules?.map((module) => ({
+        ...module,
+        relativePath: toRelative(module.relativePath),
       })),
     })),
     projectGraph: result.projectGraph
@@ -71,6 +88,53 @@ export function toJson(result: AnalysisResult): string {
           edges: result.projectGraph.edges.map((edge) => ({
             ...edge,
             sourceFiles: edge.sourceFiles.map(toRelative),
+          })),
+          fileToProject: Object.fromEntries(
+            Object.entries(result.projectGraph.fileToProject).map(([file, project]) => [
+              toRelative(file),
+              project,
+            ])
+          ),
+          projectToFiles: Object.fromEntries(
+            Object.entries(result.projectGraph.projectToFiles).map(([project, files]) => [
+              project,
+              files.map(toRelative),
+            ])
+          ),
+        }
+      : undefined,
+    projectImpact: result.projectImpact
+      ? Object.fromEntries(
+          Object.entries(result.projectImpact).map(([project, impact]) => [
+            project,
+            {
+              ...impact,
+              affectedFiles: impact.affectedFiles.map(toRelative),
+            },
+          ])
+        )
+      : undefined,
+    warnings: result.warnings.map((warning) => ({
+      ...warning,
+      file: toRelative(warning.file),
+    })),
+    diagnostics: result.diagnostics?.map((diagnostic) => ({
+      ...diagnostic,
+      file: toRelative(diagnostic.file),
+    })),
+    governance: result.governance
+      ? {
+          ...result.governance,
+          violations: result.governance.violations.map((violation) => ({
+            ...violation,
+            from: toRelative(violation.from),
+            to: toRelative(violation.to),
+            dependencyPath: violation.dependencyPath.map(toRelative),
+          })),
+          boundaries: result.governance.boundaries.map((boundary) => ({
+            ...boundary,
+            from: toRelative(boundary.from),
+            to: toRelative(boundary.to),
           })),
         }
       : undefined,

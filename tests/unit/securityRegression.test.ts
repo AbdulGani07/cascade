@@ -66,11 +66,23 @@ describe("hostile repository boundaries", () => {
       file,
       message: `token=${fakeToken}`,
     });
+    result.diagnostics?.push({
+      file,
+      message: "portable diagnostic",
+      severity: "warning",
+    });
+    result.deadCodeFindings = [{ file, confidence: 1, evidence: ["test"] }];
+    result.entryPointEvidence = [{ file, confidence: 1, reason: "test", kind: "configured" }];
     const output = toJson(result);
     expect(output).not.toContain(project);
     expect(output).not.toContain(fakeToken);
-    expect(JSON.parse(output).projectRoot).toBe(".");
-    expect(JSON.parse(output).nodes[0].absolutePath).toBe("token.ts");
+    const portable = JSON.parse(output);
+    expect(portable.projectRoot).toBe(".");
+    expect(portable.nodes[0].absolutePath).toBe("token.ts");
+    expect(portable.warnings[0].file).toBe("token.ts");
+    expect(portable.diagnostics.at(-1).file).toBe("token.ts");
+    expect(portable.deadCodeFindings[0].file).toBe("token.ts");
+    expect(portable.entryPointEvidence[0].file).toBe("token.ts");
   });
 
   it("rejects configuration paths outside the project", () => {
