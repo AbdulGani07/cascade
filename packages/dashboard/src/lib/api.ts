@@ -45,6 +45,23 @@ export type AnalysisResult = {
     frameworks?: string[];
     modules?: { name: string; relativePath: string; kind?: string }[];
   }[];
+  projectGraph?: {
+    nodes: { id: string; name: string; projectType: string; languages: string[] }[];
+    edges: {
+      id: string;
+      from: string;
+      to: string;
+      type: string;
+      confidence: number;
+      evidence: string[];
+      sourceFiles: string[];
+    }[];
+    cycles: string[][];
+  };
+  projectImpact?: Record<
+    string,
+    { directlyAffected: string[]; allAffected: string[]; affectedFiles: string[] }
+  >;
   pluginManifests?: {
     id: string;
     name: string;

@@ -46,6 +46,32 @@ export function toJson(result: AnalysisResult): string {
         },
       ])
     ),
+    projects: result.projects?.map((project) => ({
+      ...project,
+      rootPath: toRelative(project.rootPath),
+      configFiles: project.configFiles.map(toRelative),
+      files: project.files?.map(toRelative),
+      workspaces: project.workspaces.map((workspace) => ({
+        ...workspace,
+        path: toRelative(workspace.path),
+        manifestPath: workspace.manifestPath ? toRelative(workspace.manifestPath) : undefined,
+      })),
+    })),
+    projectGraph: result.projectGraph
+      ? {
+          ...result.projectGraph,
+          nodes: result.projectGraph.nodes.map((project) => ({
+            ...project,
+            rootPath: toRelative(project.rootPath),
+            configFiles: project.configFiles.map(toRelative),
+            files: project.files?.map(toRelative),
+          })),
+          edges: result.projectGraph.edges.map((edge) => ({
+            ...edge,
+            sourceFiles: edge.sourceFiles.map(toRelative),
+          })),
+        }
+      : undefined,
   };
 
   return JSON.stringify(relativeResult, null, 2);

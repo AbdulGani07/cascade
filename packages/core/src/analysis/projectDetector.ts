@@ -5,6 +5,8 @@ import { toPosixRelativePath } from "../utils/pathUtils.js";
 
 export function detectProjects(projectRoot: string, nodes: DependencyNode[]): ProjectInfo[] {
   const manifests = new Set<string>([path.join(projectRoot, "package.json")]);
+  for (const manifest of findManifestFiles(projectRoot, new Set(["package.json"])))
+    manifests.add(manifest);
   for (const node of nodes) {
     if (path.posix.basename(node.relativePath) === "package.json") manifests.add(node.absolutePath);
   }
@@ -79,6 +81,37 @@ export function detectProjects(projectRoot: string, nodes: DependencyNode[]): Pr
     }
   }
   return projects;
+}
+
+function findManifestFiles(projectRoot: string, names: Set<string>): string[] {
+  const result: string[] = [];
+  const ignored = new Set([
+    ".git",
+    "node_modules",
+    ".pnpm",
+    "dist",
+    "build",
+    "target",
+    "vendor",
+    ".venv",
+  ]);
+  const visit = (directory: string, depth: number) => {
+    if (depth > 8) return;
+    let entries: fs.Dirent[] = [];
+    try {
+      entries = fs.readdirSync(directory, { withFileTypes: true });
+    } catch {
+      return;
+    }
+    for (const entry of entries) {
+      const full = path.join(directory, entry.name);
+      if (entry.isDirectory()) {
+        if (!ignored.has(entry.name)) visit(full, depth + 1);
+      } else if (entry.isFile() && names.has(entry.name)) result.push(full);
+    }
+  };
+  visit(projectRoot, 0);
+  return result.sort();
 }
 
 function detectCompiledProjects(projectRoot: string, nodes: DependencyNode[]): ProjectInfo[] {
@@ -209,6 +242,10 @@ function detectCompiledProjects(projectRoot: string, nodes: DependencyNode[]): P
       "renv.lock": ["r", "r-project"],
       "svelte.config.js": ["vite", "sveltekit"],
       "nuxt.config.ts": ["vite", "nuxt"],
+      "turbo.json": ["turbo", "turborepo"],
+      "nx.json": ["nx", "nx-workspace"],
+      "rush.json": ["rush", "rush-monorepo"],
+      "lerna.json": ["lerna", "lerna-monorepo"],
     } as const;
     if (name in expandedBuildSystems) {
       const [buildSystem, projectType] =
@@ -343,6 +380,10 @@ function findBuildManifests(projectRoot: string): string[] {
           "renv.lock",
           "svelte.config.js",
           "nuxt.config.ts",
+          "turbo.json",
+          "nx.json",
+          "rush.json",
+          "lerna.json",
         ].includes(entry.name) ||
           /\.(?:csproj|sln)$/.test(entry.name))
       )

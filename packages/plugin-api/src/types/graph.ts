@@ -212,4 +212,6 @@ export interface AnalysisResult {
   diagnostics?: ParseDiagnostic[];
   pluginManifests?: PluginSummary[];
   projects?: import("./project.js").ProjectInfo[];
+  projectGraph?: import("./project.js").ProjectGraph;
+  projectImpact?: Record<string, import("./project.js").ProjectImpactReport>;
 }

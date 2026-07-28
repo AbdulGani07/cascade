@@ -22,6 +22,10 @@ export interface CascadeConfig {
   maxDepth?: number;
   pythonSourceRoots?: string[];
   analyzeNotebooks?: boolean;
+  /** Analyze only these project/workspace IDs; omitted means the complete repository. */
+  selectedProjects?: string[];
+  /** Deterministic local corrections for unusual repository layouts. */
+  projectOverrides?: Record<string, { name?: string; projectType?: string; ignore?: boolean }>;
 }
 
 export const defaultConfig: CascadeConfig = {
@@ -168,6 +172,8 @@ export const defaultConfig: CascadeConfig = {
   conditions: ["types", "import", "require", "node", "browser", "default"],
   pythonSourceRoots: ["src"],
   analyzeNotebooks: false,
+  selectedProjects: [],
+  projectOverrides: {},
 };
 
 export function loadCascadeConfig(projectRoot: string): CascadeConfig {
@@ -213,6 +219,13 @@ export function loadCascadeConfig(projectRoot: string): CascadeConfig {
         ? parsed.pythonSourceRoots
         : defaultConfig.pythonSourceRoots,
       analyzeNotebooks: parsed.analyzeNotebooks === true,
+      selectedProjects: Array.isArray(parsed.selectedProjects)
+        ? parsed.selectedProjects.filter((item): item is string => typeof item === "string")
+        : defaultConfig.selectedProjects,
+      projectOverrides:
+        parsed.projectOverrides && typeof parsed.projectOverrides === "object"
+          ? parsed.projectOverrides
+          : defaultConfig.projectOverrides,
     };
   } catch (err) {
     throw new Error(

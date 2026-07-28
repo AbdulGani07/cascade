@@ -20,7 +20,7 @@ import { extractScriptDependencies } from "@cascade/language-javascript";
 export class TypeScriptLanguagePlugin implements LanguagePlugin {
   id = "cascade-language-typescript";
   name = "Cascade TypeScript Language Plugin";
-  version = "3.0.0";
+  version = "3.1.0";
   supportedExtensions = [".ts", ".tsx", ".mts", ".cts"];
 
   fileDetectionRules = [

@@ -157,6 +157,24 @@ export default function Sidebar({
           </span>
         )}
       </div>
+      {analysisData.projectGraph && (
+        <div className="mb-3 rounded-xl border border-violet-500/30 bg-violet-950/20 p-2 text-[10px] text-violet-200">
+          <div className="mb-1 flex justify-between font-semibold">
+            <span>Project graph</span>
+            <span>
+              {analysisData.projectGraph.nodes.length} projects /{" "}
+              {analysisData.projectGraph.edges.length} links
+            </span>
+          </div>
+          <div className="max-h-16 overflow-y-auto font-mono text-violet-300/80">
+            {analysisData.projectGraph.edges.slice(0, 8).map((edge) => (
+              <div key={edge.id} title={edge.evidence.join("; ")}>
+                {edge.from} → {edge.to} · {edge.type}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Search Bar */}
       <div className="relative mb-3">

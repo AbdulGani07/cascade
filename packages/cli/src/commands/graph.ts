@@ -11,11 +11,13 @@ export function registerGraphCommand(program: Command): void {
   program
     .command("graph <path>")
     .option("--json", "output raw JSON instead of a formatted table")
+    .option("--project", "show the typed project graph instead of the file graph")
     .action(
       (
         projectPath: string,
         options: {
           json?: boolean;
+          project?: boolean;
         }
       ) => {
         try {
@@ -27,6 +29,21 @@ export function registerGraphCommand(program: Command): void {
           }
 
           const result = analyze(absolutePath);
+
+          if (options.project) {
+            if (options.json) {
+              console.log(JSON.stringify(result.projectGraph, null, 2));
+              return;
+            }
+            printHeading("Project Dependency Graph");
+            console.log(
+              renderTable(
+                ["From", "To", "Relationship"],
+                (result.projectGraph?.edges ?? []).map((edge) => [edge.from, edge.to, edge.type])
+              )
+            );
+            return;
+          }
 
           if (options.json) {
             const parsed = JSON.parse(toJson(result));

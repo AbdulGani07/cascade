@@ -1,0 +1,4 @@
+{
+  "name": "@poly/shared",
+  "types": "src/index.ts"
+}

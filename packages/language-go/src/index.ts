@@ -404,7 +404,7 @@ function detectEntryPoints(projectRoot: string, files: string[]): EntryPointHint
 export class GoLanguagePlugin implements LanguagePlugin {
   id = "cascade-language-go";
   name = "Cascade Go Language Plugin";
-  version = "3.0.0";
+  version = "3.1.0";
   supportedExtensions = [".go"];
   fileDetectionRules = [
     { type: "extension" as const, pattern: ".go" },

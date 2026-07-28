@@ -67,3 +67,13 @@ Windows development machine:
 | Svelte     |        1,000 |                  5.4 |
 | Styles     |        1,000 |                 10.0 |
 | GraphQL    |        1,000 |                  1.4 |
+
+## Project-intelligence baseline (2026-07-28)
+
+| Project graph          | Projects | Relationships | Time (ms) |
+| ---------------------- | -------: | ------------: | --------: |
+| 100 workspace packages |      100 |            99 |     243.5 |
+
+This benchmark performs deterministic manifest discovery, project ownership
+normalization, relationship indexing, package-cycle detection, and reverse
+project-impact indexing without executing build tools.

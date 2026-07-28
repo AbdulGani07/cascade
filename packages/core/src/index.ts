@@ -5,6 +5,7 @@ export * from "./config/configLoader.js";
 export * from "./export/jsonExporter.js";
 export * from "./plugins/pluginRegistry.js";
 export * from "./utils/pathUtils.js";
+export * from "./analysis/projectGraph.js";
 
 import { AnalysisResult, ImpactReport, LanguagePlugin } from "@cascade/plugin-api";
 import { loadCascadeConfig, CascadeConfig } from "@cascade/config";
@@ -41,7 +42,7 @@ import { buildGraph } from "./graph/graphBuilder.js";
 import { detectCycles } from "./graph/cycleDetector.js";
 import { findDeadCode } from "./analysis/deadCodeAnalyzer.js";
 import { simulateDeletion } from "./analysis/impactSimulator.js";
-import { detectProjects } from "./analysis/projectDetector.js";
+import { detectProjectIntelligence } from "./analysis/projectGraph.js";
 
 export interface AnalyzeOptions {
   config?: CascadeConfig;
@@ -93,8 +94,30 @@ export function analyze(projectRoot: string, options?: AnalyzeOptions): Analysis
   registry.configureWithCascadeConfig(config);
 
   // 4. Discover project files using plugins
-  const nodes = scanFiles(projectRoot, config, registry);
-  const projects = detectProjects(projectRoot, nodes);
+  let nodes = scanFiles(projectRoot, config, registry);
+  let intelligence = detectProjectIntelligence(projectRoot, nodes, registry.getRegisteredPlugins());
+  let projects = intelligence.projects;
+  for (const [id, override] of Object.entries(config.projectOverrides ?? {})) {
+    const project = projects.find((candidate) => candidate.id === id);
+    if (!project) continue;
+    if (override.name) project.name = override.name;
+    if (override.projectType) project.projectType = override.projectType;
+  }
+  const selected = new Set(config.selectedProjects ?? []);
+  if (selected.size) {
+    const selectedProjects = projects.filter(
+      (project) => selected.has(project.id) || selected.has(project.name)
+    );
+    nodes = nodes.filter((node) =>
+      selectedProjects.some((project) =>
+        node.relativePath.startsWith(project.id === "." ? "" : `${project.id}/`)
+      )
+    );
+    intelligence = detectProjectIntelligence(projectRoot, nodes, registry.getRegisteredPlugins());
+    projects = intelligence.projects.filter(
+      (project) => selected.has(project.id) || selected.has(project.name)
+    );
+  }
   for (const node of nodes) {
     const project = [...projects]
       .filter((candidate) => {
@@ -155,8 +178,10 @@ export function analyze(projectRoot: string, options?: AnalyzeOptions): Analysis
     entryPointEvidence,
     impact,
     warnings,
-    diagnostics,
+    diagnostics: [...diagnostics, ...intelligence.diagnostics],
     pluginManifests,
     projects,
+    projectGraph: { ...intelligence.projectGraph, nodes: projects },
+    projectImpact: intelligence.projectImpact,
   };
 }

@@ -1,0 +1,8 @@
+{
+  "name": "polyglot-root",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ]
+}

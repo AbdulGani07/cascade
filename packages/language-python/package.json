@@ -1,6 +1,6 @@
 {
   "name": "@cascade/language-python",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "description": "First-party Python language plugin for Cascade",
   "type": "module",
   "engines": {

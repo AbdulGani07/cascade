@@ -1,8 +1,12 @@
 # Cascade
 
-Current release: **3.0.0** (2026-07-28)
+Current release: **3.1.0** (2026-07-28)
 
 Cascade is a modular, pluggable dependency-analysis and code-intelligence toolkit that predicts the impact of code changes. It scans multi-language repositories, builds dependency graphs, detects cycles and unreachable code, and exposes actionable results through a CLI, reporters (Markdown, SARIF), and a React dashboard.
+
+It also builds an evidence-backed project/workspace graph for polyglot monorepos,
+including packages, services, build modules, deployment units, and typed
+relationships between them.
 
 ## Requirements
 
@@ -80,3 +84,4 @@ pnpm check
 - [Rust capability matrix](docs/RUST_SUPPORT.md)
 - [C and C++ capability matrices](docs/C_CPP_SUPPORT.md)
 - [Expanded Batches B–D capability matrices](docs/EXPANDED_LANGUAGE_SUPPORT.md)
+- [Project and workspace intelligence](docs/PROJECT_WORKSPACE_INTELLIGENCE.md)

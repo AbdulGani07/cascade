@@ -22,7 +22,7 @@ export { extractScriptDependencies } from "./scriptDependencyExtractor.js";
 export class JavaScriptLanguagePlugin implements LanguagePlugin {
   id = "cascade-language-javascript";
   name = "Cascade JavaScript Language Plugin";
-  version = "3.0.0";
+  version = "3.1.0";
   supportedExtensions = [".js", ".jsx", ".mjs", ".cjs"];
 
   fileDetectionRules = [

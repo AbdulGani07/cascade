@@ -7,6 +7,7 @@ import {
   SymbolReference,
   ImportKind,
 } from "./graph.js";
+import type { ProjectDetector } from "./project.js";
 
 /** Declared plugin functional capabilities */
 export interface PluginCapabilities {
@@ -228,4 +229,6 @@ export interface LanguagePlugin {
   frameworkMetadata?: FrameworkMetadataProvider;
   /** Optional custom language graph analyzer */
   analysisProvider?: AnalysisProvider;
+  /** Optional build/workspace detector supplied by a language or ecosystem plugin. */
+  projectDetectors?: ProjectDetector[];
 }

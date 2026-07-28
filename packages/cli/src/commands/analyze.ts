@@ -39,6 +39,12 @@ export function registerAnalyzeCommand(program: Command): void {
             [
               ["Total Scanned Modules", String(result.nodes.length)],
               ["Dependency Connections", String(result.edges.length)],
+              [
+                "Detected Projects",
+                String(result.projectGraph?.nodes.length ?? result.projects?.length ?? 0),
+              ],
+              ["Project Relationships", String(result.projectGraph?.edges.length ?? 0)],
+              ["Package Cycles", String(result.projectGraph?.cycles.length ?? 0)],
               ["Detected Entry Points", String(result.entryPoints.length)],
               ["Circular Import Loops", String(result.cycles.length)],
               ["Unreferenced Dead Files", String(result.deadFiles.length)],

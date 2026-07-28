@@ -40,9 +40,59 @@ export interface ProjectInfo {
     | "powershell"
     | "r"
     | "vite"
+    | "nx"
+    | "turbo"
+    | "rush"
+    | "lerna"
     | "mixed";
   /** Logical modules/projects declared by the build system. */
   modules?: Array<{ name: string; relativePath: string; kind?: string }>;
+  /** Parent workspace or enclosing project, when evidenced by a manifest. */
+  parentProjectId?: string;
+  /** Source units belonging directly to this project after nested-project ownership is removed. */
+  files?: string[];
+  /** High-level deployment classification inferred from explicit configuration. */
+  deploymentUnits?: string[];
+}
+
+export type ProjectRelationshipKind =
+  | "workspace-depends-on"
+  | "build-depends-on"
+  | "runtime-depends-on"
+  | "test-depends-on"
+  | "generates"
+  | "deploys"
+  | "packages"
+  | "references"
+  | "extends-configuration";
+
+export interface ProjectRelationship {
+  id: string;
+  from: string;
+  to: string;
+  type: ProjectRelationshipKind;
+  confidence: number;
+  evidence: string[];
+  sourceFiles: string[];
+}
+
+export interface ProjectGraph {
+  nodes: ProjectInfo[];
+  edges: ProjectRelationship[];
+  cycles: string[][];
+}
+
+export interface ProjectImpactReport {
+  target: string;
+  directlyAffected: string[];
+  allAffected: string[];
+  affectedFiles: string[];
+}
+
+export interface ProjectDetectionContext {
+  projectRoot: string;
+  files: string[];
+  projects: ProjectInfo[];
 }
 
 export interface ProjectDetector {
