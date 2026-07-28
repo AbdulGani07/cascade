@@ -4,7 +4,7 @@ Cascade is a modular, pluggable dependency-analysis and code-intelligence toolki
 
 ## Requirements
 
-- Node.js 18 or newer
+- Node.js 22.13 or newer
 - pnpm 9.15.0
 
 ## Development

@@ -5,7 +5,7 @@
   "description": "Cascade — Dependency intelligence and change-impact analysis platform",
   "packageManager": "pnpm@9.15.0",
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=22.13.0"
   },
   "workspaces": [
     "packages/*"

@@ -34,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Isolated plugin crashes during AST parsing and dependency extraction to prevent total pipeline failure.
 - Exported `toPosixRelativePath` utility directly from `@cascade/core` root.
 - Corrected the frozen lockfile and workspace dependency metadata for reproducible CI installs.
+- Aligned the supported Node.js range and CI matrix with the Vite 8/Rolldown runtime requirement.
 
 ## [1.0.0] - 2026-07-27
 

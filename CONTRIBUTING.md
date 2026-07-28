@@ -10,7 +10,7 @@ We expect all contributors to follow our [Code of Conduct](CODE_OF_CONDUCT.md).
 
 ### Prerequisites
 
-- **Node.js**: >= 18.0.0
+- **Node.js**: >= 22.13.0
 - **pnpm**: >= 9.0.0 (`npm i -g pnpm`)
 
 ### Local Setup
