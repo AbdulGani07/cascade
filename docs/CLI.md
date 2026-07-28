@@ -1,79 +1,150 @@
-# Cascade CLI reference
+# CLI reference
 
-Cascade is designed to start with one command:
+All examples assume:
 
-```sh
-cascade analyze .
+```bash
+alias cascade='node /path/to/cascade/packages/cli/dist/index.js'
 ```
 
-The published npm package name for the requested `npx cascade-analyzer` journey
-has **not** been verified. The project owner must confirm npm availability and
-ownership before that name is placed in package metadata, release workflows, or
-documentation. Until then, use the repository binary or the verified scoped CLI
-package name when it is published.
+Use the full `node packages/cli/dist/index.js` command when running from the
+Cascade checkout.
 
-## Command groups
+## Global options
 
-| Group         | Commands                                                   |
-| ------------- | ---------------------------------------------------------- |
-| Analysis      | `analyze`, `graph`, `projects`, `impact`, `deadcode`       |
-| Change impact | `diff`, `affected`, `affected-tests`, `risk`, `explain`    |
-| Governance    | `governance`                                               |
-| Setup         | `init`, `config validate`, `doctor`, `cache`, `completion` |
+| Option            | Behavior                                         |
+| ----------------- | ------------------------------------------------ |
+| `-V`, `--version` | Print the CLI version                            |
+| `--quiet`         | Suppress non-essential terminal output           |
+| `--verbose`       | Show additional diagnostics                      |
+| `--debug`         | Show failure stack traces                        |
+| `--no-color`      | Disable ANSI color; `NO_COLOR` is also respected |
+| `-h`, `--help`    | Show help                                        |
 
-Run `cascade --help` or `cascade <command> --help` for the authoritative option
-list. JSON commands keep stdout machine-readable; diagnostics go to stderr.
+## Analysis commands
 
-## First run
+### `analyze <path>`
 
-```sh
-cascade doctor .
+```bash
+cascade analyze .
+cascade analyze . --json
+```
+
+`--json` prints schema 2.0 analysis JSON. Exit status is `1` when cycles or dead
+files are present.
+
+### `graph <path>`
+
+```bash
+cascade graph .
+cascade graph . --json
+cascade graph . --project
+```
+
+`--project` selects the typed project graph instead of file edges.
+
+### `projects <path>`
+
+```bash
+cascade projects .
+cascade projects . --json
+cascade projects . --project packages/api
+```
+
+The final form prints reverse project impact for one detected ID.
+
+### `impact <path>`
+
+```bash
+cascade impact . --file src/core.ts
+cascade impact . --file src/core.ts --json
+```
+
+Reports direct and transitive reverse dependencies for the selected file.
+
+### `deadcode <path>`
+
+```bash
+cascade deadcode .
+cascade deadcode . --json
+```
+
+Dead-file findings require sufficiently confident entry-point evidence.
+
+## Git change-impact commands
+
+The following commands share these options:
+
+| Option              | Default        | Values                                          |
+| ------------------- | -------------- | ----------------------------------------------- |
+| `--base <ref>`      | `HEAD`         | Commit, branch, or tag                          |
+| `--head <ref>`      | `WORKING_TREE` | Commit, branch, tag, or `WORKING_TREE`          |
+| `--format <format>` | `terminal`     | `terminal`, `json`, `markdown`, `sarif`, `html` |
+| `--output <file>`   | stdout         | Output file                                     |
+| `--item <id>`       | all            | Used by `explain`                               |
+
+```bash
+cascade diff . --base main --head HEAD --format json
+cascade affected . --base main
+cascade affected-tests . --base main
+cascade risk . --base main --format markdown
+cascade explain . --base main --item src/index.ts
+```
+
+`diff` returns the complete comparison. The other commands select affected
+items, candidate tests, the transparent risk calculation, or evidence for one
+item.
+
+## Governance
+
+```bash
+cascade governance . --format terminal
+cascade governance . --format json
+cascade governance . --format markdown
+cascade governance . --format sarif
+```
+
+## Dashboard
+
+```bash
+cascade dashboard .
+```
+
+Starts a token-protected loopback server and opens the browser.
+
+## Setup and diagnostics
+
+```bash
 cascade init .
+cascade init . --force
 cascade config validate .
-cascade analyze .
+cascade doctor .
+cascade cache path
+cascade cache clear --yes
+cascade completion bash
+cascade completion zsh
+cascade completion fish
 ```
 
-`init` will not overwrite an existing configuration without `--force`.
+`cache clear` refuses non-interactive removal without `--yes`.
 
-## Output and automation
+## Exit codes
 
-Use `--json` where a command supports it. Change-impact commands support
-`--format json|markdown|html|sarif` and `--output report.ext`. `graph` and the
-project graph can be consumed as JSON. The stable exit-code contract is:
+| Code | Meaning                                                          |
+| ---: | ---------------------------------------------------------------- |
+|  `0` | Command completed without its command-specific finding condition |
+|  `1` | Analysis findings or a policy gate caused a non-zero result      |
+|  `2` | Invalid or missing input                                         |
+|  `3` | Analysis or command failure                                      |
 
-| Code | Meaning                                                                   |
-| ---- | ------------------------------------------------------------------------- |
-| 0    | Analysis completed without configured findings that fail the command      |
-| 1    | Analysis completed and found reportable cycles/dead files/policy failures |
-| 2    | Invalid input or missing target                                           |
-| 3    | Analysis, configuration, or Git failure                                   |
+Not every command currently normalizes exit codes identically; automation
+should inspect both the code and selected output format.
 
-Use `NO_COLOR=1` or `--no-color` for logs. `--quiet` is intended for scripts,
-and `--verbose`/`--debug` expose more diagnostics. Avoid parsing formatted tables;
-use JSON instead.
+## Verify help
 
-## Completion
-
-```sh
-# bash
-source <(cascade completion bash)
-
-# zsh
-source <(cascade completion zsh)
-
-# fish
-cascade completion fish | source
+```bash
+cascade --help
+cascade diff --help
 ```
 
-## Troubleshooting
-
-- Run `cascade doctor .` first when a repository is not detected as expected.
-- Run `cascade config validate .` after editing `cascade.config.json`.
-- Use an absolute or quoted relative path for directories with spaces, Unicode,
-  parentheses, or shell-special characters: `cascade analyze "my project (β)"`.
-- In CI, pass Git refs explicitly to `diff`, and use a checkout with sufficient
-  history. Shallow clones can limit comparison evidence.
-- `cache clear --yes` is required in non-interactive CI. It removes only
-  Cascade's own cache directory.
-- `affected-tests` reports candidates with evidence; it does not prove test
-  sufficiency.
+Documentation CI extracts command names from this page and checks them against
+the registered CLI.

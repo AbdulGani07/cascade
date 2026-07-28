@@ -1,42 +1,51 @@
 # Contributing to Cascade
 
-Thank you for your interest in contributing to Cascade! Cascade is an open-source code intelligence and change-impact analysis platform for modern software projects.
+Thank you for helping improve Cascade. Contributions are governed by the [Code of Conduct](CODE_OF_CONDUCT.md).
 
-## Code of Conduct
+## Set up
 
-We expect all contributors to follow our [Code of Conduct](CODE_OF_CONDUCT.md).
+Prerequisites are Node.js 22.13 or newer and pnpm 9 or newer.
 
-## Getting Started
+```bash
+git clone https://github.com/AbdulGani07/cascade.git
+cd cascade
+corepack enable
+pnpm install --frozen-lockfile
+pnpm run build
+```
 
-### Prerequisites
+## Development checks
 
-- **Node.js**: >= 22.13.0
-- **pnpm**: >= 9.0.0 (`npm i -g pnpm`)
+```bash
+pnpm run check
+pnpm run format
+pnpm run test:docs
+```
 
-### Local Setup
+Run `pnpm run benchmark` for graph or performance-sensitive changes. Include before-and-after measurements when claiming a performance improvement.
 
-1. Fork and clone the repository.
-2. Install dependencies:
-   ```bash
-   pnpm install
-   ```
-3. Build all workspace packages:
-   ```bash
-   pnpm run build
-   ```
-4. Run tests:
-   ```bash
-   pnpm run test
-   ```
+## Change expectations
 
-## Development Workflow
+- Add regression tests for fixes and tests at the claimed capability level for features.
+- Do not execute source code or build configuration from analyzed repositories.
+- Keep traversal, parsing, graph, output, and cache behavior bounded.
+- Document new configuration, commands, report fields, and security implications.
+- Update the capability matrix only when fixtures and tests support the claim.
+- Keep output deterministic and use project-relative paths by default.
+- Use conventional commit subjects such as `fix: reject symlink root escape`.
 
-- Always write tests for new features and bug fixes.
-- Run `pnpm run check` before submitting a Pull Request to verify linting, typechecking, tests, and builds.
-- Follow conventional commits guidelines (e.g. `feat: add tsconfig path alias resolver`, `fix: normalize windows backslashes in report output`).
+## Documentation
 
-## Pull Request Guidelines
+Documentation has one canonical page per topic; link to it instead of copying long sections. The docs validator checks local links, heading structure, JSON examples, known CLI commands, schema keys, and common spelling errors.
 
-1. Ensure CI passes on all matrix configurations.
-2. Link any related issues in your PR description.
-3. Keep pull requests focused on a single logical change.
+When UI behavior changes, update the checked dashboard images with the reproducible local fixture and review them before committing.
+
+## Pull requests
+
+Keep each pull request focused, link related issues, explain important tradeoffs, and disclose behavior that remains unsupported. All CI checks must pass. Security-sensitive changes require independent review.
+
+## Security reports
+
+Do not open public issues for vulnerabilities. Follow [SECURITY.md](SECURITY.md).
+
+See [Release policy](docs/RELEASE_POLICY.md) and [Project governance](docs/GOVERNANCE.md).

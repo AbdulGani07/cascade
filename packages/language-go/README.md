@@ -10,5 +10,5 @@ expressions. `go.mod` and `go.work` remain authoritative structured build metada
 module paths, workspace modules, and local `replace` directives are used during
 resolution without invoking the network or mutating a module cache.
 
-See [`docs/GO_SUPPORT.md`](../../docs/GO_SUPPORT.md) for the capability matrix and
+See the [language capability matrix](../../docs/CAPABILITY_MATRIX.md) for capability and
 explicit limitations.

@@ -18,6 +18,7 @@
     "test:unit": "vitest run tests/unit",
     "test:integration": "vitest run tests/integration",
     "test:e2e": "vitest run tests/e2e",
+    "test:docs": "node scripts/validate-docs.mjs",
     "lint": "eslint packages/*/src/**/*.ts --no-error-on-unmatched-pattern",
     "typecheck": "npm run typecheck --workspaces",
     "format": "prettier --check \"**/*.{ts,tsx,json,md}\"",
@@ -26,7 +27,7 @@
     "benchmark:performance": "node --expose-gc benchmarks/performance.mjs",
     "benchmark:regression": "node benchmarks/regression.mjs",
     "clean": "npm run clean --workspaces",
-    "check": "npm run lint && npm run build && npm run typecheck && npm run test"
+    "check": "npm run lint && npm run build && npm run typecheck && npm run test && npm run test:docs"
   },
   "repository": {
     "type": "git",

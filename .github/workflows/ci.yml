@@ -46,6 +46,9 @@ jobs:
       - name: Run unit & integration tests
         run: pnpm run test
 
+      - name: Validate documentation
+        run: pnpm run test:docs
+
       - name: Stable graph performance regression
         if: matrix.node-version == 22
         run: pnpm run benchmark:regression

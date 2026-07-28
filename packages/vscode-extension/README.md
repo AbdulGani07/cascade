@@ -7,5 +7,5 @@ Background analysis is disabled by default. Run **Cascade: Analyze Current File*
 `cascade.backgroundAnalysis`. Cascade does not include telemetry and does not send source code to
 remote services.
 
-See the repository's [editor integration guide](../../docs/EDITOR_INTEGRATIONS.md) for architecture,
+See the repository's [VS Code extension guide](../../docs/VSCODE_EXTENSION.md) for architecture,
 configuration, privacy, performance, troubleshooting, and publishing details.

@@ -38,5 +38,5 @@ the user's filesystem and process permissions. Only install plugins from
 publishers you trust. Plugin isolation is a residual risk, not a security
 boundary.
 
-See [docs/SECURITY_THREAT_MODEL.md](docs/SECURITY_THREAT_MODEL.md) for the full
+See [docs/SECURITY.md](docs/SECURITY.md) for the full
 threat model, operational guidance, and remaining risks.

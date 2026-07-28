@@ -1,0 +1,11 @@
+cff-version: 1.2.0
+message: "If you use Cascade in research, cite the software release and commit."
+title: "Cascade"
+type: software
+version: 3.3.0
+date-released: 2026-07-28
+license: MIT
+repository-code: "https://github.com/AbdulGani07/cascade"
+authors:
+  - family-names: "Gani"
+    given-names: "Abdul"

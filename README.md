@@ -1,110 +1,242 @@
 # Cascade
 
-Current release: **3.3.0** (2026-07-28)
+## Understand what changes before they break something
 
-Cascade is a modular, pluggable dependency-analysis and code-intelligence toolkit that predicts the impact of code changes. It scans multi-language repositories, builds dependency graphs, detects cycles and unreachable code, and exposes actionable results through a CLI, reporters (Markdown, SARIF), and a React dashboard.
+Cascade maps dependencies across supported languages, detects architectural
+risks, and explains the likely blast radius of code changes. It combines a
+static-analysis CLI, pull-request reports, architecture policies, a local
+dashboard, a GitHub Action, and a VS Code extension.
 
-It also builds an evidence-backed project/workspace graph for polyglot monorepos,
-including packages, services, build modules, deployment units, and typed
-relationships between them.
+Cascade reports evidence from source and build metadata. Results depend on each
+language plugin's capability and do not guarantee runtime behavior or safe
+refactoring.
 
-## Requirements
+![Cascade dashboard overview](docs/assets/dashboard-overview.png)
 
-- Node.js 22.13 or newer
-- pnpm 9.15.0
+> Demo assets live in [`docs/assets`](docs/assets). See the
+> [dashboard guide](docs/DASHBOARD.md) for the capture workflow.
 
-## Development
+## Try it in 30 seconds
+
+Cascade 3.3.0 currently runs from the repository; an npm package name is not yet
+published.
 
 ```bash
-pnpm install
+git clone https://github.com/AbdulGani07/cascade.git
+cd cascade
+corepack enable
+pnpm install --frozen-lockfile
 pnpm build
-pnpm test
-```
-
-For the command reference, setup/diagnostic commands, CI-safe output, completion,
-and troubleshooting, see [CLI.md](docs/CLI.md). The npm name for the desired
-`npx cascade-analyzer` command is intentionally pending owner availability and
-ownership verification.
-
-Analyze a project:
-
-```bash
 node packages/cli/dist/index.js analyze test-project
 ```
 
-Generate Schema 2.0 JSON output:
+The first command prints a summary such as:
 
-```bash
-node packages/cli/dist/index.js analyze test-project --json > analysis.json
+```text
+CASCADE Architecture Analysis Summary
+Total Scanned Modules      3
+Dependency Connections     2
+Detected Entry Points      1
+Circular Import Loops      0
+Unreferenced Dead Files    0
+Languages                  typescript
 ```
 
-Additional commands:
+Counts depend on the repository. `analyze` exits with `1` when cycles or dead
+files are reported, `2` for invalid input, and `3` for analysis failure.
+
+## What Cascade provides
+
+- File and project dependency graphs with forward and reverse indexes
+- Cycle detection, entry-point evidence, and unreachable-file findings
+- Git change comparison, affected items, candidate tests, and evidence paths
+- A transparent change-risk indicator—never a production-failure prediction
+- Versioned architecture rules with suppressions and SARIF output
+- Project detection for common package, workspace, build, and deployment files
+- Local React dashboard with bounded graph rendering and report export
+- Composite GitHub Action and documented examples for other CI systems
+- Local editor service and VS Code extension with saved-file refresh
+- Plugin and reporter APIs for extending analysis
+
+## Language support
+
+| Capability level | Meaning                                                          |
+| ---------------- | ---------------------------------------------------------------- |
+| Structured       | Grammar-backed parsing plus language-aware extraction/resolution |
+| Syntax-aware     | Structured or targeted parsing with useful dependency evidence   |
+| Pattern-based    | Bounded text extraction; confidence and limitations matter more  |
+| Metadata/asset   | Relationships from configuration, documents, styles, or assets   |
+
+| Level              | Languages and formats                                      |
+| ------------------ | ---------------------------------------------------------- |
+| Structured         | JavaScript, TypeScript, Java, Kotlin, C#, Go, Rust, C, C++ |
+| Syntax-aware       | Python, PHP, Ruby, Swift, Dart                             |
+| Pattern-based      | Shell, PowerShell, Lua, R                                  |
+| Component/document | Vue, Svelte, HTML, CSS/Sass/Less, GraphQL                  |
+| Optional           | SQL analysis exists but is disabled by default             |
+
+See the [supported-language guide](docs/LANGUAGE_SUPPORT.md) and
+[capability matrix](docs/CAPABILITY_MATRIX.md) for exact parser, symbol,
+resolution, project, and limitation details.
+
+## Supported project types
+
+Cascade detects evidence for JavaScript workspaces, Python projects, Maven and
+Gradle builds, .NET solutions/projects, Go modules/workspaces, Cargo
+packages/workspaces, CMake/Meson/native builds, infrastructure/configuration
+projects, services, packages, applications, tests, and deployment units.
+Detection is static and does not execute build tools.
+
+[Project detection reference →](docs/PROJECT_DETECTION.md)
+
+## Pull-request analysis
 
 ```bash
-node packages/cli/dist/index.js graph test-project
-node packages/cli/dist/index.js graph test-project --project
-node packages/cli/dist/index.js projects test-project
-node packages/cli/dist/index.js diff . --base main --head HEAD --format json
-node packages/cli/dist/index.js affected . --base main
-node packages/cli/dist/index.js affected-tests . --base main
-node packages/cli/dist/index.js risk . --base main --format markdown
-node packages/cli/dist/index.js explain . --base main --item src/index.ts
-node packages/cli/dist/index.js governance test-project --format markdown
-node packages/cli/dist/index.js deadcode test-project
-node packages/cli/dist/index.js impact test-project
-node packages/cli/dist/index.js dashboard test-project
+node packages/cli/dist/index.js diff . --base main --head HEAD --format markdown
+node packages/cli/dist/index.js affected . --base main --head HEAD
+node packages/cli/dist/index.js affected-tests . --base main --head HEAD
+node packages/cli/dist/index.js risk . --base main --head HEAD
 ```
 
-Run the complete validation pipeline before submitting changes:
+A report distinguishes changed files, dependency evidence, candidate tests,
+new cycles, new unresolved dependencies, architecture findings, and the factors
+that contribute to the risk score.
+
+[Before-and-after PR example →](docs/IMPACT_ANALYSIS.md#before-and-after-example)
+
+## Architecture rules
+
+```json
+{
+  "architectureGovernance": {
+    "version": "1",
+    "rules": [
+      {
+        "id": "domain-does-not-import-ui",
+        "from": ["packages/domain/**"],
+        "to": ["packages/ui/**"],
+        "deny": ["packages/ui/**"],
+        "severity": "error"
+      }
+    ]
+  }
+}
+```
 
 ```bash
-pnpm check
+node packages/cli/dist/index.js governance . --format sarif
 ```
 
-## Workspace Packages
+[Architecture-rule reference →](docs/ARCHITECTURE_RULES.md)
 
-- `@cascade/plugin-api` — Core SPI interfaces for language plugins, parsers, extractors, resolvers, and reporters
-- `@cascade/config` — Shared Cascade configuration parsing and validation
-- `@cascade/core` — PluginRegistry engine, graph algorithms, entry point detection, impact simulation, and JSON exporter
-- `@cascade/language-javascript` — Language plugin for JavaScript/JSX parsing and dependency extraction
-- `@cascade/language-typescript` — Language plugin for TypeScript/TSX parsing, type-only imports, and symbol extraction
-- `@cascade/language-python` — Python/Python-stub dependency extraction, package resolution, framework detection, and diagnostics
-- `@cascade/language-java` — Java AST analysis with Maven, Gradle, JPMS, Spring Boot, and JUnit awareness
-- `@cascade/language-kotlin` — Kotlin AST analysis for JVM, Gradle Kotlin DSL, Android, and multiplatform projects
-- `@cascade/language-csharp` — C# AST analysis with SDK projects, solutions, project references, and ASP.NET Core awareness
-- `@cascade/language-go` — Go AST analysis with modules, workspaces, replace directives, internal packages, and cgo evidence
-- `@cascade/language-rust` — Rust syntax-tree analysis with Cargo workspace, module, include, and crate resolution
-- `@cascade/language-c` — C syntax-tree analysis with preprocessor includes and native build metadata
-- `@cascade/language-cpp` — C++ syntax-tree analysis with header dependencies and native build metadata
-- `@cascade/language-expanded` — Structured first-party plugins for Batches B–D, including scripting, component, document, style, GraphQL, and optional SQL analysis
-- `@cascade/reporters` — Diagnostic reporters including Markdown summary (`MarkdownReporter`) and SARIF 2.1.0 (`SarifReporter`)
-- `@cascade/cli` — Command-line interface and terminal user interface
-- `@cascade/dashboard` — Interactive React Flow graph visualizer
-- `@cascade/editor-service` — Local, versioned, multi-root analysis service for editor integrations
-- `cascade-code-intelligence` — Official VS Code extension source package
-- `@cascade/test-utils` — Mock plugin generation and isolated graph testing harness
+## Dashboard, GitHub Action, and IDE
 
-## Project Documentation
+```bash
+node packages/cli/dist/index.js dashboard .
+```
 
-- [Changelog](CHANGELOG.md)
-- [Contributing guide](CONTRIBUTING.md)
-- [Security policy](SECURITY.md)
-- [Code of Conduct](CODE_OF_CONDUCT.md)
-- [Architecture audit and roadmap](CASCADE_AUDIT_AND_ROADMAP.md)
-- [JavaScript/TypeScript support matrices](docs/LANGUAGE_SUPPORT.md)
-- [Python support and capability matrix](docs/PYTHON_SUPPORT.md)
-- [Java and Kotlin capability matrices](docs/JVM_LANGUAGE_SUPPORT.md)
-- [C# capability matrix](docs/languages/csharp.md)
-- [Go capability matrix](docs/GO_SUPPORT.md)
-- [Rust capability matrix](docs/RUST_SUPPORT.md)
-- [C and C++ capability matrices](docs/C_CPP_SUPPORT.md)
-- [Expanded Batches B–D capability matrices](docs/EXPANDED_LANGUAGE_SUPPORT.md)
-- [Project and workspace intelligence](docs/PROJECT_WORKSPACE_INTELLIGENCE.md)
-- [Editor service and VS Code extension](docs/EDITOR_INTEGRATIONS.md)
-- [Git change-impact analysis](docs/GIT_CHANGE_IMPACT.md)
-- [CLI reference and troubleshooting](docs/CLI.md)
-- [GitHub Action setup, permissions, and release process](docs/GITHUB_ACTION.md)
-- [Dashboard workspace, security, exports, and performance](docs/DASHBOARD.md)
-- [Performance methodology, measurements, and limits](docs/PERFORMANCE.md)
-- [Security threat model, mitigations, and residual risks](docs/SECURITY_THREAT_MODEL.md)
-- Architecture governance is configured through versioned `architectureGovernance` rules in `cascade.config.json`; use `cascade governance` for terminal, JSON, Markdown, or SARIF findings.
+The dashboard binds to `127.0.0.1`, uses a random local session token, and does
+not intentionally send source code to a remote service.
+
+```yaml
+- uses: AbdulGani07/cascade@v3.3.0
+  with:
+    base: ${{ github.event.pull_request.base.sha }}
+    head: ${{ github.event.pull_request.head.sha }}
+```
+
+The repository also contains the `cascade-code-intelligence` VS Code extension
+source and a JSON-lines editor service. Background analysis is opt-in.
+
+- [Dashboard](docs/DASHBOARD.md)
+- [GitHub Action](docs/GITHUB_ACTION.md)
+- [VS Code extension](docs/VSCODE_EXTENSION.md)
+
+## Configuration
+
+Create and validate a starter file:
+
+```bash
+node packages/cli/dist/index.js init .
+node packages/cli/dist/index.js config validate .
+```
+
+```json
+{
+  "entryPoints": ["src/index.ts"],
+  "ignore": ["**/node_modules/**", "**/dist/**"],
+  "selectedProjects": [],
+  "symlinks": "ignore",
+  "maxFiles": 100000,
+  "maxFileSizeBytes": 5242880,
+  "maxTotalBytes": 1073741824,
+  "architectureGovernance": { "version": "1", "rules": [] }
+}
+```
+
+[Configuration reference →](docs/CONFIGURATION.md)
+
+## Privacy, security, and performance
+
+Cascade does not intentionally execute analyzed source, package scripts, build
+tools, or framework configuration. Reports use project-relative paths and
+apply heuristic secret redaction. Third-party plugins are trusted in-process
+code and are not sandboxed.
+
+Measured on the documented Windows/Node 22 machine, a 100-file fixture was
+sub-second, 1,000 files took a few seconds, 10,000 files took tens of seconds,
+and the 50,000-file structural fixture took about two minutes. Language mix,
+filesystem, graph density, and impact-output size materially affect results.
+
+- [Security model](docs/SECURITY.md)
+- [Performance methodology](docs/PERFORMANCE.md)
+
+## How it compares
+
+| Tool category               | Typical focus                   | Cascade's focus                                                 |
+| --------------------------- | ------------------------------- | --------------------------------------------------------------- |
+| Package dependency checkers | Manifest/package versions       | File and project relationships from source and metadata         |
+| Linters                     | Rules within files or ASTs      | Cross-file graph, change impact, and architecture boundaries    |
+| Build graphs                | Tasks and declared packages     | Language-plugin evidence plus detected project relationships    |
+| Code search                 | Finding text/symbol occurrences | Directed dependencies, reverse impact, cycles, and explanations |
+
+Cascade can complement these tools; it does not replace compilers, tests,
+coverage, runtime tracing, vulnerability scanners, or code review.
+
+## Documentation
+
+Start at the [documentation index](docs/README.md). Popular guides:
+
+- [Installation](docs/INSTALLATION.md)
+- [Getting started](docs/GETTING_STARTED.md)
+- [CLI reference](docs/CLI.md)
+- [Examples](docs/EXAMPLES.md)
+- [Plugin development](docs/PLUGIN_DEVELOPMENT.md)
+- [JSON schema](docs/JSON_SCHEMA.md)
+- [Troubleshooting](docs/TROUBLESHOOTING.md)
+- [FAQ](docs/FAQ.md)
+
+## Roadmap
+
+Near-term work is tracked through GitHub issues and the
+[roadmap](docs/ROADMAP.md): stronger incremental analysis, safer plugin
+isolation, schema publication, more browser-scale dashboard aggregation, and
+additional language-specific resolution evidence. Items are plans, not
+commitments.
+
+## Contributing and governance
+
+Read [CONTRIBUTING.md](CONTRIBUTING.md), the
+[governance model](docs/GOVERNANCE.md), and the
+[Code of Conduct](CODE_OF_CONDUCT.md). Run `pnpm check` and
+`pnpm run test:docs` before opening a pull request.
+
+## Citation and academic use
+
+Cascade does not currently publish a paper or DOI. Academic users may cite the
+repository URL, release tag, and commit SHA. See [CITATION.cff](CITATION.cff)
+for machine-readable metadata.
+
+## License
+
+[MIT](LICENSE) © Cascade contributors.
