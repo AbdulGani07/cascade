@@ -108,6 +108,9 @@ importers:
       '@cascade/language-csharp':
         specifier: workspace:*
         version: link:../language-csharp
+      '@cascade/language-expanded':
+        specifier: workspace:*
+        version: link:../language-expanded
       '@cascade/language-go':
         specifier: workspace:*
         version: link:../language-go
@@ -205,6 +208,19 @@ importers:
       tree-sitter-c-sharp:
         specifier: 0.23.1
         version: 0.23.1(tree-sitter@0.22.4)
+
+  packages/language-expanded:
+    dependencies:
+      '@cascade/plugin-api':
+        specifier: workspace:*
+        version: link:../plugin-api
+    devDependencies:
+      '@types/node':
+        specifier: ^26.1.1
+        version: 26.1.2
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
 
   packages/language-go:
     dependencies:

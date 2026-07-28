@@ -1,6 +1,6 @@
 # Cascade
 
-Current release: **2.3.0** (2026-07-28)
+Current release: **3.0.0** (2026-07-28)
 
 Cascade is a modular, pluggable dependency-analysis and code-intelligence toolkit that predicts the impact of code changes. It scans multi-language repositories, builds dependency graphs, detects cycles and unreachable code, and exposes actionable results through a CLI, reporters (Markdown, SARIF), and a React dashboard.
 
@@ -59,6 +59,7 @@ pnpm check
 - `@cascade/language-rust` — Rust syntax-tree analysis with Cargo workspace, module, include, and crate resolution
 - `@cascade/language-c` — C syntax-tree analysis with preprocessor includes and native build metadata
 - `@cascade/language-cpp` — C++ syntax-tree analysis with header dependencies and native build metadata
+- `@cascade/language-expanded` — Structured first-party plugins for Batches B–D, including scripting, component, document, style, GraphQL, and optional SQL analysis
 - `@cascade/reporters` — Diagnostic reporters including Markdown summary (`MarkdownReporter`) and SARIF 2.1.0 (`SarifReporter`)
 - `@cascade/cli` — Command-line interface and terminal user interface
 - `@cascade/dashboard` — Interactive React Flow graph visualizer
@@ -78,3 +79,4 @@ pnpm check
 - [Go capability matrix](docs/GO_SUPPORT.md)
 - [Rust capability matrix](docs/RUST_SUPPORT.md)
 - [C and C++ capability matrices](docs/C_CPP_SUPPORT.md)
+- [Expanded Batches B–D capability matrices](docs/EXPANDED_LANGUAGE_SUPPORT.md)

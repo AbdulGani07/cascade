@@ -10,6 +10,20 @@ import { createGoPlugin } from "../packages/language-go/dist/index.js";
 import { createRustPlugin } from "../packages/language-rust/dist/index.js";
 import { createCPlugin } from "../packages/language-c/dist/index.js";
 import { createCppPlugin } from "../packages/language-cpp/dist/index.js";
+import {
+  createDartPlugin,
+  createGraphqlPlugin,
+  createLuaPlugin,
+  createPhpPlugin,
+  createPowerShellPlugin,
+  createRPlugin,
+  createRubyPlugin,
+  createShellPlugin,
+  createStylesPlugin,
+  createSveltePlugin,
+  createSwiftPlugin,
+  createVuePlugin,
+} from "../packages/language-expanded/dist/index.js";
 
 const sizes = [
   ["small", 100],
@@ -52,12 +66,33 @@ const languageCases = [
   ["Rust", createRustPlugin(), (index) => `use benchmark::Type${index};\n`, "fn main() {}"],
   ["C", createCPlugin(), (index) => `#include "type${index}.h"\n`, "int main(void) { return 0; }"],
   ["C++", createCppPlugin(), (index) => `#include "type${index}.hpp"\n`, "int main() { return 0; }"],
+  ["PHP", createPhpPlugin(), (index) => `require "./type${index}.php";\n`, "<?php\n"],
+  ["Ruby", createRubyPlugin(), (index) => `require_relative "./type${index}"\n`, ""],
+  ["Swift", createSwiftPlugin(), (index) => `import Type${index}\n`, ""],
+  ["Dart", createDartPlugin(), (index) => `import "./type${index}.dart";\n`, ""],
+  ["Shell", createShellPlugin(), (index) => `source "./type${index}.sh"\n`, ""],
+  ["PowerShell", createPowerShellPlugin(), (index) => `Import-Module "./Type${index}.psm1"\n`, ""],
+  ["Lua", createLuaPlugin(), (index) => `require("./type${index}")\n`, ""],
+  ["R", createRPlugin(), (index) => `source("./type${index}.R")\n`, ""],
+  ["Vue", createVuePlugin(), (index) => `import Type${index} from "./Type${index}.vue"\n`, "<script>\n", "</script>"],
+  ["Svelte", createSveltePlugin(), (index) => `import "./type${index}.js"\n`, "<script>\n", "</script>"],
+  ["Styles", createStylesPlugin(), (index) => `@import "./type${index}.css";\n`, ""],
+  ["GraphQL", createGraphqlPlugin(), (index) => `#import "./type${index}.graphql"\n`, ""],
 ];
 for (const [language, plugin, importLine, prefixOrSuffix, optionalSuffix] of languageCases) {
   const importCount = 1_000;
   const imports = Array.from({ length: importCount }, (_, index) => importLine(index)).join("");
   const content = optionalSuffix ? `${prefixOrSuffix}${imports}${optionalSuffix}` : `${imports}${prefixOrSuffix}`;
-  const extension = { "C#": "cs", "C++": "cpp", Rust: "rs" }[language] ?? language.toLowerCase();
+  const extension =
+    {
+      "C#": "cs",
+      "C++": "cpp",
+      Rust: "rs",
+      Shell: "sh",
+      PowerShell: "ps1",
+      Styles: "css",
+      GraphQL: "graphql",
+    }[language] ?? language.toLowerCase();
   const context = { filePath: `benchmark.${extension}`, relativePath: `benchmark.${extension}`, content };
   const started = performance.now();
   const parsed = plugin.parser.parse(context);

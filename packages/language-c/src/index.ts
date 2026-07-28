@@ -268,7 +268,7 @@ function buildMetadata(root: string, files: string[]) {
 export class CLanguagePlugin implements LanguagePlugin {
   id = "cascade-language-c";
   name = "Cascade C Language Plugin";
-  version = "2.3.0";
+  version = "3.0.0";
   supportedExtensions = [".c", ".h"];
   fileDetectionRules = [
     { type: "extension" as const, pattern: ".c" },

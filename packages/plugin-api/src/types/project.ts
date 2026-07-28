@@ -32,6 +32,14 @@ export interface ProjectInfo {
     | "make"
     | "meson"
     | "bazel"
+    | "composer"
+    | "bundler"
+    | "swiftpm"
+    | "dart"
+    | "shell"
+    | "powershell"
+    | "r"
+    | "vite"
     | "mixed";
   /** Logical modules/projects declared by the build system. */
   modules?: Array<{ name: string; relativePath: string; kind?: string }>;

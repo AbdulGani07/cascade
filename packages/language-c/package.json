@@ -1,6 +1,6 @@
 {
   "name": "@cascade/language-c",
-  "version": "2.3.0",
+  "version": "3.0.0",
   "description": "First-party C language plugin for Cascade",
   "type": "module",
   "engines": {

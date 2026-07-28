@@ -28,6 +28,10 @@ export default defineConfig({
       "@cascade/language-rust": path.resolve(__dirname, "packages/language-rust/src/index.ts"),
       "@cascade/language-c": path.resolve(__dirname, "packages/language-c/src/index.ts"),
       "@cascade/language-cpp": path.resolve(__dirname, "packages/language-cpp/src/index.ts"),
+      "@cascade/language-expanded": path.resolve(
+        __dirname,
+        "packages/language-expanded/src/index.ts"
+      ),
       "@cascade/test-utils": path.resolve(__dirname, "packages/test-utils/src/index.ts"),
       "@cascade/core": path.resolve(__dirname, "packages/core/src/index.ts"),
     },

@@ -5,6 +5,26 @@ All notable changes to Cascade will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.0] - 2026-07-28
+
+Released at `2026-07-28T14:40:01+06:00`.
+
+### Added
+
+- Batch B first-party plugins for PHP, Ruby, Swift, and Dart with package/build metadata and conservative resolution.
+- Batch C first-party plugins for shell scripts, PowerShell, Lua, and R, including quoted special-character PowerShell paths.
+- Batch D first-party plugins for Vue, Svelte, HTML, CSS/SCSS/Sass/Less, GraphQL, and opt-in SQL nodes.
+- Error-tolerant structured token trees with locations and malformed string/comment diagnostics.
+- Composer, Bundler/Rake, SwiftPM, Dart/Flutter, Nuxt/Vite, and Svelte/SvelteKit manifest evidence where statically available.
+- Realistic fixtures, integration regressions, capability matrices, limitations, configuration examples, and parser benchmarks for all new plugins.
+
+### Changed
+
+- CLI, configuration, JSON plugin manifests, and dashboard capability metadata now include all Batch B–D plugins.
+- Generated, vendor, dependency, cache, build, Pods, DerivedData, `.dart_tool`, `.bundle`, and R environment directories are excluded by default.
+- SQL analysis is disabled by default and never invents repository file targets from table names.
+- Repository version advanced to 3.0.0 because the first-party language surface and configuration schema expanded materially.
+
 ## [2.3.0] - 2026-07-28
 
 Released at `2026-07-28T14:01:04+06:00`.
@@ -114,6 +134,7 @@ Released at `2026-07-28T09:54:18+06:00`.
 - JavaScript and TypeScript file scanning, dependency graph construction, cycle detection, dead-file analysis, and impact simulation.
 - CLI commands for analysis, graph inspection, impact reports, dead-code reports, and the dashboard server.
 
+[3.0.0]: https://github.com/AbdulGani07/cascade/releases/tag/v3.0.0
 [2.3.0]: https://github.com/AbdulGani07/cascade/releases/tag/v2.3.0
 [2.2.0]: https://github.com/AbdulGani07/cascade/releases/tag/v2.2.0
 [2.1.0]: https://github.com/AbdulGani07/cascade/releases/tag/v2.1.0

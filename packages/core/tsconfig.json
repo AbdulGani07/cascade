@@ -22,7 +22,8 @@
     { "path": "../language-go" },
     { "path": "../language-rust" },
     { "path": "../language-c" },
-    { "path": "../language-cpp" }
+    { "path": "../language-cpp" },
+    { "path": "../language-expanded" }
   ],
   "include": ["src/**/*"]
 }

@@ -14,6 +14,7 @@
     { "path": "./packages/language-rust" },
     { "path": "./packages/language-c" },
     { "path": "./packages/language-cpp" },
+    { "path": "./packages/language-expanded" },
     { "path": "./packages/test-utils" },
     { "path": "./packages/core" },
     { "path": "./packages/cli" }

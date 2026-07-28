@@ -1,0 +1,8 @@
+{
+  "name": "cascade/php-fixture",
+  "autoload": {
+    "psr-4": {
+      "Cascade\\": "src/"
+    }
+  }
+}

@@ -156,7 +156,7 @@ function metadata(_root: string, files: string[]) {
 export class CppLanguagePlugin implements LanguagePlugin {
   id = "cascade-language-cpp";
   name = "Cascade C++ Language Plugin";
-  version = "2.3.0";
+  version = "3.0.0";
   supportedExtensions = [
     ".cc",
     ".cpp",

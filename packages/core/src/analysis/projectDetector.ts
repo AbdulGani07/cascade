@@ -201,6 +201,37 @@ function detectCompiledProjects(projectRoot: string, nodes: DependencyNode[]): P
         },
       ];
     }
+    const expandedBuildSystems = {
+      "composer.json": ["composer", "php-composer"],
+      Gemfile: ["bundler", "ruby-bundler"],
+      "Package.swift": ["swiftpm", "swift-package"],
+      "pubspec.yaml": ["dart", "dart-package"],
+      "renv.lock": ["r", "r-project"],
+      "svelte.config.js": ["vite", "sveltekit"],
+      "nuxt.config.ts": ["vite", "nuxt"],
+    } as const;
+    if (name in expandedBuildSystems) {
+      const [buildSystem, projectType] =
+        expandedBuildSystems[name as keyof typeof expandedBuildSystems];
+      return [
+        {
+          id,
+          name: path.basename(rootPath),
+          rootPath,
+          projectType,
+          languages,
+          workspaces: [],
+          configFiles: [relativeManifest],
+          frameworks: projectType.includes("svelte")
+            ? ["SvelteKit"]
+            : projectType.includes("nuxt")
+              ? ["Nuxt"]
+              : [],
+          buildSystem,
+          modules: [],
+        },
+      ];
+    }
     if (
       [
         "CMakeLists.txt",
@@ -305,6 +336,13 @@ function findBuildManifests(projectRoot: string): string[] {
           "BUILD",
           "BUILD.bazel",
           "WORKSPACE",
+          "composer.json",
+          "Gemfile",
+          "Package.swift",
+          "pubspec.yaml",
+          "renv.lock",
+          "svelte.config.js",
+          "nuxt.config.ts",
         ].includes(entry.name) ||
           /\.(?:csproj|sln)$/.test(entry.name))
       )

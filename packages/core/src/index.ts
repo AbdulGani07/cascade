@@ -18,6 +18,22 @@ import { createGoPlugin } from "@cascade/language-go";
 import { createRustPlugin } from "@cascade/language-rust";
 import { createCPlugin } from "@cascade/language-c";
 import { createCppPlugin } from "@cascade/language-cpp";
+import {
+  createDartPlugin,
+  createGraphqlPlugin,
+  createHtmlPlugin,
+  createLuaPlugin,
+  createPhpPlugin,
+  createPowerShellPlugin,
+  createRPlugin,
+  createRubyPlugin,
+  createShellPlugin,
+  createSqlPlugin,
+  createStylesPlugin,
+  createSveltePlugin,
+  createSwiftPlugin,
+  createVuePlugin,
+} from "@cascade/language-expanded";
 import { PluginRegistry } from "./plugins/pluginRegistry.js";
 import { scanFiles } from "./parser/fileScanner.js";
 import { detectEntryPointEvidence } from "./analysis/entryPointDetector.js";
@@ -51,6 +67,20 @@ export function analyze(projectRoot: string, options?: AnalyzeOptions): Analysis
   registry.registerPlugin(createRustPlugin(), { priority: 75 });
   registry.registerPlugin(createCppPlugin(), { priority: 72 });
   registry.registerPlugin(createCPlugin(), { priority: 70 });
+  registry.registerPlugin(createPhpPlugin(), { priority: 75 });
+  registry.registerPlugin(createRubyPlugin(), { priority: 75 });
+  registry.registerPlugin(createSwiftPlugin(), { priority: 75 });
+  registry.registerPlugin(createDartPlugin(), { priority: 75 });
+  registry.registerPlugin(createShellPlugin(), { priority: 75 });
+  registry.registerPlugin(createPowerShellPlugin(), { priority: 75 });
+  registry.registerPlugin(createLuaPlugin(), { priority: 75 });
+  registry.registerPlugin(createRPlugin(), { priority: 75 });
+  registry.registerPlugin(createVuePlugin(), { priority: 90 });
+  registry.registerPlugin(createSveltePlugin(), { priority: 90 });
+  registry.registerPlugin(createHtmlPlugin(), { priority: 60 });
+  registry.registerPlugin(createStylesPlugin(), { priority: 60 });
+  registry.registerPlugin(createGraphqlPlugin(), { priority: 65 });
+  registry.registerPlugin(createSqlPlugin(), { priority: 40 });
 
   // 2. Register custom user plugins if provided
   if (options?.customPlugins) {

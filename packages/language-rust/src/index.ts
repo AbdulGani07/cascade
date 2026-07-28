@@ -476,7 +476,7 @@ function cargoMetadata(projectRoot: string, files: string[]): FrameworkMetadata[
 export class RustLanguagePlugin implements LanguagePlugin {
   id = "cascade-language-rust";
   name = "Cascade Rust Language Plugin";
-  version = "2.3.0";
+  version = "3.0.0";
   supportedExtensions = [".rs"];
   fileDetectionRules = [
     { type: "extension" as const, pattern: ".rs" },
