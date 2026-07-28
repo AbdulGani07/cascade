@@ -1,0 +1,7 @@
+[project]
+name = "poly-api"
+version = "1.0.0"
+dependencies = ["fastapi"]
+
+[tool.uv.workspace]
+members = ["../../packages/python-shared"]

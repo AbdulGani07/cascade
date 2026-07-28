@@ -64,9 +64,10 @@ export function registerProjectsCommand(program: Command): void {
       printHeading("Project & Workspace Intelligence");
       console.log(
         renderTable(
-          ["Project", "Type", "Build", "Languages", "Files"],
+          ["Project", "Role", "Type", "Build", "Languages", "Files"],
           graph.nodes.map((item) => [
             item.id,
+            item.role ?? "unknown",
             item.projectType,
             item.buildSystem ?? "-",
             item.languages.join(", "),

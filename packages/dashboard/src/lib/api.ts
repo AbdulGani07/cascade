@@ -46,7 +46,15 @@ export type AnalysisResult = {
     modules?: { name: string; relativePath: string; kind?: string }[];
   }[];
   projectGraph?: {
-    nodes: { id: string; name: string; projectType: string; languages: string[] }[];
+    nodes: {
+      id: string;
+      name: string;
+      projectType: string;
+      languages: string[];
+      role?: string;
+      buildSystem?: string;
+      files?: string[];
+    }[];
     edges: {
       id: string;
       from: string;
@@ -57,6 +65,14 @@ export type AnalysisResult = {
       sourceFiles: string[];
     }[];
     cycles: string[][];
+    fileToProject: Record<string, string>;
+    projectToFiles: Record<string, string[]>;
+    groups: {
+      byLanguage: Record<string, string[]>;
+      byRole: Record<string, string[]>;
+      byBuildSystem: Record<string, string[]>;
+      byWorkspace: Record<string, string[]>;
+    };
   };
   projectImpact?: Record<
     string,

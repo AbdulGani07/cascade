@@ -97,7 +97,7 @@ export function scanFiles(
             },
             pluginProvenance: {
               pluginId: plugin ? plugin.id : "cascade-core",
-              pluginVersion: plugin ? plugin.version : "3.1.0",
+              pluginVersion: plugin ? plugin.version : "3.1.1",
             },
             diagnostics: [],
           });

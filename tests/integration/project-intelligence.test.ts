@@ -12,6 +12,9 @@ describe("project intelligence", () => {
     expect(result.projectGraph?.nodes.map((project) => project.id)).toEqual(
       expect.arrayContaining([".", "apps/web", "packages/shared", "services/worker"])
     );
+    expect(result.projectGraph?.nodes.map((project) => project.id)).toEqual(
+      expect.arrayContaining(["services/api", "services/gateway", "mobile", "native", "infra"])
+    );
     expect(result.projectGraph?.edges).toContainEqual(
       expect.objectContaining({
         from: "apps/web",
@@ -23,9 +26,14 @@ describe("project intelligence", () => {
       expect.objectContaining({ from: ".", to: "apps/web", type: "packages" })
     );
     expect(result.projectGraph?.edges).toContainEqual(
-      expect.objectContaining({ from: ".", to: "services/worker", type: "references" })
+      expect.objectContaining({ from: "infra", to: "services/worker", type: "references" })
     );
     expect(result.projectImpact?.["packages/shared"]?.allAffected).toContain("apps/web");
+    expect(result.projectGraph?.fileToProject["apps/web/src/main.ts"]).toBe("apps/web");
+    expect(result.projectGraph?.projectToFiles["services/api"]).toContain(
+      "services/api/src/poly_api/main.py"
+    );
+    expect(result.projectGraph?.groups.byLanguage.python).toContain("services/api");
     const serialized = JSON.parse(toJson(result));
     expect(serialized.projectGraph.edges[0].sourceFiles[0]).not.toMatch(/^[A-Z]:\\/i);
   });
@@ -61,6 +69,26 @@ describe("project intelligence", () => {
     });
     expect(selectedResult.nodes.every((node) => node.relativePath.startsWith("apps/web/"))).toBe(
       true
+    );
+    expect(selectedResult.projectGraph?.nodes.map((project) => project.id)).toEqual(["apps/web"]);
+  });
+
+  it("applies project overrides including ignored projects", () => {
+    const result = analyze(root, {
+      config: {
+        ...defaultConfig,
+        projectOverrides: {
+          "apps/web": { name: "frontend", projectType: "service" },
+          "services/worker": { ignore: true },
+        },
+      },
+    });
+    expect(result.projects).toContainEqual(
+      expect.objectContaining({ id: "apps/web", name: "frontend", projectType: "service" })
+    );
+    expect(result.projects?.some((project) => project.id === "services/worker")).toBe(false);
+    expect(result.nodes.some((node) => node.relativePath.startsWith("services/worker/"))).toBe(
+      false
     );
   });
 });

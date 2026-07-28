@@ -1,6 +1,6 @@
 {
   "name": "@cascade/language-java",
-  "version": "3.1.0",
+  "version": "3.1.1",
   "description": "First-party Java language analysis plugin for Cascade",
   "type": "module",
   "engines": {

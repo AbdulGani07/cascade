@@ -1,6 +1,6 @@
 # Cascade
 
-Current release: **3.1.0** (2026-07-28)
+Current release: **3.1.1** (2026-07-28)
 
 Cascade is a modular, pluggable dependency-analysis and code-intelligence toolkit that predicts the impact of code changes. It scans multi-language repositories, builds dependency graphs, detects cycles and unreachable code, and exposes actionable results through a CLI, reporters (Markdown, SARIF), and a React dashboard.
 
@@ -37,6 +37,8 @@ Additional commands:
 
 ```bash
 node packages/cli/dist/index.js graph test-project
+node packages/cli/dist/index.js graph test-project --project
+node packages/cli/dist/index.js projects test-project
 node packages/cli/dist/index.js deadcode test-project
 node packages/cli/dist/index.js impact test-project
 node packages/cli/dist/index.js dashboard test-project

@@ -134,24 +134,32 @@ for (const [language, plugin, importLine, prefixOrSuffix, optionalSuffix] of lan
   console.log(`| ${language} | ${importCount} | ${(performance.now() - started).toFixed(1)} |`);
 }
 
-const projectBenchmarkRoot = fs.mkdtempSync(path.join(os.tmpdir(), "cascade-project-benchmark-"));
-for (let index = 0; index < 100; index++) {
-  const folder = path.join(projectBenchmarkRoot, "packages", `pkg-${index}`);
-  fs.mkdirSync(path.join(folder, "src"), { recursive: true });
-  fs.writeFileSync(
-    path.join(folder, "package.json"),
-    JSON.stringify({
-      name: `@benchmark/pkg-${index}`,
-      dependencies: index ? { [`@benchmark/pkg-${index - 1}`]: "workspace:*" } : {},
-    })
-  );
-  fs.writeFileSync(path.join(folder, "src", "index.ts"), "export const value = true;\n");
-}
-const startedProjects = performance.now();
-const projectIntelligence = detectProjectIntelligence(projectBenchmarkRoot, []);
 console.log("\n| Project graph | Projects | Relationships | Time (ms) |");
 console.log("| --- | ---: | ---: | ---: |");
-console.log(
-  `| 100 workspace packages | ${projectIntelligence.projects.length} | ${projectIntelligence.projectGraph.edges.length} | ${(performance.now() - startedProjects).toFixed(1)} |`
-);
-fs.rmSync(projectBenchmarkRoot, { recursive: true, force: true });
+for (const projectCount of [100, 1_000]) {
+  const projectBenchmarkRoot = fs.mkdtempSync(
+    path.join(os.tmpdir(), "cascade-project-benchmark-")
+  );
+  fs.writeFileSync(
+    path.join(projectBenchmarkRoot, "package.json"),
+    JSON.stringify({ name: "benchmark-workspace", private: true, workspaces: ["packages/*"] })
+  );
+  for (let index = 0; index < projectCount; index++) {
+    const folder = path.join(projectBenchmarkRoot, "packages", `pkg-${index}`);
+    fs.mkdirSync(path.join(folder, "src"), { recursive: true });
+    fs.writeFileSync(
+      path.join(folder, "package.json"),
+      JSON.stringify({
+        name: `@benchmark/pkg-${index}`,
+        dependencies: index ? { [`@benchmark/pkg-${index - 1}`]: "workspace:*" } : {},
+      })
+    );
+    fs.writeFileSync(path.join(folder, "src", "index.ts"), "export const value = true;\n");
+  }
+  const startedProjects = performance.now();
+  const projectIntelligence = detectProjectIntelligence(projectBenchmarkRoot, []);
+  console.log(
+    `| ${projectCount} workspace packages | ${projectIntelligence.projects.length} | ${projectIntelligence.projectGraph.edges.length} | ${(performance.now() - startedProjects).toFixed(1)} |`
+  );
+  fs.rmSync(projectBenchmarkRoot, { recursive: true, force: true });
+}

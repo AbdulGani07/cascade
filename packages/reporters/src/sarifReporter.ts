@@ -58,7 +58,7 @@ export class SarifReporter implements Reporter {
           tool: {
             driver: {
               name: "Cascade",
-              version: "3.1.0",
+              version: "3.1.1",
               rules,
             },
           },

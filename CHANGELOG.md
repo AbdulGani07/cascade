@@ -5,6 +5,24 @@ All notable changes to Cascade will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.1.1] - 2026-07-28
+
+### Added
+
+- Project roles, file-to-project and project-to-file navigation indexes, deterministic language/role/build/workspace groups, and a dashboard Projects graph view.
+- Nested Python project detection (including Poetry, uv, PDM, and Hatch), infrastructure project discovery, and expanded realistic polyglot fixtures.
+- Typed project relationships for Maven, Gradle, MSBuild, Go workspaces, Cargo, CMake, Meson, container build contexts, and CI working directories.
+- 1,000-workspace benchmark coverage and documented performance evidence.
+
+### Changed
+
+- Project selection and ignore overrides now filter project edges, project impact, and source nodes consistently; unmatched overrides produce diagnostics.
+- Relationship and reverse-impact indexing now avoid quadratic/cubic lookup paths in large workspaces.
+
+### Fixed
+
+- Terraform relationships are owned by their infrastructure project instead of being attributed to the repository root.
+
 ## [3.1.0] - 2026-07-28
 
 Released at `2026-07-28T15:09:31+06:00`.
@@ -145,6 +163,7 @@ Released at `2026-07-28T09:54:18+06:00`.
 - JavaScript and TypeScript file scanning, dependency graph construction, cycle detection, dead-file analysis, and impact simulation.
 - CLI commands for analysis, graph inspection, impact reports, dead-code reports, and the dashboard server.
 
+[3.1.1]: https://github.com/AbdulGani07/cascade/releases/tag/v3.1.1
 [3.1.0]: https://github.com/AbdulGani07/cascade/releases/tag/v3.1.0
 [3.0.0]: https://github.com/AbdulGani07/cascade/releases/tag/v3.0.0
 [2.3.0]: https://github.com/AbdulGani07/cascade/releases/tag/v2.3.0

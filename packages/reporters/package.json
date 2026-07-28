@@ -1,6 +1,6 @@
 {
   "name": "@cascade/reporters",
-  "version": "3.1.0",
+  "version": "3.1.1",
   "description": "Standard reporters (JSON, Text/Table, Markdown, SARIF) for Cascade analysis results",
   "type": "module",
   "engines": {

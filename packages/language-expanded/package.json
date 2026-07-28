@@ -1,6 +1,6 @@
 {
   "name": "@cascade/language-expanded",
-  "version": "3.1.0",
+  "version": "3.1.1",
   "description": "First-party structured plugins for Cascade language expansion batches B, C, and D",
   "type": "module",
   "main": "dist/index.js",

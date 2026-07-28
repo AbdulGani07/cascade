@@ -18,7 +18,9 @@ export default function App() {
   const { data, isLoading, error } = useGraphData();
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<"graph" | "matrix" | "cycles" | "deadcode">("graph");
+  const [viewMode, setViewMode] = useState<"graph" | "projects" | "matrix" | "cycles" | "deadcode">(
+    "graph"
+  );
   const [layoutDirection, setLayoutDirection] = useState<"TB" | "LR">("TB");
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -36,7 +38,7 @@ export default function App() {
 
   const handleSelectNode = (id: string | null) => {
     setSelectedId(id);
-    if (id && viewMode !== "graph") {
+    if (id && !["graph", "projects"].includes(viewMode)) {
       setViewMode("graph");
     }
   };
@@ -93,7 +95,12 @@ export default function App() {
   }
 
   const highlightedIds = selectedId
-    ? new Set([selectedId, ...(data.impact[selectedId]?.allAffected ?? [])])
+    ? new Set([
+        selectedId,
+        ...(viewMode === "projects"
+          ? (data.projectImpact?.[selectedId]?.allAffected ?? [])
+          : (data.impact[selectedId]?.allAffected ?? [])),
+      ])
     : new Set<string>();
 
   return (
@@ -146,6 +153,17 @@ export default function App() {
               onSelect={handleSelectNode}
               layoutDirection={layoutDirection}
               onToggleLayout={() => setLayoutDirection((prev) => (prev === "TB" ? "LR" : "TB"))}
+            />
+          )}
+          {viewMode === "projects" && (
+            <GraphView
+              analysisData={data}
+              selectedId={selectedId}
+              highlightedIds={highlightedIds}
+              onSelect={handleSelectNode}
+              layoutDirection={layoutDirection}
+              onToggleLayout={() => setLayoutDirection((prev) => (prev === "TB" ? "LR" : "TB"))}
+              graphKind="project"
             />
           )}
 

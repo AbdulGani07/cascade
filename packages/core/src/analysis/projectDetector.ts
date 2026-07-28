@@ -48,6 +48,9 @@ export function detectProjects(projectRoot: string, nodes: DependencyNode[]): Pr
           /(^|\/)(tsconfig.*\.json|vite\.config\.|next\.config\.|nx\.json|turbo\.json)/.test(file)
         ),
       frameworks,
+      buildSystem: detectNodeBuildSystem(rootPath, manifest),
+      role: inferNodeRole(manifest, frameworks, relativeRoot),
+      detectionEvidence: [toPosixRelativePath(manifestPath, projectRoot)],
     });
   }
 
@@ -78,9 +81,80 @@ export function detectProjects(projectRoot: string, nodes: DependencyNode[]): Pr
           ? "mixed"
           : project.buildSystem;
       existing.modules = [...(existing.modules ?? []), ...(project.modules ?? [])];
+      existing.detectionEvidence = [
+        ...new Set([...(existing.detectionEvidence ?? []), ...(project.detectionEvidence ?? [])]),
+      ];
+    }
+  }
+  for (const project of detectInfrastructureProjects(projectRoot)) {
+    const existing = projects.find((candidate) => candidate.id === project.id);
+    if (!existing) projects.push(project);
+    else {
+      existing.configFiles = [...new Set([...existing.configFiles, ...project.configFiles])].sort();
+      existing.deploymentUnits = [
+        ...new Set([...(existing.deploymentUnits ?? []), ...(project.deploymentUnits ?? [])]),
+      ].sort();
+      existing.detectionEvidence = [
+        ...new Set([...(existing.detectionEvidence ?? []), ...(project.detectionEvidence ?? [])]),
+      ].sort();
     }
   }
   return projects;
+}
+
+function detectInfrastructureProjects(projectRoot: string): ProjectInfo[] {
+  const names = new Set([
+    "Dockerfile",
+    "docker-compose.yml",
+    "docker-compose.yaml",
+    "compose.yml",
+    "compose.yaml",
+    "main.tf",
+    "terragrunt.hcl",
+    ".gitlab-ci.yml",
+    ".gitlab-ci.yaml",
+    "azure-pipelines.yml",
+    "cloudbuild.yaml",
+  ]);
+  const manifests = findManifestFiles(projectRoot, names).filter(
+    (file) =>
+      names.has(path.basename(file)) ||
+      /(?:^|[\\/])\.github[\\/]workflows[\\/].+\.ya?ml$/i.test(file) ||
+      /(?:^|[\\/])(?:k8s|kubernetes|deploy|helm)[\\/].+\.ya?ml$/i.test(file)
+  );
+  const byRoot = new Map<string, string[]>();
+  for (const manifest of manifests) {
+    const directory = path.dirname(manifest);
+    const relative = toPosixRelativePath(manifest, projectRoot);
+    const bucket = byRoot.get(directory) ?? [];
+    bucket.push(relative);
+    byRoot.set(directory, bucket);
+  }
+  return [...byRoot.entries()].map(([rootPath, configFiles]) => {
+    const id = toPosixRelativePath(rootPath, projectRoot) || ".";
+    const units = configFiles.flatMap((file) =>
+      /Dockerfile|compose/i.test(file)
+        ? ["container"]
+        : /\.tf$|terragrunt/.test(file)
+          ? ["terraform-module"]
+          : /\.github\/workflows|gitlab-ci|pipelines|cloudbuild/.test(file)
+            ? ["ci-pipeline"]
+            : ["kubernetes"]
+    );
+    return {
+      id,
+      name: id === "." ? path.basename(projectRoot) : path.basename(rootPath),
+      rootPath,
+      projectType: "infrastructure",
+      languages: [],
+      workspaces: [],
+      configFiles: [...new Set(configFiles)].sort(),
+      frameworks: [],
+      role: "infrastructure",
+      deploymentUnits: [...new Set(units)].sort(),
+      detectionEvidence: [...new Set(configFiles)].sort(),
+    };
+  });
 }
 
 function findManifestFiles(projectRoot: string, names: Set<string>): string[] {
@@ -156,6 +230,12 @@ function detectCompiledProjects(projectRoot: string, nodes: DependencyNode[]): P
           frameworks,
           buildSystem: name === "pom.xml" ? "maven" : "gradle",
           modules,
+          role: frameworks.includes("Android")
+            ? "application"
+            : modules.length
+              ? "workspace"
+              : "library",
+          detectionEvidence: [relativeManifest],
         },
       ];
     }
@@ -185,6 +265,8 @@ function detectCompiledProjects(projectRoot: string, nodes: DependencyNode[]): P
           frameworks,
           buildSystem: "dotnet",
           modules,
+          role: frameworks.length ? "service" : name.endsWith(".sln") ? "workspace" : "library",
+          detectionEvidence: [relativeManifest],
         },
       ];
     }
@@ -206,6 +288,8 @@ function detectCompiledProjects(projectRoot: string, nodes: DependencyNode[]): P
           frameworks: [],
           buildSystem: "go",
           modules,
+          role: name === "go.work" ? "workspace" : "module",
+          detectionEvidence: [relativeManifest],
         },
       ];
     }
@@ -231,6 +315,8 @@ function detectCompiledProjects(projectRoot: string, nodes: DependencyNode[]): P
           frameworks: [],
           buildSystem: "cargo",
           modules,
+          role: membersBlock ? "workspace" : "library",
+          detectionEvidence: [relativeManifest],
         },
       ];
     }
@@ -266,6 +352,8 @@ function detectCompiledProjects(projectRoot: string, nodes: DependencyNode[]): P
               : [],
           buildSystem,
           modules: [],
+          role: projectType.includes("monorepo") ? "workspace" : "application",
+          detectionEvidence: [relativeManifest],
         },
       ];
     }
@@ -325,6 +413,8 @@ function detectCompiledProjects(projectRoot: string, nodes: DependencyNode[]): P
           frameworks: [],
           buildSystem,
           modules,
+          role: modules.length ? "workspace" : "library",
+          detectionEvidence: [relativeManifest],
         },
       ];
     }
@@ -391,7 +481,7 @@ function findBuildManifests(projectRoot: string): string[] {
     }
   };
   visit(projectRoot, 0);
-  return result;
+  return result.sort();
 }
 
 function safeRead(filePath: string): string {
@@ -403,45 +493,51 @@ function safeRead(filePath: string): string {
 }
 
 function detectPythonProjects(projectRoot: string, nodes: DependencyNode[]): ProjectInfo[] {
-  if (!nodes.some((node) => node.language === "python")) return [];
-  const configs = ["pyproject.toml", "setup.py", "setup.cfg", "requirements.txt"].filter((name) =>
-    fs.existsSync(path.join(projectRoot, name))
+  const manifests = findManifestFiles(
+    projectRoot,
+    new Set(["pyproject.toml", "setup.py", "setup.cfg"])
   );
-  const metadata = configs
-    .map((name) => {
-      try {
-        return fs.readFileSync(path.join(projectRoot, name), "utf8");
-      } catch {
-        return "";
-      }
-    })
-    .join("\n")
-    .toLowerCase();
-  const frameworks: string[] = [];
-  if (metadata.includes("django") || fs.existsSync(path.join(projectRoot, "manage.py")))
-    frameworks.push("Django");
-  if (metadata.includes("fastapi")) frameworks.push("FastAPI");
-  if (metadata.includes("flask")) frameworks.push("Flask");
-  const manager = metadata.includes("[tool.poetry")
-    ? "poetry"
-    : metadata.includes("[tool.uv")
-      ? "uv"
-      : metadata.includes("[tool.pdm")
-        ? "pdm"
-        : "pip";
-  const projectType = frameworks[0]?.toLowerCase() ?? `python-${manager}`;
-  return [
-    {
-      id: ".",
-      name: path.basename(projectRoot),
-      rootPath: projectRoot,
-      projectType,
-      languages: ["python"],
+  return manifests.map((manifestPath) => {
+    const rootPath = path.dirname(manifestPath);
+    const id = toPosixRelativePath(rootPath, projectRoot) || ".";
+    const localConfigs = ["pyproject.toml", "setup.py", "setup.cfg", "requirements.txt"].filter(
+      (name) => fs.existsSync(path.join(rootPath, name))
+    );
+    const metadata = localConfigs.map((name) => safeRead(path.join(rootPath, name))).join("\n");
+    const lower = metadata.toLowerCase();
+    const frameworks: string[] = [];
+    if (lower.includes("django") || fs.existsSync(path.join(rootPath, "manage.py")))
+      frameworks.push("Django");
+    if (lower.includes("fastapi")) frameworks.push("FastAPI");
+    if (lower.includes("flask")) frameworks.push("Flask");
+    const manager = lower.includes("[tool.poetry")
+      ? "poetry"
+      : lower.includes("[tool.uv")
+        ? "uv"
+        : lower.includes("[tool.pdm")
+          ? "pdm"
+          : lower.includes("[tool.hatch")
+            ? "hatch"
+            : "pip";
+    const declaredName =
+      /(?:^|\n)\s*name\s*=\s*["']([^"']+)/m.exec(metadata)?.[1] ?? path.basename(rootPath);
+    const relativeConfigs = localConfigs.map((name) =>
+      toPosixRelativePath(path.join(rootPath, name), projectRoot)
+    );
+    return {
+      id,
+      name: declaredName,
+      rootPath,
+      projectType: frameworks[0]?.toLowerCase() ?? `python-${manager}`,
+      languages: detectLanguages(nodes, id),
       workspaces: [],
-      configFiles: configs,
+      configFiles: relativeConfigs,
       frameworks,
-    },
-  ];
+      buildSystem: "python" as const,
+      role: frameworks.length ? ("service" as const) : ("library" as const),
+      detectionEvidence: [toPosixRelativePath(manifestPath, projectRoot)],
+    };
+  });
 }
 
 function detectFrameworks(dependencies: Record<string, string>, nodes: DependencyNode[]): string[] {
@@ -468,6 +564,37 @@ function classifyProject(manifest: any, frameworks: string[]): string {
   if (manifest.workspaces) return "monorepo";
   if (manifest.types || manifest.typings) return "typescript-library";
   return "node";
+}
+
+function detectNodeBuildSystem(
+  rootPath: string,
+  manifest: Record<string, unknown>
+): ProjectInfo["buildSystem"] {
+  const packageManager = typeof manifest.packageManager === "string" ? manifest.packageManager : "";
+  if (
+    packageManager.startsWith("pnpm") ||
+    fs.existsSync(path.join(rootPath, "pnpm-workspace.yaml"))
+  )
+    return "pnpm";
+  if (packageManager.startsWith("yarn") || fs.existsSync(path.join(rootPath, "yarn.lock")))
+    return "yarn";
+  if (fs.existsSync(path.join(rootPath, "nx.json"))) return "nx";
+  if (fs.existsSync(path.join(rootPath, "turbo.json"))) return "turbo";
+  if (fs.existsSync(path.join(rootPath, "rush.json"))) return "rush";
+  if (fs.existsSync(path.join(rootPath, "lerna.json"))) return "lerna";
+  return "npm";
+}
+
+function inferNodeRole(
+  manifest: Record<string, unknown>,
+  frameworks: string[],
+  relativeRoot: string
+): ProjectInfo["role"] {
+  if (manifest.workspaces || relativeRoot === ".") return "workspace";
+  if (frameworks.some((item) => ["Next.js", "NestJS", "Express"].includes(item))) return "service";
+  if (manifest.private !== true && (manifest.types || manifest.typings || manifest.exports))
+    return "library";
+  return "application";
 }
 
 function detectLanguages(nodes: DependencyNode[], relativeRoot: string): string[] {

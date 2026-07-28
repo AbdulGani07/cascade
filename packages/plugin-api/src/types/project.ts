@@ -53,6 +53,20 @@ export interface ProjectInfo {
   files?: string[];
   /** High-level deployment classification inferred from explicit configuration. */
   deploymentUnits?: string[];
+  /** Semantic role inferred only from manifests, layout conventions, or an override. */
+  role?:
+    | "repository"
+    | "workspace"
+    | "application"
+    | "library"
+    | "service"
+    | "test"
+    | "infrastructure"
+    | "deployment"
+    | "module"
+    | "unknown";
+  /** Manifest/configuration evidence that caused this project to exist. */
+  detectionEvidence?: string[];
 }
 
 export type ProjectRelationshipKind =
@@ -80,6 +94,16 @@ export interface ProjectGraph {
   nodes: ProjectInfo[];
   edges: ProjectRelationship[];
   cycles: string[][];
+  /** Bidirectional bridge between the project graph and file graph. */
+  fileToProject: Record<string, string>;
+  projectToFiles: Record<string, string[]>;
+  /** Deterministic facets used by CLI and dashboards. */
+  groups: {
+    byLanguage: Record<string, string[]>;
+    byRole: Record<string, string[]>;
+    byBuildSystem: Record<string, string[]>;
+    byWorkspace: Record<string, string[]>;
+  };
 }
 
 export interface ProjectImpactReport {
@@ -101,5 +125,5 @@ export interface ProjectDetector {
   detectProject(
     projectRoot: string,
     files: string[]
-  ): Promise<ProjectInfo | null> | ProjectInfo | null;
+  ): Promise<ProjectInfo | ProjectInfo[] | null> | ProjectInfo | ProjectInfo[] | null;
 }

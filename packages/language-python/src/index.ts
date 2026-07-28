@@ -270,7 +270,7 @@ function declaredDistributions(projectRoot: string): Set<string> {
 export class PythonLanguagePlugin implements LanguagePlugin {
   id = "cascade-language-python";
   name = "Cascade Python Language Plugin";
-  version = "3.1.0";
+  version = "3.1.1";
   supportedExtensions = [".py", ".pyi"];
   fileDetectionRules = [
     { type: "extension" as const, pattern: ".py" },

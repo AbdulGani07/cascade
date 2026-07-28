@@ -14,8 +14,8 @@ import type { AnalysisResult } from "../lib/api";
 
 interface NavbarProps {
   analysisData: AnalysisResult;
-  viewMode: "graph" | "matrix" | "cycles" | "deadcode";
-  onViewModeChange: (mode: "graph" | "matrix" | "cycles" | "deadcode") => void;
+  viewMode: "graph" | "projects" | "matrix" | "cycles" | "deadcode";
+  onViewModeChange: (mode: "graph" | "projects" | "matrix" | "cycles" | "deadcode") => void;
   onOpenExport: () => void;
   onRefresh: () => void;
   isRefreshing?: boolean;
@@ -141,6 +141,7 @@ export default function Navbar({
         <div className="flex bg-slate-900/90 p-1 rounded-xl border border-slate-800">
           {[
             { id: "graph", label: "Graph", icon: Network },
+            { id: "projects", label: "Projects", icon: Layers },
             { id: "matrix", label: "Matrix", icon: Grid },
             { id: "cycles", label: "Cycles", icon: AlertTriangle, badge: cycleCount },
             {
@@ -157,7 +158,9 @@ export default function Navbar({
                 key={tab.id}
                 type="button"
                 onClick={() =>
-                  onViewModeChange(tab.id as "graph" | "matrix" | "cycles" | "deadcode")
+                  onViewModeChange(
+                    tab.id as "graph" | "projects" | "matrix" | "cycles" | "deadcode"
+                  )
                 }
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all whitespace-nowrap ${
                   isActive

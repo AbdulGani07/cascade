@@ -22,6 +22,7 @@ interface GraphViewProps {
   onSelect: (id: string | null) => void;
   layoutDirection?: "TB" | "LR";
   onToggleLayout?: () => void;
+  graphKind?: "file" | "project";
 }
 
 const nodeTypes = {
@@ -35,7 +36,8 @@ function getLayoutedElements(
   analysisData: AnalysisResult,
   selectedId: string | null,
   highlightedIds: Set<string>,
-  direction: "TB" | "LR" = "TB"
+  direction: "TB" | "LR" = "TB",
+  graphKind: "file" | "project" = "file"
 ) {
   const dagreGraph = new dagre.graphlib.Graph();
   dagreGraph.setDefaultEdgeLabel(() => ({}));
@@ -49,18 +51,44 @@ function getLayoutedElements(
     marginy: 40,
   });
 
-  const cycleFiles = new Set(analysisData.cycles.flat());
+  const sourceNodes =
+    graphKind === "project" && analysisData.projectGraph
+      ? analysisData.projectGraph.nodes.map((node) => ({
+          id: node.id,
+          isEntryPoint: node.role === "application" || node.role === "service",
+          label: node.name,
+          detail: `${node.role ?? node.projectType} · ${node.buildSystem ?? "metadata"}`,
+        }))
+      : analysisData.nodes.map((node) => ({
+          ...node,
+          label: node.id.split(/[\\/]/).pop() ?? node.id,
+          detail: node.id,
+        }));
+  const sourceEdges =
+    graphKind === "project" && analysisData.projectGraph
+      ? analysisData.projectGraph.edges.map((edge) => ({
+          from: edge.from,
+          to: edge.to,
+          kind: edge.type,
+          confidence: edge.confidence,
+        }))
+      : analysisData.edges;
+  const sourceCycles =
+    graphKind === "project" && analysisData.projectGraph
+      ? analysisData.projectGraph.cycles
+      : analysisData.cycles;
+  const cycleFiles = new Set(sourceCycles.flat());
 
   // Calculate in-degrees and out-degrees
   const inDegrees: Record<string, number> = {};
   const outDegrees: Record<string, number> = {};
 
-  analysisData.nodes.forEach((node) => {
+  sourceNodes.forEach((node) => {
     inDegrees[node.id] = 0;
     outDegrees[node.id] = 0;
   });
 
-  analysisData.edges.forEach((edge) => {
+  sourceEdges.forEach((edge) => {
     outDegrees[edge.from] = (outDegrees[edge.from] || 0) + 1;
     inDegrees[edge.to] = (inDegrees[edge.to] || 0) + 1;
   });
@@ -68,21 +96,21 @@ function getLayoutedElements(
   const nodeWidth = 200;
   const nodeHeight = 80;
 
-  analysisData.nodes.forEach((node) => {
+  sourceNodes.forEach((node) => {
     dagreGraph.setNode(node.id, { width: nodeWidth, height: nodeHeight });
   });
 
-  analysisData.edges.forEach((edge) => {
+  sourceEdges.forEach((edge) => {
     dagreGraph.setEdge(edge.from, edge.to);
   });
 
   dagre.layout(dagreGraph);
 
-  const nodes: Node<FileNodeData>[] = analysisData.nodes.map((node) => {
+  const nodes: Node<FileNodeData>[] = sourceNodes.map((node) => {
     const nodeWithPosition = dagreGraph.node(node.id);
 
     let status: "normal" | "cycle" | "dead" | "entry" = "normal";
-    if (analysisData.entryPoints.includes(node.id)) {
+    if (node.isEntryPoint) {
       status = "entry";
     } else if (cycleFiles.has(node.id)) {
       status = "cycle";
@@ -97,8 +125,8 @@ function getLayoutedElements(
       id: node.id,
       type: "file",
       data: {
-        label: node.id.split(/[\\/]/).pop() ?? node.id,
-        fullPath: node.id,
+        label: node.label,
+        fullPath: node.detail,
         status,
         isSelected,
         isHighlighted,
@@ -115,7 +143,7 @@ function getLayoutedElements(
     };
   });
 
-  const edges: Edge[] = analysisData.edges.map((edge) => {
+  const edges: Edge[] = sourceEdges.map((edge) => {
     const isHighlightedEdge =
       selectedId === edge.from || (highlightedIds.has(edge.from) && highlightedIds.has(edge.to));
 
@@ -169,12 +197,19 @@ export default function GraphView({
   onSelect,
   layoutDirection = "TB",
   onToggleLayout,
+  graphKind = "file",
 }: GraphViewProps) {
   const [showLegend, setShowLegend] = useState(true);
 
   const { nodes, edges } = useMemo(() => {
-    return getLayoutedElements(analysisData, selectedId, highlightedIds, layoutDirection);
-  }, [analysisData, selectedId, highlightedIds, layoutDirection]);
+    return getLayoutedElements(
+      analysisData,
+      selectedId,
+      highlightedIds,
+      layoutDirection,
+      graphKind
+    );
+  }, [analysisData, selectedId, highlightedIds, layoutDirection, graphKind]);
 
   return (
     <div className="relative h-full w-full bg-slate-950 overflow-hidden select-none">

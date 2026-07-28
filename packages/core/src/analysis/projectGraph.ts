@@ -40,7 +40,7 @@ export function detectProjectIntelligence(
           severity: "warning",
           code: "PROJECT_DETECTOR_ASYNC_UNSUPPORTED",
         });
-      } else if (output) detected.push(output);
+      } else if (output) detected.push(...(Array.isArray(output) ? output : [output]));
     } catch (error) {
       diagnostics.push({
         file: projectRoot,
@@ -56,6 +56,7 @@ export function detectProjectIntelligence(
     nodes: projects,
     edges,
     cycles: projectCycles(projects, edges),
+    ...buildNavigationIndexes(projects),
   };
   return { projects, projectGraph, diagnostics, projectImpact: projectImpact(projects, edges) };
 }
@@ -129,6 +130,51 @@ function mergeProject(left: ProjectInfo, right: ProjectInfo): ProjectInfo {
     frameworks: [...new Set([...(left.frameworks ?? []), ...(right.frameworks ?? [])])].sort(),
     buildSystem: left.buildSystem ?? right.buildSystem,
     modules: [...(left.modules ?? []), ...(right.modules ?? [])],
+    role:
+      left.role === "infrastructure" && right.role && right.role !== "infrastructure"
+        ? right.role
+        : (left.role ?? right.role),
+    deploymentUnits: [
+      ...new Set([...(left.deploymentUnits ?? []), ...(right.deploymentUnits ?? [])]),
+    ].sort(),
+    detectionEvidence: [
+      ...new Set([...(left.detectionEvidence ?? []), ...(right.detectionEvidence ?? [])]),
+    ].sort(),
+  };
+}
+
+function buildNavigationIndexes(
+  projects: ProjectInfo[]
+): Pick<ProjectGraph, "fileToProject" | "projectToFiles" | "groups"> {
+  const projectToFiles = Object.fromEntries(
+    projects.map((project) => [project.id, [...(project.files ?? [])].sort()])
+  );
+  const fileToProject = Object.fromEntries(
+    projects.flatMap((project) => (project.files ?? []).map((file) => [file, project.id]))
+  );
+  const group = (values: Array<[string, string]>) => {
+    const result: Record<string, string[]> = {};
+    for (const [facet, project] of values) (result[facet] ??= []).push(project);
+    for (const value of Object.values(result)) value.sort();
+    return Object.fromEntries(
+      Object.entries(result).sort(([left], [right]) => left.localeCompare(right))
+    );
+  };
+  return {
+    fileToProject,
+    projectToFiles,
+    groups: {
+      byLanguage: group(
+        projects.flatMap((project) =>
+          project.languages.map((item) => [item, project.id] as [string, string])
+        )
+      ),
+      byRole: group(projects.map((project) => [project.role ?? "unknown", project.id])),
+      byBuildSystem: group(projects.map((project) => [project.buildSystem ?? "none", project.id])),
+      byWorkspace: group(
+        projects.map((project) => [project.parentProjectId ?? project.id, project.id])
+      ),
+    },
   };
 }
 
@@ -139,6 +185,7 @@ function buildRelationships(
   _diagnostics: ParseDiagnostic[]
 ): ProjectRelationship[] {
   const edges: ProjectRelationship[] = [];
+  const edgeById = new Map<string, ProjectRelationship>();
   const byName = new Map(projects.map((project) => [project.name, project]));
   const byRoot = new Map(projects.map((project) => [project.id, project]));
   const add = (
@@ -151,13 +198,13 @@ function buildRelationships(
   ) => {
     if (!to || from.id === to.id) return;
     const id = `${from.id} -> ${to.id} [${type}]`;
-    const existing = edges.find((edge) => edge.id === id);
+    const existing = edgeById.get(id);
     if (existing) {
       existing.evidence.push(evidence);
       existing.sourceFiles.push(sourceFile);
       return;
     }
-    edges.push({
+    const edge = {
       id,
       from: from.id,
       to: to.id,
@@ -165,7 +212,9 @@ function buildRelationships(
       confidence,
       evidence: [evidence],
       sourceFiles: [sourceFile],
-    });
+    };
+    edges.push(edge);
+    edgeById.set(id, edge);
   };
   for (const project of projects) {
     const packagePath = path.join(project.rootPath, "package.json");
@@ -230,6 +279,47 @@ function buildRelationships(
     for (const configFile of configFiles) {
       const content = readText(configFile);
       const relative = toPosixRelativePath(configFile, projectRoot);
+      const configName = path.basename(configFile);
+      const addPathReference = (
+        rawPath: string,
+        type: ProjectRelationship["type"],
+        label: string
+      ) => {
+        const normalized = rawPath.replace(/\\/g, "/").replace(/\.(?:csproj|fsproj|vbproj)$/, "");
+        const target = projectAtPath(
+          path.posix.normalize(path.posix.join(path.posix.dirname(relative), normalized)),
+          byRoot
+        );
+        add(project, target, type, `${label} '${rawPath}'`, relative, 0.95);
+      };
+      if (configName.endsWith(".csproj"))
+        for (const match of content.matchAll(/<ProjectReference\s+Include="([^"]+)"/g))
+          addPathReference(match[1], "build-depends-on", "MSBuild ProjectReference");
+      if (configName === "pom.xml")
+        for (const match of content.matchAll(/<module>\s*([^<]+)\s*<\/module>/g))
+          addPathReference(match[1], "packages", "Maven module");
+      if (/^(?:settings\.)?gradle(?:\.kts)?$/.test(configName))
+        for (const match of content.matchAll(/include\s*\(?\s*["']:?([^"']+)["']/g))
+          addPathReference(match[1].replace(/:/g, "/"), "packages", "Gradle included project");
+      if (configName === "go.work")
+        for (const use of extractGoWorkUses(content))
+          addPathReference(use, "workspace-depends-on", "go.work use");
+      if (configName === "Cargo.toml") {
+        const members =
+          /\[workspace\][\s\S]*?members\s*=\s*\[([\s\S]*?)\]/m.exec(content)?.[1] ?? "";
+        for (const match of members.matchAll(/"([^"]+)"/g))
+          addPathReference(match[1], "packages", "Cargo workspace member");
+        for (const match of content.matchAll(
+          /(?:^|\n)\s*[\w-]+\s*=\s*\{[^}\n]*path\s*=\s*"([^"]+)"/g
+        ))
+          addPathReference(match[1], "build-depends-on", "Cargo path dependency");
+      }
+      if (configName === "CMakeLists.txt")
+        for (const match of content.matchAll(/add_subdirectory\s*\(\s*([^\s)]+)/gi))
+          addPathReference(match[1], "build-depends-on", "CMake add_subdirectory");
+      if (configName === "meson.build")
+        for (const match of content.matchAll(/subdir\s*\(\s*['"]([^'"]+)/g))
+          addPathReference(match[1], "build-depends-on", "Meson subdir");
       for (const extend of extractExtends(content))
         add(
           project,
@@ -293,6 +383,30 @@ function buildRelationships(
           ...new Set([...(generator.deploymentUnits ?? []), "generated-output"]),
         ];
     }
+    if (/(?:^|\/)(?:Dockerfile|docker-compose|compose\.ya?ml)$/i.test(file)) {
+      for (const buildContext of [
+        ...content.matchAll(/(?:build:\s*|context:\s*)["']?(\.\.?\/[^"'#\s]+)/g),
+      ].map((match) => match[1])) {
+        const target = projectAtPath(
+          path.posix.normalize(path.posix.join(path.posix.dirname(file), buildContext)),
+          byRoot
+        );
+        add(owner, target, "packages", `container build context '${buildContext}'`, file, 0.9);
+      }
+    }
+    if (/(?:^|\/)(?:\.github\/workflows\/.+|\.gitlab-ci|azure-pipelines)\.ya?ml$/i.test(file)) {
+      for (const workingDirectory of [
+        ...content.matchAll(/working-directory:\s*["']?([^"'#\s]+)/g),
+      ].map((match) => match[1]))
+        add(
+          owner,
+          projectAtPath(workingDirectory, byRoot),
+          "deploys",
+          `CI working-directory '${workingDirectory}'`,
+          file,
+          0.85
+        );
+    }
   }
   return edges
     .map((edge) => ({
@@ -301,6 +415,17 @@ function buildRelationships(
       sourceFiles: [...new Set(edge.sourceFiles)].sort(),
     }))
     .sort((left, right) => left.id.localeCompare(right.id));
+}
+
+function extractGoWorkUses(content: string): string[] {
+  const single = [...content.matchAll(/^\s*use\s+([^\s(][^\s]*)/gm)].map((match) => match[1]);
+  const blocks = [...content.matchAll(/use\s*\(([\s\S]*?)\)/g)].flatMap((match) =>
+    match[1]
+      .split(/\r?\n/)
+      .map((line) => line.replace(/\/\/.*$/, "").trim())
+      .filter(Boolean)
+  );
+  return [...new Set([...single, ...blocks])].sort();
 }
 
 function projectCycles(projects: ProjectInfo[], edges: ProjectRelationship[]): string[][] {
@@ -323,6 +448,7 @@ function projectImpact(
   edges: ProjectRelationship[]
 ): Record<string, ProjectImpactReport> {
   const incoming = new Map(projects.map((project) => [project.id, [] as string[]]));
+  const byId = new Map(projects.map((project) => [project.id, project]));
   for (const edge of edges) incoming.get(edge.to)?.push(edge.from);
   return Object.fromEntries(
     projects.map((project) => {
@@ -335,9 +461,7 @@ function projectImpact(
             queue.push(dependent);
           }
       const affected = [...seen].filter((id) => id !== project.id).sort();
-      const files = affected
-        .flatMap((id) => projects.find((candidate) => candidate.id === id)?.files ?? [])
-        .sort();
+      const files = affected.flatMap((id) => byId.get(id)?.files ?? []).sort();
       return [
         project.id,
         {

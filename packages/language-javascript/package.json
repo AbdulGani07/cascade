@@ -1,6 +1,6 @@
 {
   "name": "@cascade/language-javascript",
-  "version": "3.1.0",
+  "version": "3.1.1",
   "description": "First-party JavaScript language plugin for Cascade platform",
   "type": "module",
   "engines": {

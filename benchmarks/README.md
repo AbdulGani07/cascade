@@ -70,10 +70,14 @@ Windows development machine:
 
 ## Project-intelligence baseline (2026-07-28)
 
-| Project graph          | Projects | Relationships | Time (ms) |
-| ---------------------- | -------: | ------------: | --------: |
-| 100 workspace packages |      100 |            99 |     243.5 |
+| Project graph            | Projects | Relationships | Time (ms) |
+| ------------------------ | -------: | ------------: | --------: |
+| 100 workspace packages   |      101 |           199 |     312.1 |
+| 1,000 workspace packages |    1,001 |         1,999 |   4,480.1 |
 
 This benchmark performs deterministic manifest discovery, project ownership
 normalization, relationship indexing, package-cycle detection, and reverse
-project-impact indexing without executing build tools.
+project-impact indexing without executing build tools. Counts include the root
+workspace and both its package-membership edges and the linear local dependency
+chain. Measurements are from the Windows development machine and should be
+treated as regression evidence, not a cross-machine latency guarantee.

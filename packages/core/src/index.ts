@@ -97,12 +97,6 @@ export function analyze(projectRoot: string, options?: AnalyzeOptions): Analysis
   let nodes = scanFiles(projectRoot, config, registry);
   let intelligence = detectProjectIntelligence(projectRoot, nodes, registry.getRegisteredPlugins());
   let projects = intelligence.projects;
-  for (const [id, override] of Object.entries(config.projectOverrides ?? {})) {
-    const project = projects.find((candidate) => candidate.id === id);
-    if (!project) continue;
-    if (override.name) project.name = override.name;
-    if (override.projectType) project.projectType = override.projectType;
-  }
   const selected = new Set(config.selectedProjects ?? []);
   if (selected.size) {
     const selectedProjects = projects.filter(
@@ -118,6 +112,30 @@ export function analyze(projectRoot: string, options?: AnalyzeOptions): Analysis
       (project) => selected.has(project.id) || selected.has(project.name)
     );
   }
+  const ignoredProjects = new Set<string>();
+  for (const [id, override] of Object.entries(config.projectOverrides ?? {}).sort(([a], [b]) =>
+    a.localeCompare(b)
+  )) {
+    const project = projects.find((candidate) => candidate.id === id);
+    if (!project) {
+      intelligence.diagnostics.push({
+        file: id,
+        message: `Project override '${id}' did not match a detected project.`,
+        severity: "warning",
+        code: "PROJECT_OVERRIDE_NOT_FOUND",
+      });
+      continue;
+    }
+    if (override.ignore) ignoredProjects.add(id);
+    if (override.name) project.name = override.name;
+    if (override.projectType) project.projectType = override.projectType;
+  }
+  projects = projects.filter((project) => !ignoredProjects.has(project.id));
+  if (ignoredProjects.size)
+    nodes = nodes.filter(
+      (node) =>
+        ![...ignoredProjects].some((id) => node.relativePath.startsWith(id === "." ? "" : `${id}/`))
+    );
   for (const node of nodes) {
     const project = [...projects]
       .filter((candidate) => {
@@ -181,7 +199,56 @@ export function analyze(projectRoot: string, options?: AnalyzeOptions): Analysis
     diagnostics: [...diagnostics, ...intelligence.diagnostics],
     pluginManifests,
     projects,
-    projectGraph: { ...intelligence.projectGraph, nodes: projects },
-    projectImpact: intelligence.projectImpact,
+    projectGraph: filterProjectGraph(intelligence.projectGraph, projects),
+    projectImpact: Object.fromEntries(
+      Object.entries(intelligence.projectImpact)
+        .filter(([id]) => projects.some((project) => project.id === id))
+        .map(([id, report]) => [
+          id,
+          {
+            ...report,
+            directlyAffected: report.directlyAffected.filter((item) =>
+              projects.some((project) => project.id === item)
+            ),
+            allAffected: report.allAffected.filter((item) =>
+              projects.some((project) => project.id === item)
+            ),
+            affectedFiles: report.affectedFiles.filter((file) =>
+              nodes.some((node) => node.relativePath === file)
+            ),
+          },
+        ])
+    ),
+  };
+}
+
+function filterProjectGraph(
+  graph: NonNullable<AnalysisResult["projectGraph"]>,
+  projects: NonNullable<AnalysisResult["projects"]>
+): NonNullable<AnalysisResult["projectGraph"]> {
+  const ids = new Set(projects.map((project) => project.id));
+  const projectToFiles = Object.fromEntries(
+    projects.map((project) => [project.id, [...(project.files ?? [])]])
+  );
+  const filterGroups = (groups: Record<string, string[]>) =>
+    Object.fromEntries(
+      Object.entries(groups)
+        .map(([key, values]) => [key, values.filter((id) => ids.has(id))] as const)
+        .filter(([, values]) => values.length)
+    );
+  return {
+    nodes: projects,
+    edges: graph.edges.filter((edge) => ids.has(edge.from) && ids.has(edge.to)),
+    cycles: graph.cycles.filter((cycle) => cycle.every((id) => ids.has(id))),
+    projectToFiles,
+    fileToProject: Object.fromEntries(
+      Object.entries(graph.fileToProject).filter(([, id]) => ids.has(id))
+    ),
+    groups: {
+      byLanguage: filterGroups(graph.groups.byLanguage),
+      byRole: filterGroups(graph.groups.byRole),
+      byBuildSystem: filterGroups(graph.groups.byBuildSystem),
+      byWorkspace: filterGroups(graph.groups.byWorkspace),
+    },
   };
 }
