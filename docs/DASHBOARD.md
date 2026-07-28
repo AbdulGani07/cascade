@@ -2,7 +2,7 @@
 
 The dashboard is a local interface for exploring repository, project, file, package, service, cycle, dead-code, impact, test, architecture, unresolved-dependency, language, hotspot, matrix, and snapshot views.
 
-![Cascade dashboard overview](assets/dashboard-overview.png)
+![Cascade dashboard overview](../examples/cascade-commerce/media-assets/dashboard-overview.png)
 
 ## Start
 

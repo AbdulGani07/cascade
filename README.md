@@ -11,10 +11,11 @@ Cascade reports evidence from source and build metadata. Results depend on each
 language plugin's capability and do not guarantee runtime behavior or safe
 refactoring.
 
-![Cascade dashboard overview](docs/assets/dashboard-overview.png)
+![Cascade dashboard overview](examples/cascade-commerce/media-assets/readme-hero.png)
 
-> Demo assets live in [`docs/assets`](docs/assets). See the
-> [dashboard guide](docs/DASHBOARD.md) for the capture workflow.
+> Reproducible demo assets live in
+> [`examples/cascade-commerce/media-assets`](examples/cascade-commerce/media-assets).
+> See the [dashboard guide](docs/DASHBOARD.md) for the capture workflow.
 
 ## Try it in 30 seconds
 
