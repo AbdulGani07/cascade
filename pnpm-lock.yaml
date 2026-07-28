@@ -99,6 +99,12 @@ importers:
       '@cascade/config':
         specifier: workspace:*
         version: link:../config
+      '@cascade/language-c':
+        specifier: workspace:*
+        version: link:../language-c
+      '@cascade/language-cpp':
+        specifier: workspace:*
+        version: link:../language-cpp
       '@cascade/language-csharp':
         specifier: workspace:*
         version: link:../language-csharp
@@ -117,6 +123,9 @@ importers:
       '@cascade/language-python':
         specifier: workspace:*
         version: link:../language-python
+      '@cascade/language-rust':
+        specifier: workspace:*
+        version: link:../language-rust
       '@cascade/language-typescript':
         specifier: workspace:*
         version: link:../language-typescript
@@ -157,6 +166,33 @@ importers:
       vite:
         specifier: ^8.1.4
         version: 8.1.5(@types/node@26.1.2)(jiti@2.7.0)
+
+  packages/language-c:
+    dependencies:
+      '@cascade/plugin-api':
+        specifier: workspace:*
+        version: link:../plugin-api
+      tree-sitter:
+        specifier: ^0.22.4
+        version: 0.22.4
+      tree-sitter-c:
+        specifier: ^0.23.4
+        version: 0.23.6(tree-sitter@0.22.4)
+
+  packages/language-cpp:
+    dependencies:
+      '@cascade/language-c':
+        specifier: workspace:*
+        version: link:../language-c
+      '@cascade/plugin-api':
+        specifier: workspace:*
+        version: link:../plugin-api
+      tree-sitter:
+        specifier: ^0.22.4
+        version: 0.22.4
+      tree-sitter-cpp:
+        specifier: ^0.23.4
+        version: 0.23.4(tree-sitter@0.22.4)
 
   packages/language-csharp:
     dependencies:
@@ -226,6 +262,18 @@ importers:
       '@cascade/plugin-api':
         specifier: workspace:*
         version: link:../plugin-api
+
+  packages/language-rust:
+    dependencies:
+      '@cascade/plugin-api':
+        specifier: workspace:*
+        version: link:../plugin-api
+      tree-sitter:
+        specifier: ^0.22.4
+        version: 0.22.4
+      tree-sitter-rust:
+        specifier: ^0.24.0
+        version: 0.24.0(tree-sitter@0.22.4)
 
   packages/language-typescript:
     dependencies:
@@ -1455,6 +1503,22 @@ packages:
       tree-sitter:
         optional: true
 
+  tree-sitter-c@0.23.6:
+    resolution: {integrity: sha512-0dxXKznVyUA0s6PjNolJNs2yF87O5aL538A/eR6njA5oqX3C3vH4vnx3QdOKwuUdpKEcFdHuiDpRKLLCA/tjvQ==}
+    peerDependencies:
+      tree-sitter: ^0.22.1
+    peerDependenciesMeta:
+      tree-sitter:
+        optional: true
+
+  tree-sitter-cpp@0.23.4:
+    resolution: {integrity: sha512-qR5qUDyhZ5jJ6V8/umiBxokRbe89bCGmcq/dk94wI4kN86qfdV8k0GHIUEKaqWgcu42wKal5E97LKpLeVW8sKw==}
+    peerDependencies:
+      tree-sitter: ^0.21.1
+    peerDependenciesMeta:
+      tree-sitter:
+        optional: true
+
   tree-sitter-go@0.23.4:
     resolution: {integrity: sha512-iQaHEs4yMa/hMo/ZCGqLfG61F0miinULU1fFh+GZreCRtKylFLtvn798ocCZjO2r/ungNZgAY1s1hPFyAwkc7w==}
     peerDependencies:
@@ -1483,6 +1547,14 @@ packages:
     resolution: {integrity: sha512-1fCbmzAskZkxcZzN41sFZ2br2iqTYP3tKls1b/HKGNPQUVOpsUxpmGxdN/wMqAk3jYZnYBR1dd/y/0avMeU7dw==}
     peerDependencies:
       tree-sitter: ^0.25.0
+    peerDependenciesMeta:
+      tree-sitter:
+        optional: true
+
+  tree-sitter-rust@0.24.0:
+    resolution: {integrity: sha512-NWemUDf629Tfc90Y0Z55zuwPCAHkLxWnMf2RznYu4iBkkrQl2o/CHGB7Cr52TyN5F1DAx8FmUnDtCy9iUkXZEQ==}
+    peerDependencies:
+      tree-sitter: ^0.22.1
     peerDependenciesMeta:
       tree-sitter:
         optional: true
@@ -2798,6 +2870,21 @@ snapshots:
     optionalDependencies:
       tree-sitter: 0.22.4
 
+  tree-sitter-c@0.23.6(tree-sitter@0.22.4):
+    dependencies:
+      node-addon-api: 8.9.0
+      node-gyp-build: 4.8.4
+    optionalDependencies:
+      tree-sitter: 0.22.4
+
+  tree-sitter-cpp@0.23.4(tree-sitter@0.22.4):
+    dependencies:
+      node-addon-api: 8.9.0
+      node-gyp-build: 4.8.4
+      tree-sitter-c: 0.23.6(tree-sitter@0.22.4)
+    optionalDependencies:
+      tree-sitter: 0.22.4
+
   tree-sitter-go@0.23.4(tree-sitter@0.22.4):
     dependencies:
       node-addon-api: 8.9.0
@@ -2820,6 +2907,13 @@ snapshots:
       tree-sitter: 0.22.4
 
   tree-sitter-javascript@0.25.0(tree-sitter@0.22.4):
+    dependencies:
+      node-addon-api: 8.9.0
+      node-gyp-build: 4.8.4
+    optionalDependencies:
+      tree-sitter: 0.22.4
+
+  tree-sitter-rust@0.24.0(tree-sitter@0.22.4):
     dependencies:
       node-addon-api: 8.9.0
       node-gyp-build: 4.8.4

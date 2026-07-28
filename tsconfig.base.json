@@ -14,6 +14,9 @@
       "@cascade/reporters": ["packages/reporters/src/index.ts"],
       "@cascade/language-javascript": ["packages/language-javascript/src/index.ts"],
       "@cascade/language-typescript": ["packages/language-typescript/src/index.ts"],
+      "@cascade/language-rust": ["packages/language-rust/src/index.ts"],
+      "@cascade/language-c": ["packages/language-c/src/index.ts"],
+      "@cascade/language-cpp": ["packages/language-cpp/src/index.ts"],
       "@cascade/test-utils": ["packages/test-utils/src/index.ts"],
       "@cascade/core": ["packages/core/src/index.ts"]
     }

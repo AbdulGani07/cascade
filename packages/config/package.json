@@ -1,6 +1,6 @@
 {
   "name": "@cascade/config",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "description": "Configuration schema, loader, and plugin prioritization settings for Cascade",
   "type": "module",
   "engines": {

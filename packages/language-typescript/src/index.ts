@@ -20,7 +20,7 @@ import { extractScriptDependencies } from "@cascade/language-javascript";
 export class TypeScriptLanguagePlugin implements LanguagePlugin {
   id = "cascade-language-typescript";
   name = "Cascade TypeScript Language Plugin";
-  version = "2.2.0";
+  version = "2.3.0";
   supportedExtensions = [".ts", ".tsx", ".mts", ".cts"];
 
   fileDetectionRules = [
@@ -47,6 +47,13 @@ export class TypeScriptLanguagePlugin implements LanguagePlugin {
     knownIssues: ["Type-only re-exports require TS compiler options context"],
     unsupportedFeatures: ["Macro expansion"],
   };
+  analysisLevels = [
+    "file-dependency",
+    "module-dependency",
+    "symbol-dependency",
+    "build-dependency",
+    "runtime-dynamic-dependency",
+  ] as const;
 
   parser = {
     parse(context: ParseContext): ParseResult {

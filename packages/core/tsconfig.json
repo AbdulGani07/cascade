@@ -19,7 +19,10 @@
     { "path": "../language-java" },
     { "path": "../language-kotlin" },
     { "path": "../language-csharp" },
-    { "path": "../language-go" }
+    { "path": "../language-go" },
+    { "path": "../language-rust" },
+    { "path": "../language-c" },
+    { "path": "../language-cpp" }
   ],
   "include": ["src/**/*"]
 }

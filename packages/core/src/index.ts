@@ -15,6 +15,9 @@ import { createJavaPlugin } from "@cascade/language-java";
 import { createKotlinPlugin } from "@cascade/language-kotlin";
 import { createCSharpPlugin } from "@cascade/language-csharp";
 import { createGoPlugin } from "@cascade/language-go";
+import { createRustPlugin } from "@cascade/language-rust";
+import { createCPlugin } from "@cascade/language-c";
+import { createCppPlugin } from "@cascade/language-cpp";
 import { PluginRegistry } from "./plugins/pluginRegistry.js";
 import { scanFiles } from "./parser/fileScanner.js";
 import { detectEntryPointEvidence } from "./analysis/entryPointDetector.js";
@@ -45,6 +48,9 @@ export function analyze(projectRoot: string, options?: AnalyzeOptions): Analysis
   registry.registerPlugin(createKotlinPlugin(), { priority: 75 });
   registry.registerPlugin(createCSharpPlugin(), { priority: 75 });
   registry.registerPlugin(createGoPlugin(), { priority: 75 });
+  registry.registerPlugin(createRustPlugin(), { priority: 75 });
+  registry.registerPlugin(createCppPlugin(), { priority: 72 });
+  registry.registerPlugin(createCPlugin(), { priority: 70 });
 
   // 2. Register custom user plugins if provided
   if (options?.customPlugins) {
@@ -102,6 +108,8 @@ export function analyze(projectRoot: string, options?: AnalyzeOptions): Analysis
     version: p.version,
     supportedExtensions: p.supportedExtensions,
     capabilities: p.capabilities as unknown as Record<string, boolean>,
+    analysisLevels: p.analysisLevels,
+    limitations: p.limitations,
   }));
 
   return {

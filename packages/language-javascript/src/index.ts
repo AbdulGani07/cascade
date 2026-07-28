@@ -22,7 +22,7 @@ export { extractScriptDependencies } from "./scriptDependencyExtractor.js";
 export class JavaScriptLanguagePlugin implements LanguagePlugin {
   id = "cascade-language-javascript";
   name = "Cascade JavaScript Language Plugin";
-  version = "2.2.0";
+  version = "2.3.0";
   supportedExtensions = [".js", ".jsx", ".mjs", ".cjs"];
 
   fileDetectionRules = [
@@ -52,6 +52,12 @@ export class JavaScriptLanguagePlugin implements LanguagePlugin {
     ],
     unsupportedFeatures: ["Type annotations (handled by TypeScript plugin)"],
   };
+  analysisLevels = [
+    "file-dependency",
+    "module-dependency",
+    "symbol-dependency",
+    "runtime-dynamic-dependency",
+  ] as const;
 
   parser = {
     parse(context: ParseContext): ParseResult {

@@ -1,6 +1,6 @@
 {
   "name": "@cascade/language-typescript",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "description": "First-party TypeScript language plugin for Cascade platform",
   "type": "module",
   "engines": {

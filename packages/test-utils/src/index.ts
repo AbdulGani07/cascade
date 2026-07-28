@@ -32,6 +32,7 @@ export function createMockLanguagePlugin(overrides?: Partial<LanguagePlugin>): L
       knownIssues: [],
       unsupportedFeatures: [],
     },
+    analysisLevels: ["file-dependency", "module-dependency"],
     parser: {
       parse(context: ParseContext) {
         return { status: "success", diagnostics: [], ast: { mockFile: context.relativePath } };

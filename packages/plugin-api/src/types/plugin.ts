@@ -28,6 +28,13 @@ export interface PluginLimitations {
   unsupportedFeatures: string[];
 }
 
+export type AnalysisLevel =
+  | "file-dependency"
+  | "module-dependency"
+  | "symbol-dependency"
+  | "build-dependency"
+  | "runtime-dynamic-dependency";
+
 export interface FileDetectionRule {
   type: "extension" | "filename" | "shebang" | "content-pattern" | "glob";
   pattern: string;
@@ -197,6 +204,8 @@ export interface LanguagePlugin {
   capabilities: PluginCapabilities;
   /** Declared limitations */
   limitations: PluginLimitations;
+  /** Explicit granularity this plugin can evidence; absence of a level is not implied support. */
+  analysisLevels: readonly AnalysisLevel[];
 
   /** Parser implementation */
   parser: ParserAdapter;

@@ -147,7 +147,8 @@ export default function Sidebar({
               .join(", ")}
             className="rounded border border-slate-700 bg-slate-900 px-1.5 py-0.5 text-[10px] text-slate-400"
           >
-            {plugin.id.replace("cascade-language-", "")} · AST
+            {plugin.id.replace("cascade-language-", "")} ·{" "}
+            {plugin.analysisLevels?.map((level) => level.replace("-dependency", "")).join("/")}
           </span>
         ))}
         {new Set(analysisData.nodes.map((node) => node.language)).size > 1 && (

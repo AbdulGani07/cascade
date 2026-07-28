@@ -11,6 +11,9 @@
     { "path": "./packages/language-kotlin" },
     { "path": "./packages/language-csharp" },
     { "path": "./packages/language-go" },
+    { "path": "./packages/language-rust" },
+    { "path": "./packages/language-c" },
+    { "path": "./packages/language-cpp" },
     { "path": "./packages/test-utils" },
     { "path": "./packages/core" },
     { "path": "./packages/cli" }

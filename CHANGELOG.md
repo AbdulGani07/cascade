@@ -5,6 +5,25 @@ All notable changes to Cascade will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.3.0] - 2026-07-28
+
+Released at `2026-07-28T14:01:04+06:00`.
+
+### Added
+
+- First-party structured Tree-sitter plugins for Rust, C, and C++.
+- Cargo package and workspace awareness, Rust module/crate/include resolution, and Cargo entry-point detection.
+- CMake, Make, Meson, and Bazel project metadata with evidence-based C/C++ include resolution.
+- Explicit plugin analysis-level declarations and published limitations in API manifests, JSON results, CLI summaries, and dashboard capability badges.
+- Realistic Cargo workspace and native-build fixtures covering malformed sources, unresolved dependencies, generated files, and portable paths.
+- Rust, C, and C++ regression tests and parser benchmarks.
+
+### Changed
+
+- Rust, C, C++, Cargo, and native build outputs are included in default discovery and exclusion rules.
+- Project detection now recognizes Cargo, CMake, Make, Meson, and Bazel manifests.
+- Plugin summaries expose analysis levels and limitations without claiming unsupported semantic or linker analysis.
+
 ## [2.2.0] - 2026-07-28
 
 Released at `2026-07-28T13:28:17+06:00`.
@@ -95,5 +114,8 @@ Released at `2026-07-28T09:54:18+06:00`.
 - JavaScript and TypeScript file scanning, dependency graph construction, cycle detection, dead-file analysis, and impact simulation.
 - CLI commands for analysis, graph inspection, impact reports, dead-code reports, and the dashboard server.
 
+[2.3.0]: https://github.com/AbdulGani07/cascade/releases/tag/v2.3.0
+[2.2.0]: https://github.com/AbdulGani07/cascade/releases/tag/v2.2.0
+[2.1.0]: https://github.com/AbdulGani07/cascade/releases/tag/v2.1.0
 [2.0.0]: https://github.com/AbdulGani07/cascade/releases/tag/v2.0.0
 [1.0.0]: https://github.com/AbdulGani07/cascade/commit/1423180

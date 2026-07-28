@@ -1,0 +1,8 @@
+[package]
+name = "cascade-app"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+shared = { path = "../shared", package = "cascade-shared" }
+serde = "1"

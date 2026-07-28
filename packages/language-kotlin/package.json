@@ -1,6 +1,6 @@
 {
   "name": "@cascade/language-kotlin",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "description": "First-party Kotlin language analysis plugin for Cascade",
   "type": "module",
   "engines": {

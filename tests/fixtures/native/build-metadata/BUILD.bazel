@@ -1,0 +1,1 @@
+cc_binary(name = "native", srcs = ["main.c"])

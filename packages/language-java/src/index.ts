@@ -330,7 +330,7 @@ function javaFrameworks(root: string, files: string[]): FrameworkMetadata[] {
 export class JavaLanguagePlugin implements LanguagePlugin {
   id = "cascade-language-java";
   name = "Cascade Java Language Plugin";
-  version = "2.2.0";
+  version = "2.3.0";
   supportedExtensions = [".java"];
   fileDetectionRules = [{ type: "extension" as const, pattern: ".java" }];
   capabilities = {
@@ -355,6 +355,12 @@ export class JavaLanguagePlugin implements LanguagePlugin {
       "Annotation-processor generated edges before generation",
     ],
   };
+  analysisLevels = [
+    "file-dependency",
+    "module-dependency",
+    "symbol-dependency",
+    "build-dependency",
+  ] as const;
   parser = { parse: parseJava };
   dependencyExtractor = { extractDependencies: extractJava };
   moduleResolver = { resolveModule: resolveJava };

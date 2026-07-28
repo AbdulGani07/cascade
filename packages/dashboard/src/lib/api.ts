@@ -51,6 +51,8 @@ export type AnalysisResult = {
     version: string;
     supportedExtensions: string[];
     capabilities: Record<string, boolean>;
+    analysisLevels: string[];
+    limitations: { knownIssues: string[]; unsupportedFeatures: string[] };
   }[];
 };
 

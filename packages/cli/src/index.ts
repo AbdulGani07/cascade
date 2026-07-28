@@ -19,7 +19,7 @@ const program = new Command();
 program
   .name("cascade")
   .description("Predict the impact of code changes before you make them.")
-  .version("2.2.0");
+  .version("2.3.0");
 
 registerAnalyzeCommand(program);
 registerGraphCommand(program);

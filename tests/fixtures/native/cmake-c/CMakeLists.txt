@@ -1,0 +1,6 @@
+cmake_minimum_required(VERSION 3.20)
+project(cascade_c_fixture C)
+add_library(greeting src/greeting.c)
+target_include_directories(greeting PUBLIC include)
+add_executable(app src/main.c)
+target_link_libraries(app PRIVATE greeting)

@@ -1,0 +1,32 @@
+{
+  "name": "@cascade/language-c",
+  "version": "2.3.0",
+  "description": "First-party C language plugin for Cascade",
+  "type": "module",
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -b tsconfig.json --force",
+    "typecheck": "tsc --noEmit",
+    "benchmark": "node benchmarks/run.mjs",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@cascade/plugin-api": "workspace:*",
+    "tree-sitter": "^0.22.4",
+    "tree-sitter-c": "^0.23.4"
+  },
+  "license": "MIT"
+}

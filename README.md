@@ -1,6 +1,6 @@
 # Cascade
 
-Current release: **2.0.0** (2026-07-28)
+Current release: **2.3.0** (2026-07-28)
 
 Cascade is a modular, pluggable dependency-analysis and code-intelligence toolkit that predicts the impact of code changes. It scans multi-language repositories, builds dependency graphs, detects cycles and unreachable code, and exposes actionable results through a CLI, reporters (Markdown, SARIF), and a React dashboard.
 
@@ -56,6 +56,9 @@ pnpm check
 - `@cascade/language-kotlin` — Kotlin AST analysis for JVM, Gradle Kotlin DSL, Android, and multiplatform projects
 - `@cascade/language-csharp` — C# AST analysis with SDK projects, solutions, project references, and ASP.NET Core awareness
 - `@cascade/language-go` — Go AST analysis with modules, workspaces, replace directives, internal packages, and cgo evidence
+- `@cascade/language-rust` — Rust syntax-tree analysis with Cargo workspace, module, include, and crate resolution
+- `@cascade/language-c` — C syntax-tree analysis with preprocessor includes and native build metadata
+- `@cascade/language-cpp` — C++ syntax-tree analysis with header dependencies and native build metadata
 - `@cascade/reporters` — Diagnostic reporters including Markdown summary (`MarkdownReporter`) and SARIF 2.1.0 (`SarifReporter`)
 - `@cascade/cli` — Command-line interface and terminal user interface
 - `@cascade/dashboard` — Interactive React Flow graph visualizer
@@ -73,3 +76,5 @@ pnpm check
 - [Java and Kotlin capability matrices](docs/JVM_LANGUAGE_SUPPORT.md)
 - [C# capability matrix](docs/languages/csharp.md)
 - [Go capability matrix](docs/GO_SUPPORT.md)
+- [Rust capability matrix](docs/RUST_SUPPORT.md)
+- [C and C++ capability matrices](docs/C_CPP_SUPPORT.md)

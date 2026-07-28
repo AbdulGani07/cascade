@@ -7,6 +7,9 @@ import { createJavaPlugin } from "../packages/language-java/dist/index.js";
 import { createKotlinPlugin } from "../packages/language-kotlin/dist/index.js";
 import { createCSharpPlugin } from "../packages/language-csharp/dist/index.js";
 import { createGoPlugin } from "../packages/language-go/dist/index.js";
+import { createRustPlugin } from "../packages/language-rust/dist/index.js";
+import { createCPlugin } from "../packages/language-c/dist/index.js";
+import { createCppPlugin } from "../packages/language-cpp/dist/index.js";
 
 const sizes = [
   ["small", 100],
@@ -46,12 +49,16 @@ const languageCases = [
   ["Kotlin", createKotlinPlugin(), (index) => `import benchmark.Type${index}\n`, "fun main() {}"],
   ["C#", createCSharpPlugin(), (index) => `using Benchmark.Type${index};\n`, "class Program {}"],
   ["Go", createGoPlugin(), (index) => `\"example.com/benchmark/type${index}\"\n`, "package main\nimport (\n", ")\nfunc main() {}"],
+  ["Rust", createRustPlugin(), (index) => `use benchmark::Type${index};\n`, "fn main() {}"],
+  ["C", createCPlugin(), (index) => `#include "type${index}.h"\n`, "int main(void) { return 0; }"],
+  ["C++", createCppPlugin(), (index) => `#include "type${index}.hpp"\n`, "int main() { return 0; }"],
 ];
 for (const [language, plugin, importLine, prefixOrSuffix, optionalSuffix] of languageCases) {
   const importCount = 1_000;
   const imports = Array.from({ length: importCount }, (_, index) => importLine(index)).join("");
   const content = optionalSuffix ? `${prefixOrSuffix}${imports}${optionalSuffix}` : `${imports}${prefixOrSuffix}`;
-  const context = { filePath: `benchmark.${language === "C#" ? "cs" : language.toLowerCase()}`, relativePath: "benchmark", content };
+  const extension = { "C#": "cs", "C++": "cpp", Rust: "rs" }[language] ?? language.toLowerCase();
+  const context = { filePath: `benchmark.${extension}`, relativePath: `benchmark.${extension}`, content };
   const started = performance.now();
   const parsed = plugin.parser.parse(context);
   plugin.dependencyExtractor.extractDependencies({ ...context, ast: parsed.ast });

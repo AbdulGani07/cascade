@@ -270,7 +270,7 @@ function declaredDistributions(projectRoot: string): Set<string> {
 export class PythonLanguagePlugin implements LanguagePlugin {
   id = "cascade-language-python";
   name = "Cascade Python Language Plugin";
-  version = "2.2.0";
+  version = "2.3.0";
   supportedExtensions = [".py", ".pyi"];
   fileDetectionRules = [
     { type: "extension" as const, pattern: ".py" },
@@ -299,6 +299,13 @@ export class PythonLanguagePlugin implements LanguagePlugin {
       "Jupyter notebook cells unless exported to Python",
     ],
   };
+  analysisLevels = [
+    "file-dependency",
+    "module-dependency",
+    "symbol-dependency",
+    "build-dependency",
+    "runtime-dynamic-dependency",
+  ] as const;
   parser = {
     parse: ({ relativePath, content }: { relativePath: string; content: string }) => {
       const ast = parsePython(relativePath, content);

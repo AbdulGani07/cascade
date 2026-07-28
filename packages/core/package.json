@@ -1,6 +1,6 @@
 {
   "name": "@cascade/core",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "description": "Core dependency graph analysis engine for Cascade",
   "type": "module",
   "engines": {
@@ -36,6 +36,9 @@
     "@cascade/language-kotlin": "workspace:*",
     "@cascade/language-csharp": "workspace:*",
     "@cascade/language-go": "workspace:*",
+    "@cascade/language-rust": "workspace:*",
+    "@cascade/language-c": "workspace:*",
+    "@cascade/language-cpp": "workspace:*",
     "@cascade/plugin-api": "workspace:*",
     "@cascade/reporters": "workspace:*",
     "typescript": "^5.9.3"

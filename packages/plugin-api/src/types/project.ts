@@ -18,7 +18,21 @@ export interface ProjectInfo {
   configFiles: string[];
   frameworks?: string[];
   /** Build ecosystem inferred from structured manifests. */
-  buildSystem?: "npm" | "pnpm" | "yarn" | "maven" | "gradle" | "dotnet" | "go" | "python" | "mixed";
+  buildSystem?:
+    | "npm"
+    | "pnpm"
+    | "yarn"
+    | "maven"
+    | "gradle"
+    | "dotnet"
+    | "go"
+    | "python"
+    | "cargo"
+    | "cmake"
+    | "make"
+    | "meson"
+    | "bazel"
+    | "mixed";
   /** Logical modules/projects declared by the build system. */
   modules?: Array<{ name: string; relativePath: string; kind?: string }>;
 }

@@ -398,7 +398,7 @@ function symbols(relativePath: string, content: string): SymbolExtractionResult 
 export class CSharpLanguagePlugin implements LanguagePlugin {
   id = "cascade-language-csharp";
   name = "Cascade C# Language Plugin";
-  version = "2.2.0";
+  version = "2.3.0";
   supportedExtensions = [".cs"];
   fileDetectionRules = [{ type: "extension" as const, pattern: ".cs" }];
   capabilities = {
@@ -424,6 +424,12 @@ export class CSharpLanguagePlugin implements LanguagePlugin {
       "source-generator execution",
     ],
   };
+  analysisLevels = [
+    "file-dependency",
+    "module-dependency",
+    "symbol-dependency",
+    "build-dependency",
+  ] as const;
 
   parser = {
     parse(context: ParseContext): ParseResult {

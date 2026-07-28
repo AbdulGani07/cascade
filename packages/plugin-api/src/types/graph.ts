@@ -188,6 +188,11 @@ export interface PluginSummary {
   version: string;
   supportedExtensions: string[];
   capabilities: Record<string, boolean>;
+  analysisLevels: readonly import("./plugin.js").AnalysisLevel[];
+  limitations: {
+    knownIssues: string[];
+    unsupportedFeatures: string[];
+  };
 }
 
 /** Schema version 2.0 analysis result payload with backwards compatibility for 1.0 */

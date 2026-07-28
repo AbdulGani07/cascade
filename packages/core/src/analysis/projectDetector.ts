@@ -176,6 +176,90 @@ function detectCompiledProjects(projectRoot: string, nodes: DependencyNode[]): P
         },
       ];
     }
+    if (name === "Cargo.toml") {
+      const content = safeRead(manifestPath);
+      const packageName =
+        /\[package\][\s\S]*?^name\s*=\s*"([^"]+)"/m.exec(content)?.[1] ?? path.basename(rootPath);
+      const membersBlock = /\[workspace\][\s\S]*?members\s*=\s*\[([\s\S]*?)\]/m.exec(content)?.[1];
+      const modules = [...(membersBlock ?? "").matchAll(/"([^"]+)"/g)].map((match) => ({
+        name: path.basename(match[1]),
+        relativePath: `${prefix}${match[1]}`,
+        kind: "cargo-workspace-member",
+      }));
+      return [
+        {
+          id,
+          name: packageName,
+          rootPath,
+          projectType: membersBlock ? "cargo-workspace" : "rust-crate",
+          languages,
+          workspaces: [],
+          configFiles: [relativeManifest],
+          frameworks: [],
+          buildSystem: "cargo",
+          modules,
+        },
+      ];
+    }
+    if (
+      [
+        "CMakeLists.txt",
+        "Makefile",
+        "makefile",
+        "meson.build",
+        "BUILD",
+        "BUILD.bazel",
+        "WORKSPACE",
+      ].includes(name)
+    ) {
+      const buildSystem =
+        name === "CMakeLists.txt"
+          ? "cmake"
+          : name === "meson.build"
+            ? "meson"
+            : /^(BUILD|WORKSPACE)/.test(name)
+              ? "bazel"
+              : "make";
+      const content = safeRead(manifestPath);
+      const modules =
+        buildSystem === "cmake"
+          ? [...content.matchAll(/add_subdirectory\s*\(\s*([^\s)]+)/gi)].map((match) => ({
+              name: path.basename(match[1]),
+              relativePath: `${prefix}${match[1]}`,
+              kind: "cmake-subdirectory",
+            }))
+          : buildSystem === "meson"
+            ? [...content.matchAll(/subdir\s*\(\s*['"]([^'"]+)/g)].map((match) => ({
+                name: path.basename(match[1]),
+                relativePath: `${prefix}${match[1]}`,
+                kind: "meson-subdirectory",
+              }))
+            : buildSystem === "bazel"
+              ? [
+                  ...content.matchAll(
+                    /(?:cc_library|cc_binary|cc_test)\s*\(\s*name\s*=\s*"([^"]+)"/g
+                  ),
+                ].map((match) => ({
+                  name: match[1],
+                  relativePath: prefix || ".",
+                  kind: "bazel-target",
+                }))
+              : [];
+      return [
+        {
+          id,
+          name: path.basename(rootPath),
+          rootPath,
+          projectType: `${buildSystem}-native`,
+          languages,
+          workspaces: [],
+          configFiles: [relativeManifest],
+          frameworks: [],
+          buildSystem,
+          modules,
+        },
+      ];
+    }
     return [];
   });
 }
@@ -213,6 +297,14 @@ function findBuildManifests(projectRoot: string): string[] {
           "settings.gradle.kts",
           "go.mod",
           "go.work",
+          "Cargo.toml",
+          "CMakeLists.txt",
+          "Makefile",
+          "makefile",
+          "meson.build",
+          "BUILD",
+          "BUILD.bazel",
+          "WORKSPACE",
         ].includes(entry.name) ||
           /\.(?:csproj|sln)$/.test(entry.name))
       )

@@ -52,6 +52,16 @@ export function registerAnalyzeCommand(program: Command): void {
                 "Languages",
                 [...new Set(result.nodes.map((node) => node.language))].sort().join(", "),
               ],
+              [
+                "Analysis Levels",
+                [
+                  ...new Set(
+                    (result.pluginManifests ?? []).flatMap((plugin) => plugin.analysisLevels ?? [])
+                  ),
+                ]
+                  .sort()
+                  .join(", "),
+              ],
             ]
           )
         );

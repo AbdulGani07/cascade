@@ -18,16 +18,27 @@ Results are machine-dependent. The harness reports wall-clock analysis time and
 heap delta and is intended to detect major parsing, resolution, or traversal
 regressions.
 
-The second table runs the production Java, Kotlin, C#, and Go structured parsers
-and dependency extractors against 1,000 imports. This catches grammar ABI and
-language-specific extraction regressions independently of graph traversal.
+The second table runs the production Java, Kotlin, C#, Go, Rust, C, and C++
+structured parsers and dependency extractors against 1,000 imports. This catches
+grammar ABI and language-specific extraction regressions independently of graph
+traversal.
 
-## Baseline (2026-07-28)
+## Batch A baseline (2026-07-28)
 
-Node.js 22.13.1, Windows:
+Windows development machine:
 
 | Fixture | Files | Edges | Time (ms) | Heap delta (MB) |
 | ------- | ----: | ----: | --------: | --------------: |
-| small   |   101 |    99 |     223.0 |             3.1 |
-| medium  | 1,001 |   999 |   1,894.9 |             6.8 |
-| large   | 5,001 | 4,999 |   8,427.1 |           130.1 |
+| small   |   101 |    99 |     656.3 |             2.3 |
+| medium  | 1,001 |   999 |   8,119.2 |            12.4 |
+| large   | 5,001 | 4,999 |  41,939.5 |           125.0 |
+
+| Language | Imports | Parse + extract (ms) |
+| -------- | ------: | -------------------: |
+| Java     |   1,000 |                385.6 |
+| Kotlin   |   1,000 |                150.3 |
+| C#       |   1,000 |                121.2 |
+| Go       |   1,000 |                 82.2 |
+| Rust     |   1,000 |                158.4 |
+| C        |   1,000 |                 86.1 |
+| C++      |   1,000 |                 76.2 |

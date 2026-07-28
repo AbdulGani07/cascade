@@ -1,6 +1,6 @@
 # JavaScript and TypeScript Analysis Support
 
-This document describes the analyzer implemented in Cascade 2.0.0. “Supported”
+This document describes the JavaScript and TypeScript analyzer in Cascade 2.3.0. “Supported”
 means covered by compiler-AST extraction or project-aware
 resolution and regression tests. “Partial” identifies conservative static
 analysis where runtime values can prevent a definitive answer.
