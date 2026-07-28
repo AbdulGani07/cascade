@@ -8,6 +8,8 @@ import {
 } from "@cascade/plugin-api";
 import { PluginRegistry } from "../plugins/pluginRegistry.js";
 import { toPosixRelativePath } from "../utils/pathUtils.js";
+import { CascadeConfig } from "@cascade/config";
+import { ProjectModuleResolver } from "../resolution/projectResolver.js";
 
 /**
  * Language-agnostic Graph Builder using PluginRegistry.
@@ -15,7 +17,8 @@ import { toPosixRelativePath } from "../utils/pathUtils.js";
 export function buildGraph(
   nodes: DependencyNode[],
   pluginRegistry: PluginRegistry,
-  projectRoot: string
+  projectRoot: string,
+  config: CascadeConfig
 ): { graph: Graph; warnings: Warning[]; diagnostics: ParseDiagnostic[] } {
   const nodesMap = new Map<string, DependencyNode>();
   nodes.forEach((n) => {
@@ -27,6 +30,7 @@ export function buildGraph(
   const edges: DependencyEdge[] = [];
   const warnings: Warning[] = [];
   const diagnostics: ParseDiagnostic[] = [];
+  const projectResolver = new ProjectModuleResolver(projectRoot, allKnownRelativeFiles, config);
 
   for (const node of nodes) {
     const plugin = pluginRegistry.findPluginForFile(node.absolutePath, node.relativePath);
@@ -96,14 +100,12 @@ export function buildGraph(
 
     // 4. Resolve each extracted dependency & construct graph edge
     for (const dep of extractResult.dependencies) {
-      const resolution = pluginRegistry.safeResolveModule(plugin, {
-        specifier: dep.specifier,
-        importerFilePath: node.absolutePath,
-        importerRelativePath: node.relativePath,
-        projectRoot,
-        extractedDependency: dep,
-        allKnownFiles: allKnownRelativeFiles,
-      });
+      const resolution = projectResolver.resolve(
+        dep.specifier,
+        node.absolutePath,
+        node.relativePath,
+        dep
+      );
 
       if (resolution.diagnostics) {
         diagnostics.push(...resolution.diagnostics);
@@ -122,8 +124,9 @@ export function buildGraph(
         resolvedNodeId = nodesMap.get(targetId)!.id;
       }
 
-      // Only add edge if resolution is resolved or if target node exists
-      if (resolution.resolutionStatus === "resolved" || nodesMap.has(resolvedNodeId)) {
+      // Preserve unresolved and external edges with their resolution status.
+      // Graph traversals ignore targets that are not known nodes.
+      {
         const edgeId = `${node.id} -> ${resolvedNodeId} [${dep.importKind}]`;
 
         // Check for cross-language edge
@@ -143,7 +146,9 @@ export function buildGraph(
                 ? "type-import"
                 : dep.isDynamic
                   ? "dynamic-import"
-                  : "import",
+                  : dep.importKind === "reference"
+                    ? "reference"
+                    : "import",
           importKind: dep.importKind,
           isStatic: dep.isStatic,
           isDynamic: dep.isDynamic,

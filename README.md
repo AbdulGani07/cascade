@@ -1,5 +1,7 @@
 # Cascade
 
+Current release: **2.0.0** (2026-07-28)
+
 Cascade is a modular, pluggable dependency-analysis and code-intelligence toolkit that predicts the impact of code changes. It scans multi-language repositories, builds dependency graphs, detects cycles and unreachable code, and exposes actionable results through a CLI, reporters (Markdown, SARIF), and a React dashboard.
 
 ## Requirements
@@ -61,3 +63,4 @@ pnpm check
 - [Security policy](SECURITY.md)
 - [Code of Conduct](CODE_OF_CONDUCT.md)
 - [Architecture audit and roadmap](CASCADE_AUDIT_AND_ROADMAP.md)
+- [JavaScript/TypeScript support matrices](docs/LANGUAGE_SUPPORT.md)

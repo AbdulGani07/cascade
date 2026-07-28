@@ -1,7 +1,7 @@
 {
   "name": "@cascade/monorepo",
   "private": true,
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Cascade — Dependency intelligence and change-impact analysis platform",
   "packageManager": "pnpm@9.15.0",
   "engines": {
@@ -22,6 +22,7 @@
     "typecheck": "npm run typecheck --workspaces",
     "format": "prettier --check \"**/*.{ts,tsx,json,md}\"",
     "format:fix": "prettier --write \"**/*.{ts,tsx,json,md}\"",
+    "benchmark": "node benchmarks/run.mjs",
     "clean": "npm run clean --workspaces",
     "check": "npm run lint && npm run build && npm run typecheck && npm run test"
   },

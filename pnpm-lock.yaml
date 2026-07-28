@@ -111,6 +111,9 @@ importers:
       '@cascade/reporters':
         specifier: workspace:*
         version: link:../reporters
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
 
   packages/dashboard:
     dependencies:
@@ -151,6 +154,9 @@ importers:
       tree-sitter-javascript:
         specifier: ^0.23.1
         version: 0.23.1(tree-sitter@0.22.4)
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
 
   packages/language-typescript:
     dependencies:

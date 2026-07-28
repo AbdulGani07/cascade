@@ -1,4 +1,4 @@
-import { Graph } from "@cascade/plugin-api";
+import { DeadCodeFinding, EntryPointEvidence, Graph } from "@cascade/plugin-api";
 import { reachableFrom } from "../graph/graphAlgorithms.js";
 
 /**
@@ -12,7 +12,14 @@ export function findDeadFiles(graph: Graph, entryPoints: string[]): string[] {
 
   for (const [nodeId, node] of graph.nodes.entries()) {
     // Ignore test files and config files when checking dead code
-    if (node.isTestFile || node.fileCategory === "config" || node.fileCategory === "test") {
+    if (
+      node.isTestFile ||
+      node.isGeneratedFile ||
+      node.fileCategory === "config" ||
+      node.fileCategory === "test" ||
+      node.fileCategory === "generated" ||
+      node.fileCategory === "asset"
+    ) {
       continue;
     }
     if (!reachable.has(nodeId)) {
@@ -21,4 +28,28 @@ export function findDeadFiles(graph: Graph, entryPoints: string[]): string[] {
   }
 
   return dead;
+}
+
+export function findDeadCode(
+  graph: Graph,
+  entryPointEvidence: EntryPointEvidence[],
+  diagnosticsCount: number
+): DeadCodeFinding[] {
+  const strongRoots = entryPointEvidence.filter((entry) => entry.confidence >= 0.8);
+  if (strongRoots.length === 0) return [];
+  const dead = findDeadFiles(
+    graph,
+    strongRoots.map((entry) => entry.file)
+  );
+  const resolutionPenalty = Math.min(0.35, diagnosticsCount * 0.02);
+  const rootConfidence = Math.min(...strongRoots.map((entry) => entry.confidence));
+  return dead.map((file) => ({
+    file,
+    confidence: Math.max(0.5, Math.min(0.99, rootConfidence - resolutionPenalty)),
+    evidence: [
+      `Unreachable from ${strongRoots.length} entry root(s)`,
+      `${diagnosticsCount} unresolved or parse diagnostic(s) may reduce certainty`,
+      "Tests, generated files, configuration, and assets are excluded",
+    ],
+  }));
 }

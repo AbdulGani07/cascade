@@ -15,8 +15,23 @@ export function scanFiles(
   pluginRegistry: PluginRegistry
 ): DependencyNode[] {
   const nodes: DependencyNode[] = [];
+  const visitedDirectories = new Set<string>();
+  const gitignorePatterns =
+    config.respectGitignore !== false
+      ? readIgnorePatterns(path.join(projectRoot, ".gitignore"))
+      : [];
+  const ignorePatterns = [...config.ignore, ...gitignorePatterns];
 
   function walk(currentDir: string) {
+    let realDirectory: string;
+    try {
+      realDirectory = fs.realpathSync(currentDir);
+    } catch {
+      return;
+    }
+    if (visitedDirectories.has(realDirectory)) return;
+    visitedDirectories.add(realDirectory);
+
     const entries = fs.readdirSync(currentDir, { withFileTypes: true });
 
     for (const entry of entries) {
@@ -24,17 +39,19 @@ export function scanFiles(
       const relativePath = toPosixRelativePath(absolutePath, projectRoot);
 
       // Check ignore patterns
-      if (config.ignore.some((pattern: string) => minimatch(relativePath, pattern))) {
+      if (isIgnored(relativePath, entry.isDirectory(), ignorePatterns)) {
         continue;
       }
 
-      if (entry.isDirectory()) {
+      if (entry.isDirectory() || (entry.isSymbolicLink() && safeIsDirectory(absolutePath))) {
         walk(absolutePath);
       } else {
         const plugin = pluginRegistry.findPluginForFile(absolutePath, relativePath);
         const ext = path.extname(relativePath).toLowerCase();
+        const isAsset =
+          config.includeNonCodeEdges !== false && config.assetExtensions?.includes(ext);
 
-        if (plugin || config.extensions.includes(ext)) {
+        if (plugin || config.extensions.includes(ext) || isAsset) {
           const isTest = plugin?.testFileDetector?.isTestFile(absolutePath, relativePath) ?? false;
           const isGen =
             plugin?.generatedFileDetector?.isGeneratedFile(absolutePath, relativePath) ?? false;
@@ -59,7 +76,15 @@ export function scanFiles(
             absolutePath,
             relativePath,
             language: langName,
-            fileCategory: isTest ? "test" : isGen ? "generated" : isConfig ? "config" : "source",
+            fileCategory: isTest
+              ? "test"
+              : isGen
+                ? "generated"
+                : isConfig
+                  ? "config"
+                  : isAsset
+                    ? "asset"
+                    : "source",
             isEntryPoint: false,
             isTestFile: isTest,
             isGeneratedFile: isGen,
@@ -72,7 +97,7 @@ export function scanFiles(
             },
             pluginProvenance: {
               pluginId: plugin ? plugin.id : "cascade-core",
-              pluginVersion: plugin ? plugin.version : "1.0.0",
+              pluginVersion: plugin ? plugin.version : "2.0.0",
             },
             diagnostics: [],
           });
@@ -83,4 +108,38 @@ export function scanFiles(
 
   walk(projectRoot);
   return nodes;
+}
+
+function safeIsDirectory(filePath: string): boolean {
+  try {
+    return fs.statSync(filePath).isDirectory();
+  } catch {
+    return false;
+  }
+}
+
+function readIgnorePatterns(filePath: string): string[] {
+  try {
+    return fs
+      .readFileSync(filePath, "utf-8")
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0 && !line.startsWith("#") && !line.startsWith("!"))
+      .map((line) => line.replace(/^\//, ""))
+      .flatMap((line) =>
+        line.endsWith("/") ? [line + "**", `**/${line}**`] : [line, `**/${line}`]
+      );
+  } catch {
+    return [];
+  }
+}
+
+function isIgnored(relativePath: string, isDirectory: boolean, patterns: string[]): boolean {
+  const candidate = isDirectory ? `${relativePath}/` : relativePath;
+  return patterns.some(
+    (pattern) =>
+      minimatch(relativePath, pattern, { dot: true }) ||
+      minimatch(candidate, pattern, { dot: true }) ||
+      minimatch(relativePath, `${pattern}/**`, { dot: true })
+  );
 }

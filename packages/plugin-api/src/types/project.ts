@@ -16,6 +16,7 @@ export interface ProjectInfo {
   languages: string[];
   workspaces: WorkspacePackage[];
   configFiles: string[];
+  frameworks?: string[];
 }
 
 export interface ProjectDetector {

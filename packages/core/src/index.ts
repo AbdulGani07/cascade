@@ -12,11 +12,12 @@ import { createJavaScriptPlugin } from "@cascade/language-javascript";
 import { createTypeScriptPlugin } from "@cascade/language-typescript";
 import { PluginRegistry } from "./plugins/pluginRegistry.js";
 import { scanFiles } from "./parser/fileScanner.js";
-import { detectEntryPoints } from "./analysis/entryPointDetector.js";
+import { detectEntryPointEvidence } from "./analysis/entryPointDetector.js";
 import { buildGraph } from "./graph/graphBuilder.js";
 import { detectCycles } from "./graph/cycleDetector.js";
-import { findDeadFiles } from "./analysis/deadCodeAnalyzer.js";
+import { findDeadCode } from "./analysis/deadCodeAnalyzer.js";
 import { simulateDeletion } from "./analysis/impactSimulator.js";
+import { detectProjects } from "./analysis/projectDetector.js";
 
 export interface AnalyzeOptions {
   config?: CascadeConfig;
@@ -47,9 +48,11 @@ export function analyze(projectRoot: string, options?: AnalyzeOptions): Analysis
 
   // 4. Discover project files using plugins
   const nodes = scanFiles(projectRoot, config, registry);
+  const projects = detectProjects(projectRoot, nodes);
 
   // 5. Detect entry points
-  const entryPointIds = detectEntryPoints(projectRoot, nodes, config, registry);
+  const entryPointEvidence = detectEntryPointEvidence(projectRoot, nodes, config, registry);
+  const entryPointIds = entryPointEvidence.map((entry) => entry.file);
 
   // Update nodes with entry point flag
   nodes.forEach((n) => {
@@ -57,11 +60,12 @@ export function analyze(projectRoot: string, options?: AnalyzeOptions): Analysis
   });
 
   // 6. Build language-agnostic dependency graph
-  const { graph, warnings, diagnostics } = buildGraph(nodes, registry, projectRoot);
+  const { graph, warnings, diagnostics } = buildGraph(nodes, registry, projectRoot, config);
 
   // 7. Graph analysis algorithms
   const cycles = detectCycles(graph);
-  const deadFiles = findDeadFiles(graph, entryPointIds);
+  const deadCodeFindings = findDeadCode(graph, entryPointEvidence, diagnostics.length);
+  const deadFiles = deadCodeFindings.map((finding) => finding.file);
 
   // 8. Build impact report map
   const impact: Record<string, ImpactReport> = {};
@@ -86,10 +90,13 @@ export function analyze(projectRoot: string, options?: AnalyzeOptions): Analysis
     edges: graph.edges,
     cycles,
     deadFiles,
+    deadCodeFindings,
     entryPoints: entryPointIds,
+    entryPointEvidence,
     impact,
     warnings,
     diagnostics,
     pluginManifests,
+    projects,
   };
 }

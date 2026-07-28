@@ -89,7 +89,14 @@ export interface DependencyNode {
 }
 
 export type ImportKind =
-  "static" | "dynamic" | "re-export" | "type-only" | "side-effect" | "conditional";
+  | "static"
+  | "dynamic"
+  | "re-export"
+  | "type-only"
+  | "side-effect"
+  | "conditional"
+  | "reference"
+  | "asset";
 
 export type EdgeType =
   | "import"
@@ -97,6 +104,7 @@ export type EdgeType =
   | "re-export"
   | "dynamic-import"
   | "type-import"
+  | "asset-import"
   | "cross-language"
   | "reference";
 
@@ -153,6 +161,20 @@ export interface ImpactReport {
   isSafeToDelete: boolean;
 }
 
+export interface EntryPointEvidence {
+  file: string;
+  confidence: number;
+  reason: string;
+  project?: string;
+  kind: "configured" | "package" | "framework" | "convention" | "test";
+}
+
+export interface DeadCodeFinding {
+  file: string;
+  confidence: number;
+  evidence: string[];
+}
+
 export interface Warning {
   file: string;
   message: string;
@@ -175,9 +197,12 @@ export interface AnalysisResult {
   edges: DependencyEdge[];
   cycles: string[][];
   deadFiles: string[];
+  deadCodeFindings?: DeadCodeFinding[];
   entryPoints: string[];
+  entryPointEvidence?: EntryPointEvidence[];
   impact: Record<string, ImpactReport>;
   warnings: Warning[];
   diagnostics?: ParseDiagnostic[];
   pluginManifests?: PluginSummary[];
+  projects?: import("./project.js").ProjectInfo[];
 }

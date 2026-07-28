@@ -8,7 +8,6 @@ import {
   ParseResult,
   ExtractionContext,
   DependencyExtractionResult,
-  ExtractedDependency,
   SymbolContext,
   SymbolExtractionResult,
   SymbolDeclaration,
@@ -16,11 +15,12 @@ import {
   ResolvedModuleResult,
   EntryPointHint,
 } from "@cascade/plugin-api";
+import { extractScriptDependencies } from "@cascade/language-javascript";
 
 export class TypeScriptLanguagePlugin implements LanguagePlugin {
   id = "cascade-language-typescript";
   name = "Cascade TypeScript Language Plugin";
-  version = "1.0.0";
+  version = "2.0.0";
   supportedExtensions = [".ts", ".tsx", ".mts", ".cts"];
 
   fileDetectionRules = [
@@ -77,58 +77,7 @@ export class TypeScriptLanguagePlugin implements LanguagePlugin {
 
   dependencyExtractor = {
     extractDependencies(context: ExtractionContext): DependencyExtractionResult {
-      const deps: ExtractedDependency[] = [];
-      const diagnostics: DependencyExtractionResult["diagnostics"] = [];
-
-      // Regex parser for TS imports including "import type"
-      const typeImportRegex = /import\s+type\s+[\s\S]*?\s+from\s+['"]([^'"]+)['"]/g;
-      let match: RegExpExecArray | null;
-      while ((match = typeImportRegex.exec(context.content)) !== null) {
-        deps.push({
-          specifier: match[1],
-          importKind: "type-only",
-          isStatic: true,
-          isDynamic: false,
-          isTypeOnly: true,
-          isReExport: false,
-          isConditional: false,
-          rawText: match[0],
-        });
-      }
-
-      const importRegex =
-        /(?:import\s+(?:[\s\S]*?\s+from\s+)?|import\(|require\()\s*['"]([^'"]+)['"]/g;
-      while ((match = importRegex.exec(context.content)) !== null) {
-        if (match[0].startsWith("import type")) continue; // already added above
-        const isDynamic = match[0].includes("import(") || match[0].includes("require(");
-        deps.push({
-          specifier: match[1],
-          importKind: isDynamic ? "dynamic" : "static",
-          isStatic: !isDynamic,
-          isDynamic,
-          isTypeOnly: false,
-          isReExport: false,
-          isConditional: false,
-          rawText: match[0],
-        });
-      }
-
-      const exportRegex = /export\s+[\s\S]*?\s+from\s+['"]([^'"]+)['"]/g;
-      while ((match = exportRegex.exec(context.content)) !== null) {
-        const isTypeExport = match[0].includes("type ");
-        deps.push({
-          specifier: match[1],
-          importKind: isTypeExport ? "type-only" : "re-export",
-          isStatic: false,
-          isDynamic: false,
-          isTypeOnly: isTypeExport,
-          isReExport: true,
-          isConditional: false,
-          rawText: match[0],
-        });
-      }
-
-      return { dependencies: deps, diagnostics };
+      return extractScriptDependencies(context.filePath, context.relativePath, context.content);
     },
   };
 
@@ -272,7 +221,13 @@ export class TypeScriptLanguagePlugin implements LanguagePlugin {
   generatedFileDetector = {
     isGeneratedFile(_filePath: string, relativePath: string, content?: string): boolean {
       const normalized = relativePath.toLowerCase();
-      if (normalized.endsWith(".d.ts") || normalized.endsWith(".js.map")) return true;
+      if (
+        normalized.endsWith(".d.ts") ||
+        normalized.endsWith(".d.mts") ||
+        normalized.endsWith(".d.cts") ||
+        normalized.endsWith(".js.map")
+      )
+        return true;
       if (content && (content.includes("@generated") || content.includes("auto-generated")))
         return true;
       return false;

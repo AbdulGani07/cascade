@@ -8,7 +8,6 @@ import {
   ParseResult,
   ExtractionContext,
   DependencyExtractionResult,
-  ExtractedDependency,
   SymbolContext,
   SymbolExtractionResult,
   SymbolDeclaration,
@@ -16,11 +15,14 @@ import {
   ResolvedModuleResult,
   EntryPointHint,
 } from "@cascade/plugin-api";
+import { extractScriptDependencies } from "./scriptDependencyExtractor.js";
+
+export { extractScriptDependencies } from "./scriptDependencyExtractor.js";
 
 export class JavaScriptLanguagePlugin implements LanguagePlugin {
   id = "cascade-language-javascript";
   name = "Cascade JavaScript Language Plugin";
-  version = "1.0.0";
+  version = "2.0.0";
   supportedExtensions = [".js", ".jsx", ".mjs", ".cjs"];
 
   fileDetectionRules = [
@@ -79,80 +81,7 @@ export class JavaScriptLanguagePlugin implements LanguagePlugin {
 
   dependencyExtractor = {
     extractDependencies(context: ExtractionContext): DependencyExtractionResult {
-      const deps: ExtractedDependency[] = [];
-      const diagnostics: DependencyExtractionResult["diagnostics"] = [];
-
-      // Try tree-sitter AST extraction first if tree is present
-      if (context.ast) {
-        try {
-          const tree = context.ast as Parser.Tree;
-          const querySource = `
-            (import_statement source: (string) @import)
-            (call_expression function: (import) arguments: (arguments (string) @dynamic))
-            (call_expression function: (identifier) @req (#eq? @req "require") arguments: (arguments (string) @require))
-            (export_statement source: (string) @reexport)
-          `;
-          const query = new Parser.Query(JavaScript as unknown as Parser.Language, querySource);
-          const matches = query.matches(tree.rootNode);
-
-          for (const match of matches) {
-            for (const capture of match.captures) {
-              const specifier = capture.node.text.replace(/['"]/g, "");
-              const isDynamic = capture.name === "dynamic" || capture.name === "require";
-              const isReExport = capture.name === "reexport";
-
-              deps.push({
-                specifier,
-                importKind: isReExport ? "re-export" : isDynamic ? "dynamic" : "static",
-                isStatic: !isDynamic && !isReExport,
-                isDynamic,
-                isTypeOnly: false,
-                isReExport,
-                isConditional: false,
-                rawText: capture.node.text,
-              });
-            }
-          }
-        } catch {
-          // Tree query failed; fall through to regex parser
-        }
-      }
-
-      if (deps.length === 0) {
-        // Regex fallback parser
-        const importRegex =
-          /(?:import\s+(?:[\s\S]*?\s+from\s+)?|import\(|require\()\s*['"]([^'"]+)['"]/g;
-        let match: RegExpExecArray | null;
-        while ((match = importRegex.exec(context.content)) !== null) {
-          const isDynamic = match[0].includes("import(") || match[0].includes("require(");
-          deps.push({
-            specifier: match[1],
-            importKind: isDynamic ? "dynamic" : "static",
-            isStatic: !isDynamic,
-            isDynamic,
-            isTypeOnly: false,
-            isReExport: false,
-            isConditional: false,
-            rawText: match[0],
-          });
-        }
-
-        const exportRegex = /export\s+[\s\S]*?\s+from\s+['"]([^'"]+)['"]/g;
-        while ((match = exportRegex.exec(context.content)) !== null) {
-          deps.push({
-            specifier: match[1],
-            importKind: "re-export",
-            isStatic: false,
-            isDynamic: false,
-            isTypeOnly: false,
-            isReExport: true,
-            isConditional: false,
-            rawText: match[0],
-          });
-        }
-      }
-
-      return { dependencies: deps, diagnostics };
+      return extractScriptDependencies(context.filePath, context.relativePath, context.content);
     },
   };
 

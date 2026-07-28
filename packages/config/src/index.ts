@@ -14,6 +14,11 @@ export interface CascadeConfig {
   extensions: string[];
   plugins: PluginConfigSetting[];
   pathAliases?: Record<string, string>;
+  assetExtensions?: string[];
+  includeNonCodeEdges?: boolean;
+  respectGitignore?: boolean;
+  caseSensitiveResolution?: boolean;
+  conditions?: string[];
   maxDepth?: number;
 }
 
@@ -29,12 +34,29 @@ export const defaultConfig: CascadeConfig = {
     "index.js",
   ],
   ignore: ["**/node_modules/**", "**/dist/**", "**/build/**", "**/.git/**", "**/coverage/**"],
-  extensions: [".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs"],
+  extensions: [".ts", ".tsx", ".mts", ".cts", ".js", ".jsx", ".mjs", ".cjs"],
   plugins: [
     { id: "cascade-language-typescript", enabled: true, priority: 100 },
     { id: "cascade-language-javascript", enabled: true, priority: 50 },
   ],
   pathAliases: {},
+  assetExtensions: [
+    ".json",
+    ".css",
+    ".scss",
+    ".sass",
+    ".less",
+    ".svg",
+    ".png",
+    ".jpg",
+    ".jpeg",
+    ".gif",
+    ".webp",
+    ".wasm",
+  ],
+  includeNonCodeEdges: true,
+  respectGitignore: true,
+  conditions: ["types", "import", "require", "node", "browser", "default"],
 };
 
 export function loadCascadeConfig(projectRoot: string): CascadeConfig {
@@ -62,6 +84,19 @@ export function loadCascadeConfig(projectRoot: string): CascadeConfig {
           }))
         : defaultConfig.plugins,
       pathAliases: parsed.pathAliases || defaultConfig.pathAliases,
+      assetExtensions: Array.isArray(parsed.assetExtensions)
+        ? parsed.assetExtensions
+        : defaultConfig.assetExtensions,
+      includeNonCodeEdges:
+        typeof parsed.includeNonCodeEdges === "boolean"
+          ? parsed.includeNonCodeEdges
+          : defaultConfig.includeNonCodeEdges,
+      respectGitignore:
+        typeof parsed.respectGitignore === "boolean"
+          ? parsed.respectGitignore
+          : defaultConfig.respectGitignore,
+      caseSensitiveResolution: parsed.caseSensitiveResolution,
+      conditions: Array.isArray(parsed.conditions) ? parsed.conditions : defaultConfig.conditions,
       maxDepth: parsed.maxDepth,
     };
   } catch (err) {
