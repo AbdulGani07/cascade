@@ -33,6 +33,68 @@ export default function ExportModal({ analysisData, onClose }: ExportModalProps)
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
   };
+  const handleHtmlDownload = () => {
+    const safeData = JSON.stringify(analysisData).replace(/</g, "\\u003c");
+    const html = `<!doctype html><meta charset="utf-8"><title>Cascade report</title><h1>Cascade analysis report</h1><pre id="report"></pre><script>document.getElementById("report").textContent=JSON.stringify(${safeData},null,2)</script>`;
+    const url = URL.createObjectURL(new Blob([html], { type: "text/html" }));
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "cascade-report.html";
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+  const summaryLines = [
+    `Files: ${analysisData.nodes.length}`,
+    `Edges: ${analysisData.edges.length}`,
+    `Projects: ${analysisData.projectGraph?.nodes.length ?? 0}`,
+    `Cycles: ${analysisData.cycles.length}`,
+    `Dead files: ${analysisData.deadFiles.length}`,
+  ];
+  const downloadBlob = (content: BlobPart, type: string, name: string) => {
+    const url = URL.createObjectURL(new Blob([content], { type }));
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = name;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+  const handleSvgDownload = () => {
+    const escape = (value: string) =>
+      value
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/\"/g, "&quot;");
+    const lines = summaryLines
+      .map(
+        (line, index) =>
+          `<text x="40" y="${100 + index * 34}" font-family="system-ui" font-size="20" fill="#cbd5e1">${escape(line)}</text>`
+      )
+      .join("");
+    downloadBlob(
+      `<svg xmlns="http://www.w3.org/2000/svg" width="900" height="360"><rect width="100%" height="100%" fill="#0f172a"/><text x="40" y="55" font-family="system-ui" font-size="30" font-weight="700" fill="#67e8f9">Cascade analysis report</text>${lines}</svg>`,
+      "image/svg+xml",
+      "cascade-report.svg"
+    );
+  };
+  const handlePngDownload = () => {
+    const canvas = document.createElement("canvas");
+    canvas.width = 1200;
+    canvas.height = 630;
+    const context = canvas.getContext("2d");
+    if (!context) return;
+    context.fillStyle = "#0f172a";
+    context.fillRect(0, 0, 1200, 630);
+    context.fillStyle = "#67e8f9";
+    context.font = "bold 44px system-ui";
+    context.fillText("Cascade analysis report", 60, 90);
+    context.fillStyle = "#cbd5e1";
+    context.font = "28px system-ui";
+    summaryLines.forEach((line, index) => context.fillText(line, 60, 170 + index * 58));
+    canvas.toBlob((blob) => {
+      if (blob) downloadBlob(blob, "image/png", "cascade-report.png");
+    });
+  };
 
   const cycleCount = new Set(analysisData.cycles.flat()).size;
 
@@ -59,6 +121,13 @@ export default function ExportModal({ analysisData, onClose }: ExportModalProps)
             className="p-1.5 rounded-xl text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors"
           >
             <X className="w-4 h-4" />
+          </button>
+          <button
+            type="button"
+            onClick={handleHtmlDownload}
+            className="rounded-xl border border-slate-700 px-4 py-2 text-xs font-medium text-slate-200 hover:bg-slate-800"
+          >
+            Download HTML
           </button>
         </div>
 
@@ -140,6 +209,28 @@ export default function ExportModal({ analysisData, onClose }: ExportModalProps)
 
         {/* Modal Footer */}
         <div className="p-4 border-t border-slate-800 bg-slate-950/50 flex items-center justify-end gap-3">
+          <button
+            type="button"
+            onClick={handleSvgDownload}
+            className="rounded-xl border border-slate-700 px-3 py-2 text-xs text-slate-200"
+          >
+            SVG
+          </button>
+          <button
+            type="button"
+            onClick={handlePngDownload}
+            className="rounded-xl border border-slate-700 px-3 py-2 text-xs text-slate-200"
+          >
+            PNG
+          </button>
+          <button
+            type="button"
+            onClick={() => window.print()}
+            className="rounded-xl border border-slate-700 px-3 py-2 text-xs text-slate-200"
+            title="Choose Save as PDF in the browser print dialog"
+          >
+            PDF
+          </button>
           <button
             type="button"
             onClick={handleCopy}

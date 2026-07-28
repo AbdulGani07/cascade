@@ -14,6 +14,7 @@ import { LayoutGrid, Info, Compass } from "lucide-react";
 
 import FileNode, { type FileNodeData } from "./FileNode";
 import type { AnalysisResult } from "../lib/api";
+import type { WorkspaceFilters } from "../lib/filters";
 
 interface GraphViewProps {
   analysisData: AnalysisResult;
@@ -22,7 +23,9 @@ interface GraphViewProps {
   onSelect: (id: string | null) => void;
   layoutDirection?: "TB" | "LR";
   onToggleLayout?: () => void;
-  graphKind?: "file" | "project";
+  graphKind?: "file" | "project" | "package" | "service";
+  onSelectEdge?: (edge: AnalysisResult["edges"][number] | null) => void;
+  filters?: WorkspaceFilters;
 }
 
 const nodeTypes = {
@@ -37,7 +40,9 @@ function getLayoutedElements(
   selectedId: string | null,
   highlightedIds: Set<string>,
   direction: "TB" | "LR" = "TB",
-  graphKind: "file" | "project" = "file"
+  graphKind: "file" | "project" | "package" | "service" = "file",
+  maximumNodes = Number.POSITIVE_INFINITY,
+  filters?: WorkspaceFilters
 ) {
   const dagreGraph = new dagre.graphlib.Graph();
   dagreGraph.setDefaultEdgeLabel(() => ({}));
@@ -51,30 +56,88 @@ function getLayoutedElements(
     marginy: 40,
   });
 
-  const sourceNodes =
-    graphKind === "project" && analysisData.projectGraph
-      ? analysisData.projectGraph.nodes.map((node) => ({
+  const projectNodes = (analysisData.projectGraph?.nodes ?? []).filter((node) =>
+    graphKind === "package"
+      ? node.role === "package" || node.role === "library" || node.projectType === "package"
+      : graphKind === "service"
+        ? node.role === "service" || node.role === "application" || node.projectType === "service"
+        : true
+  );
+  const allNodes =
+    graphKind !== "file" && analysisData.projectGraph
+      ? projectNodes.map((node) => ({
           id: node.id,
           isEntryPoint: node.role === "application" || node.role === "service",
           label: node.name,
           detail: `${node.role ?? node.projectType} · ${node.buildSystem ?? "metadata"}`,
         }))
-      : analysisData.nodes.map((node) => ({
-          ...node,
-          label: node.id.split(/[\\/]/).pop() ?? node.id,
-          detail: node.id,
-        }));
-  const sourceEdges =
-    graphKind === "project" && analysisData.projectGraph
+      : analysisData.nodes
+          .filter((node) => {
+            if (!filters) return true;
+            const extension = node.id.split(".").pop() ?? "";
+            const inCycle = analysisData.cycles.some((cycle) => cycle.includes(node.id));
+            const statusMatches =
+              filters.status === "all" ||
+              (filters.status === "entry" && node.isEntryPoint) ||
+              (filters.status === "cycle" && inCycle) ||
+              (filters.status === "dead" && analysisData.deadFiles.includes(node.id)) ||
+              (filters.status === "unresolved" &&
+                analysisData.edges.some(
+                  (edge) => edge.from === node.id && edge.resolutionStatus === "unresolved"
+                ));
+            return (
+              (filters.language === "all" || node.language === filters.language) &&
+              (filters.project === "all" || node.project === filters.project) &&
+              (filters.packageName === "all" || node.packageOrWorkspace === filters.packageName) &&
+              (filters.fileType === "all" || extension === filters.fileType) &&
+              statusMatches
+            );
+          })
+          .map((node) => ({
+            ...node,
+            label: node.id.split(/[\\/]/).pop() ?? node.id,
+            detail: node.id,
+          }));
+  const allEdges =
+    graphKind !== "file" && analysisData.projectGraph
       ? analysisData.projectGraph.edges.map((edge) => ({
           from: edge.from,
           to: edge.to,
           kind: edge.type,
           confidence: edge.confidence,
+          architectureBoundary: analysisData.governance?.boundaries.some(
+            (boundary) => boundary.from === edge.from && boundary.to === edge.to
+          ),
         }))
-      : analysisData.edges;
+      : analysisData.edges.filter(
+          (edge) =>
+            !filters ||
+            ((filters.dependencyType === "all" ||
+              (edge.dependencyCategory ?? edge.kind) === filters.dependencyType) &&
+              (filters.confidence === "all" ||
+                (filters.confidence === "high" && (edge.confidence ?? 1) >= 0.8) ||
+                (filters.confidence === "medium" &&
+                  (edge.confidence ?? 1) >= 0.5 &&
+                  (edge.confidence ?? 1) < 0.8) ||
+                (filters.confidence === "low" && (edge.confidence ?? 1) < 0.5)))
+        );
+  const degree = new Map<string, number>();
+  for (const edge of allEdges) {
+    degree.set(edge.from, (degree.get(edge.from) ?? 0) + 1);
+    degree.set(edge.to, (degree.get(edge.to) ?? 0) + 1);
+  }
+  const sourceNodes = allNodes
+    .sort(
+      (left, right) =>
+        (degree.get(right.id) ?? 0) - (degree.get(left.id) ?? 0) || left.id.localeCompare(right.id)
+    )
+    .slice(0, maximumNodes);
+  const visibleIds = new Set(sourceNodes.map((node) => node.id));
+  const sourceEdges = allEdges.filter(
+    (edge) => visibleIds.has(edge.from) && visibleIds.has(edge.to)
+  );
   const sourceCycles =
-    graphKind === "project" && analysisData.projectGraph
+    graphKind !== "file" && analysisData.projectGraph
       ? analysisData.projectGraph.cycles
       : analysisData.cycles;
   const cycleFiles = new Set(sourceCycles.flat());
@@ -149,6 +212,13 @@ function getLayoutedElements(
 
     let strokeColor = "#334155"; // slate-700
     let strokeWidth = 1.8;
+    const isAdded = analysisData.gitImpact?.graphDiff?.addedEdges.some(
+      (item) => item.from === edge.from && item.to === edge.to
+    );
+    const isRemoved = analysisData.gitImpact?.graphDiff?.removedEdges.some(
+      (item) => item.from === edge.from && item.to === edge.to
+    );
+    const isBoundary = "architectureBoundary" in edge && edge.architectureBoundary;
 
     if (isHighlightedEdge) {
       strokeColor = "#38bdf8"; // cyan-400
@@ -157,6 +227,12 @@ function getLayoutedElements(
       strokeColor = "#a855f7"; // purple-500
     } else if (edge.kind === "re-export") {
       strokeColor = "#f59e0b"; // amber-500
+    } else if (isAdded) {
+      strokeColor = "#22c55e";
+    } else if (isRemoved) {
+      strokeColor = "#f43f5e";
+    } else if (isBoundary) {
+      strokeColor = "#f97316";
     }
 
     return {
@@ -164,10 +240,15 @@ function getLayoutedElements(
       source: edge.from,
       target: edge.to,
       animated: isHighlightedEdge,
-      label:
-        edge.confidence !== undefined && edge.confidence < 1
-          ? `${Math.round(edge.confidence * 100)}%`
-          : undefined,
+      label: isAdded
+        ? "added"
+        : isRemoved
+          ? "removed"
+          : isBoundary
+            ? "boundary"
+            : edge.confidence !== undefined && edge.confidence < 1
+              ? `${Math.round(edge.confidence * 100)}%`
+              : undefined,
       labelStyle: { fill: "#94a3b8", fontSize: 9 },
       type: "smoothstep",
       markerEnd: {
@@ -180,6 +261,7 @@ function getLayoutedElements(
         stroke: strokeColor,
         strokeWidth,
         opacity: isHighlightedEdge ? 1 : selectedId ? 0.25 : 0.75,
+        strokeDasharray: isRemoved || isBoundary ? "6 4" : undefined,
       },
     };
   });
@@ -198,8 +280,25 @@ export default function GraphView({
   layoutDirection = "TB",
   onToggleLayout,
   graphKind = "file",
+  onSelectEdge,
+  filters,
 }: GraphViewProps) {
   const [showLegend, setShowLegend] = useState(true);
+  const [showAll, setShowAll] = useState(false);
+  const projectNodeMatchesKind = (
+    node: NonNullable<AnalysisResult["projectGraph"]>["nodes"][number]
+  ) =>
+    graphKind === "package"
+      ? node.role === "package" || node.role === "library" || node.projectType === "package"
+      : graphKind === "service"
+        ? node.role === "service" || node.role === "application" || node.projectType === "service"
+        : true;
+  const sourceCount =
+    graphKind !== "file"
+      ? (analysisData.projectGraph?.nodes.filter(projectNodeMatchesKind).length ?? 0)
+      : analysisData.nodes.length;
+  const graphLimit = graphKind === "file" ? 400 : 800;
+  const isAggregated = sourceCount > graphLimit && !showAll;
 
   const { nodes, edges } = useMemo(() => {
     return getLayoutedElements(
@@ -207,9 +306,20 @@ export default function GraphView({
       selectedId,
       highlightedIds,
       layoutDirection,
-      graphKind
+      graphKind,
+      isAggregated ? graphLimit : Number.POSITIVE_INFINITY,
+      filters
     );
-  }, [analysisData, selectedId, highlightedIds, layoutDirection, graphKind]);
+  }, [
+    analysisData,
+    selectedId,
+    highlightedIds,
+    layoutDirection,
+    graphKind,
+    isAggregated,
+    graphLimit,
+    filters,
+  ]);
 
   return (
     <div className="relative h-full w-full bg-slate-950 overflow-hidden select-none">
@@ -219,10 +329,17 @@ export default function GraphView({
         nodeTypes={nodeTypes}
         onNodeClick={(_, node) => onSelect(node.id)}
         onPaneClick={() => onSelect(null)}
+        onEdgeClick={(_, edge) => {
+          const source = analysisData.edges.find(
+            (item) => item.from === edge.source && item.to === edge.target
+          );
+          onSelectEdge?.(source ?? null);
+        }}
         fitView
         fitViewOptions={{ padding: 0.2 }}
         minZoom={0.2}
         maxZoom={2.5}
+        aria-label={`${graphKind === "file" ? "File" : graphKind === "package" ? "Package" : graphKind === "service" ? "Service" : "Project"} dependency graph`}
       >
         <Background color="#334155" gap={24} size={1.5} />
         <Controls className="!bg-slate-900/80 !border-slate-800 backdrop-blur-md" />
@@ -239,6 +356,28 @@ export default function GraphView({
           style={{ height: 110, width: 160 }}
         />
       </ReactFlow>
+
+      {isAggregated && (
+        <section
+          className="absolute top-4 left-4 z-10 max-w-md rounded-xl border border-amber-500/40 bg-slate-950/95 p-3 text-xs text-slate-200 shadow-xl"
+          aria-live="polite"
+        >
+          <strong className="block text-amber-300">
+            Large graph: showing {graphLimit} highest-connected nodes
+          </strong>
+          <p className="mt-1 text-slate-400">
+            Filter or select a project before expanding all {sourceCount.toLocaleString()} nodes.
+            This avoids expensive browser layouts.
+          </p>
+          <button
+            type="button"
+            onClick={() => setShowAll(true)}
+            className="mt-2 rounded-md border border-amber-400/50 px-2 py-1 font-medium text-amber-200 hover:bg-amber-500/15"
+          >
+            Render all nodes
+          </button>
+        </section>
+      )}
 
       {/* Floating Toolbar Controls */}
       <div className="absolute top-4 right-4 flex items-center gap-2 z-10 bg-slate-900/80 backdrop-blur-md border border-slate-800 p-1.5 rounded-xl shadow-2xl">

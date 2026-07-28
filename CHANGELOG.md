@@ -5,6 +5,32 @@ All notable changes to Cascade will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.2.0] - 2026-07-28
+
+### Added
+
+- Official composite GitHub Action with safe pull-request ref resolution, configurable policy gates, dependency caching, job summaries, and JSON, Markdown, HTML, and SARIF artifacts.
+- Example pull-request and tagged-release workflows, minimum-permission and fork-safety guidance, and CLI examples for GitLab CI, Jenkins, Azure Pipelines, CircleCI, and Bitbucket Pipelines.
+- CLI setup and platform commands: `init`, `config validate`, `doctor`, `cache`, and shell completion, plus command suggestions, grouped help, debug/color controls, and documented exit codes.
+- Professional dashboard workspace views for repositories, projects, files, packages, services, cycles, unreachable code, change impact, pull requests, affected tests, architecture violations, unresolved dependencies, languages, hotspots, dependency matrices, and snapshots.
+- Dashboard command palette, URL-persisted views and filters, light/dark modes, direct and transitive path tracing, edge evidence, architecture-boundary and graph-diff overlays, and JSON/HTML/SVG/PNG/PDF export paths.
+- Dashboard component, accessibility-contract, schema, interaction, graph-algorithm, and 50,000-node performance tests.
+
+### Changed
+
+- Dashboard graph rendering now starts from meaningful bounded groups instead of laying out every file: 400 file nodes, 800 project/package/service nodes, and 200 matrix nodes by default.
+- Cascade configuration can be selected through a validated action path, with selected-project overrides propagated consistently.
+- CLI package metadata now declares its binary, entry point, types, exports, and deterministic published file set.
+
+### Security
+
+- GitHub Action inputs use environment transfer and Node argument arrays instead of interpolated shell commands; repository-relative paths are validated before use.
+- The dashboard renders repository data as React text, avoids unsafe HTML injection, never executes analyzed source, and documents separate local and hosted deployment requirements.
+
+### Performance
+
+- Selecting 400 visible nodes from a synthetic 50,000-node/100,000-edge graph measured 114.27 ms and 16.27 MiB heap locally; 100,000 nodes/200,000 edges measured 230.76 ms and 27.87 MiB.
+
 ## [3.1.1] - 2026-07-28
 
 ### Added
@@ -163,6 +189,7 @@ Released at `2026-07-28T09:54:18+06:00`.
 - JavaScript and TypeScript file scanning, dependency graph construction, cycle detection, dead-file analysis, and impact simulation.
 - CLI commands for analysis, graph inspection, impact reports, dead-code reports, and the dashboard server.
 
+[3.2.0]: https://github.com/AbdulGani07/cascade/releases/tag/v3.2.0
 [3.1.1]: https://github.com/AbdulGani07/cascade/releases/tag/v3.1.1
 [3.1.0]: https://github.com/AbdulGani07/cascade/releases/tag/v3.1.0
 [3.0.0]: https://github.com/AbdulGani07/cascade/releases/tag/v3.0.0

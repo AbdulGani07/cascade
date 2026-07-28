@@ -11,6 +11,7 @@ import {
   X,
 } from "lucide-react";
 import type { AnalysisResult } from "../lib/api";
+import { shortestDependencyPath } from "../lib/graphModel";
 
 interface ImpactReport {
   directlyAffected: string[];
@@ -24,6 +25,7 @@ interface ImpactPanelProps {
   analysisData?: AnalysisResult;
   onSelectNode?: (id: string) => void;
   onCloseMobile?: () => void;
+  selectedEdge?: AnalysisResult["edges"][number] | null;
 }
 
 /**
@@ -35,10 +37,12 @@ export default function ImpactPanel({
   analysisData,
   onSelectNode,
   onCloseMobile,
+  selectedEdge,
 }: ImpactPanelProps) {
   const [activeTab, setActiveTab] = useState<"blast" | "imports" | "dependents">("blast");
+  const [traceTarget, setTraceTarget] = useState<string | null>(null);
 
-  if (!selectedId) {
+  if (!selectedId && !selectedEdge) {
     return (
       <aside className="flex h-full w-80 flex-col items-center justify-center p-6 text-center text-slate-400 bg-slate-950/95 backdrop-blur-xl select-none flex-shrink-0 relative">
         {onCloseMobile && (
@@ -61,20 +65,87 @@ export default function ImpactPanel({
     );
   }
 
-  const report = impact?.[selectedId];
-  const filename = selectedId.split("/").pop() ?? selectedId;
+  if (selectedEdge) {
+    return (
+      <aside
+        className="flex h-full w-80 shrink-0 flex-col overflow-auto border-l border-slate-800 bg-slate-950/95 p-4 text-slate-200"
+        aria-label="Dependency explanation"
+      >
+        <div className="flex items-center justify-between">
+          <h2 className="font-semibold">Why these nodes connect</h2>
+          {onCloseMobile && (
+            <button type="button" onClick={onCloseMobile} aria-label="Close explanation panel">
+              <X className="h-4 w-4" />
+            </button>
+          )}
+        </div>
+        <dl className="mt-4 space-y-3 text-xs">
+          <div>
+            <dt className="text-slate-500">From</dt>
+            <dd className="break-all font-mono">{selectedEdge.from}</dd>
+          </div>
+          <div>
+            <dt className="text-slate-500">To</dt>
+            <dd className="break-all font-mono">{selectedEdge.to}</dd>
+          </div>
+          <div>
+            <dt className="text-slate-500">Relationship</dt>
+            <dd>{selectedEdge.dependencyCategory ?? selectedEdge.kind}</dd>
+          </div>
+          <div>
+            <dt className="text-slate-500">Resolution</dt>
+            <dd>{selectedEdge.resolutionStatus ?? "resolved"}</dd>
+          </div>
+          <div>
+            <dt className="text-slate-500">Confidence</dt>
+            <dd>
+              {selectedEdge.confidence == null
+                ? "not supplied"
+                : `${Math.round(selectedEdge.confidence * 100)}%`}
+            </dd>
+          </div>
+        </dl>
+        <h3 className="mt-5 text-xs font-semibold uppercase tracking-wide text-slate-400">
+          Evidence
+        </h3>
+        {selectedEdge.evidence?.length ? (
+          <ul className="mt-2 list-disc space-y-2 pl-4 text-xs">
+            {selectedEdge.evidence.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
+          </ul>
+        ) : (
+          <p className="mt-2 text-xs text-slate-500">
+            No source evidence was supplied for this edge.
+          </p>
+        )}
+      </aside>
+    );
+  }
+
+  const activeId = selectedId as string;
+  const report = impact?.[activeId];
+  const filename = activeId.split("/").pop() ?? activeId;
 
   // Calculate imports (outgoing edges) and dependents (incoming edges)
   const imports =
-    analysisData?.edges.filter((edge) => edge.from === selectedId).map((edge) => edge.to) ?? [];
+    analysisData?.edges.filter((edge) => edge.from === activeId).map((edge) => edge.to) ?? [];
 
   const dependents =
-    analysisData?.edges.filter((edge) => edge.to === selectedId).map((edge) => edge.from) ?? [];
+    analysisData?.edges.filter((edge) => edge.to === activeId).map((edge) => edge.from) ?? [];
 
   const totalProjectNodes = analysisData?.nodes.length ?? 1;
   const blastPercentage = Math.round(
     ((report?.allAffected.length ?? 0) / Math.max(1, totalProjectNodes - 1)) * 100
   );
+  const forwardTrace =
+    traceTarget && analysisData
+      ? shortestDependencyPath(analysisData.edges, activeId, traceTarget)
+      : [];
+  const tracePath =
+    forwardTrace.length || !traceTarget || !analysisData
+      ? forwardTrace
+      : shortestDependencyPath(analysisData.edges, traceTarget, activeId);
 
   return (
     <aside className="flex h-full w-80 flex-col border-l border-slate-800 bg-slate-950/95 backdrop-blur-xl p-4 text-slate-200 select-none flex-shrink-0">
@@ -105,10 +176,10 @@ export default function ImpactPanel({
             )}
           </div>
         </div>
-        <h3 className="font-mono font-bold text-sm text-slate-100 truncate" title={selectedId}>
+        <h3 className="font-mono font-bold text-sm text-slate-100 truncate" title={activeId}>
           {filename}
         </h3>
-        <p className="text-[10px] text-slate-500 font-mono truncate">{selectedId}</p>
+        <p className="text-[10px] text-slate-500 font-mono truncate">{activeId}</p>
       </div>
 
       {/* Tabs */}
@@ -150,6 +221,25 @@ export default function ImpactPanel({
 
       {/* Tab Contents */}
       <div className="flex-1 overflow-y-auto space-y-4 pr-1">
+        {traceTarget && (
+          <section
+            className="rounded-lg border border-cyan-500/30 bg-cyan-950/20 p-2 text-xs"
+            aria-live="polite"
+          >
+            <h4 className="font-semibold text-cyan-300">Dependency path</h4>
+            {tracePath.length ? (
+              <ol className="mt-1 space-y-1 font-mono text-[10px]">
+                {tracePath.map((item, index) => (
+                  <li key={item}>
+                    {index + 1}. {item}
+                  </li>
+                ))}
+              </ol>
+            ) : (
+              <p className="mt-1 text-slate-400">No directed path was found.</p>
+            )}
+          </section>
+        )}
         {activeTab === "blast" && (
           <>
             {/* Safe / Unsafe Status Card */}
@@ -214,7 +304,7 @@ export default function ImpactPanel({
                     <button
                       key={file}
                       type="button"
-                      onClick={() => onSelectNode?.(file)}
+                      onClick={() => setTraceTarget(file)}
                       className="w-full text-left p-2 rounded-lg bg-slate-900 border border-slate-800 hover:border-cyan-500/50 text-xs text-slate-300 font-mono flex items-center justify-between group transition-colors"
                     >
                       <span className="truncate group-hover:text-cyan-300">{file}</span>
@@ -239,7 +329,7 @@ export default function ImpactPanel({
                     <button
                       key={file}
                       type="button"
-                      onClick={() => onSelectNode?.(file)}
+                      onClick={() => setTraceTarget(file)}
                       className="w-full text-left p-2 rounded-lg bg-slate-900/50 border border-slate-800/80 hover:border-cyan-500/50 text-xs text-slate-400 font-mono flex items-center justify-between group transition-colors"
                     >
                       <span className="truncate group-hover:text-cyan-300">{file}</span>

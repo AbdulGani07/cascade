@@ -213,9 +213,17 @@ export const defaultConfig: CascadeConfig = {
 };
 
 export function loadCascadeConfig(projectRoot: string): CascadeConfig {
-  const configPath = path.join(projectRoot, "cascade.config.json");
+  const configPath = process.env.CASCADE_CONFIG_PATH
+    ? path.resolve(process.env.CASCADE_CONFIG_PATH)
+    : path.join(projectRoot, "cascade.config.json");
+  const selectedProjectsOverride = process.env.CASCADE_SELECTED_PROJECTS?.split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
   if (!fs.existsSync(configPath)) {
-    return { ...defaultConfig };
+    return {
+      ...defaultConfig,
+      selectedProjects: selectedProjectsOverride || defaultConfig.selectedProjects,
+    };
   }
 
   try {
@@ -255,9 +263,11 @@ export function loadCascadeConfig(projectRoot: string): CascadeConfig {
         ? parsed.pythonSourceRoots
         : defaultConfig.pythonSourceRoots,
       analyzeNotebooks: parsed.analyzeNotebooks === true,
-      selectedProjects: Array.isArray(parsed.selectedProjects)
-        ? parsed.selectedProjects.filter((item): item is string => typeof item === "string")
-        : defaultConfig.selectedProjects,
+      selectedProjects:
+        selectedProjectsOverride ||
+        (Array.isArray(parsed.selectedProjects)
+          ? parsed.selectedProjects.filter((item): item is string => typeof item === "string")
+          : defaultConfig.selectedProjects),
       projectOverrides:
         parsed.projectOverrides && typeof parsed.projectOverrides === "object"
           ? parsed.projectOverrides

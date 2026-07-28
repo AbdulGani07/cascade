@@ -1,0 +1,24 @@
+name: Cascade PR impact
+on: [pull_request]
+permissions:
+  contents: read
+  security-events: write
+jobs:
+  cascade:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with: { fetch-depth: 0 }
+      - id: cascade
+        uses: ./
+        with:
+          base: ${{ github.event.pull_request.base.sha }}
+          head: ${{ github.event.pull_request.head.sha }}
+          fail-on-severity: error
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always()
+        with: { name: cascade-${{ github.sha }}, path: .cascade-artifacts, if-no-files-found: error }
+      - uses: github/codeql-action/upload-sarif@3b0bd1d116c0bde30213346b22d4f634d96a2fb0 # v3
+        if: always()
+        with: { sarif_file: .cascade-artifacts/cascade.sarif }

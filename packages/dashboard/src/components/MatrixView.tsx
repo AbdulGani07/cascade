@@ -13,7 +13,8 @@ interface MatrixViewProps {
 export default function MatrixView({ analysisData, onSelectNode }: MatrixViewProps) {
   const [hoveredCell, setHoveredCell] = useState<{ from: string; to: string } | null>(null);
 
-  const nodes = analysisData.nodes.map((n) => n.id);
+  const matrixLimit = 200;
+  const nodes = analysisData.nodes.slice(0, matrixLimit).map((n) => n.id);
   const edgeSet = new Set(analysisData.edges.map((e) => `${e.from}->${e.to}`));
 
   return (
@@ -35,6 +36,12 @@ export default function MatrixView({ analysisData, onSelectNode }: MatrixViewPro
           </div>
         )}
       </div>
+      {analysisData.nodes.length > matrixLimit && (
+        <p className="mb-3 rounded-lg border border-amber-500/40 bg-amber-950/30 p-2 text-xs text-amber-200">
+          Matrix is limited to the first {matrixLimit} deterministic nodes. Filter through the
+          explorer before using a dense matrix for very large repositories.
+        </p>
+      )}
 
       <div className="flex-1 border border-slate-800 bg-slate-900/60 rounded-2xl p-4 overflow-auto">
         <table className="border-collapse text-xs font-mono">

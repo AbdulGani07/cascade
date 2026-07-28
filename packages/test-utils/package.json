@@ -1,6 +1,6 @@
 {
   "name": "@cascade/test-utils",
-  "version": "3.1.1",
+  "version": "3.2.0",
   "description": "Test utilities and capability assertion helpers for Cascade plugins",
   "type": "module",
   "engines": {

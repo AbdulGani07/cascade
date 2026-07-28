@@ -78,6 +78,25 @@ export type AnalysisResult = {
     string,
     { directlyAffected: string[]; allAffected: string[]; affectedFiles: string[] }
   >;
+  governance?: {
+    violations: {
+      id: string;
+      ruleId: string;
+      severity: "info" | "warning" | "error";
+      from: string;
+      to: string;
+      dependencyPath: string[];
+      message: string;
+      remediationUrl?: string;
+      baseline: boolean;
+      suppressed: boolean;
+      evidence: string[];
+    }[];
+    diagnostics: { code: string; message: string }[];
+    unusedRules: string[];
+    contradictoryRules: string[];
+    boundaries: { from: string; to: string; ruleId: string }[];
+  };
   pluginManifests?: {
     id: string;
     name: string;
@@ -90,11 +109,38 @@ export type AnalysisResult = {
   gitImpact?: {
     base: string;
     head: string;
-    changedFiles: { path: string; kind: string }[];
-    affected: { id: string; category: string; confidence: string }[];
-    affectedTests: { id: string; confidence: string }[];
+    changedFiles: {
+      path: string;
+      kind: string;
+      previousPath?: string;
+      changedLines?: { start: number; end: number }[];
+    }[];
+    affected: {
+      id: string;
+      category: string;
+      confidence: string;
+      evidence?: { detail: string; source?: string; confidence: string }[];
+    }[];
+    affectedTests: {
+      id: string;
+      confidence: string;
+      category?: string;
+      evidence?: { detail: string; source?: string; confidence: string }[];
+    }[];
     introducedCycles: string[][];
-    risk: { score: number; level: string; disclaimer: string };
+    removedCycles?: string[][];
+    introducedArchitectureViolations?: { rule: string; edge: string }[];
+    introducedUnresolvedDependencies?: { from: string; to: string }[];
+    graphDiff?: {
+      addedEdges: { from: string; to: string }[];
+      removedEdges: { from: string; to: string }[];
+    };
+    risk: {
+      score: number;
+      level: string;
+      disclaimer: string;
+      contributions?: { factor: string; contribution: number; evidence: string[] }[];
+    };
   };
 };
 

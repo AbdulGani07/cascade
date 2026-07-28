@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AlertCircle, Network } from "lucide-react";
 
 import { useGraphData } from "./hooks/useGraphData";
@@ -10,6 +10,13 @@ import CyclesView from "./components/CyclesView";
 import DeadCodeView from "./components/DeadCodeView";
 import ImpactPanel from "./components/ImpactPanel";
 import ExportModal from "./components/ExportModal";
+import Overview from "./components/Overview";
+import WorkspaceView from "./components/WorkspaceView";
+import CommandPalette from "./components/CommandPalette";
+import { isViewId, type ViewId } from "./lib/views";
+import type { AnalysisResult } from "./lib/api";
+import FilterBar from "./components/FilterBar";
+import { emptyFilters, type WorkspaceFilters } from "./lib/filters";
 
 /**
  * Top-level layout component for the Cascade dependency analysis dashboard.
@@ -17,9 +24,11 @@ import ExportModal from "./components/ExportModal";
 export default function App() {
   const { data, isLoading, error } = useGraphData();
 
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<"graph" | "projects" | "matrix" | "cycles" | "deadcode">(
-    "graph"
+  const initialParams = new URLSearchParams(window.location.search);
+  const [selectedId, setSelectedId] = useState<string | null>(initialParams.get("node"));
+  const initialView = new URLSearchParams(window.location.search).get("view");
+  const [viewMode, setViewMode] = useState<ViewId>(
+    isViewId(initialView) ? initialView : "overview"
   );
   const [layoutDirection, setLayoutDirection] = useState<"TB" | "LR">("TB");
   const [isExportOpen, setIsExportOpen] = useState(false);
@@ -28,6 +37,41 @@ export default function App() {
   // Mobile drawer states
   const [isMobileLeftOpen, setIsMobileLeftOpen] = useState(false);
   const [isMobileRightOpen, setIsMobileRightOpen] = useState(false);
+  const [isPaletteOpen, setIsPaletteOpen] = useState(false);
+  const [selectedEdge, setSelectedEdge] = useState<AnalysisResult["edges"][number] | null>(null);
+  const [theme, setTheme] = useState<"dark" | "light">(() =>
+    window.localStorage.getItem("cascade-theme") === "light" ? "light" : "dark"
+  );
+  const [filters, setFilters] = useState<WorkspaceFilters>(() => ({
+    ...emptyFilters,
+    ...Object.fromEntries(
+      Object.keys(emptyFilters).map((key) => [key, initialParams.get(key) ?? "all"])
+    ),
+  }));
+  useEffect(() => {
+    const handler = (event: KeyboardEvent) => {
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
+        event.preventDefault();
+        setIsPaletteOpen(true);
+      }
+      if (event.key === "Escape") setIsPaletteOpen(false);
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, []);
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    window.localStorage.setItem("cascade-theme", theme);
+  }, [theme]);
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    params.set("view", viewMode);
+    if (selectedId) params.set("node", selectedId);
+    else params.delete("node");
+    for (const [key, value] of Object.entries(filters))
+      value === "all" ? params.delete(key) : params.set(key, value);
+    window.history.replaceState(null, "", `${window.location.pathname}?${params}`);
+  }, [viewMode, selectedId, filters]);
 
   const handleRefresh = () => {
     setIsRefreshing(true);
@@ -37,6 +81,7 @@ export default function App() {
   };
 
   const handleSelectNode = (id: string | null) => {
+    setSelectedEdge(null);
     setSelectedId(id);
     if (id && !["graph", "projects"].includes(viewMode)) {
       setViewMode("graph");
@@ -117,6 +162,15 @@ export default function App() {
         onToggleRightImpact={() => setIsMobileRightOpen((prev) => !prev)}
         isLeftSidebarOpen={isMobileLeftOpen}
         isRightImpactOpen={isMobileRightOpen}
+        onOpenPalette={() => setIsPaletteOpen(true)}
+        theme={theme}
+        onToggleTheme={() => setTheme((current) => (current === "dark" ? "light" : "dark"))}
+      />
+      <FilterBar
+        data={data}
+        filters={filters}
+        onChange={(key, value) => setFilters((current) => ({ ...current, [key]: value }))}
+        onReset={() => setFilters(emptyFilters)}
       />
 
       <div className="flex flex-1 overflow-hidden relative">
@@ -153,8 +207,11 @@ export default function App() {
               onSelect={handleSelectNode}
               layoutDirection={layoutDirection}
               onToggleLayout={() => setLayoutDirection((prev) => (prev === "TB" ? "LR" : "TB"))}
+              onSelectEdge={setSelectedEdge}
+              filters={filters}
             />
           )}
+          {viewMode === "overview" && <Overview data={data} onOpen={setViewMode} />}
           {viewMode === "projects" && (
             <GraphView
               analysisData={data}
@@ -164,6 +221,19 @@ export default function App() {
               layoutDirection={layoutDirection}
               onToggleLayout={() => setLayoutDirection((prev) => (prev === "TB" ? "LR" : "TB"))}
               graphKind="project"
+              filters={filters}
+            />
+          )}
+          {(viewMode === "packages" || viewMode === "services") && (
+            <GraphView
+              analysisData={data}
+              selectedId={selectedId}
+              highlightedIds={highlightedIds}
+              onSelect={handleSelectNode}
+              layoutDirection={layoutDirection}
+              onToggleLayout={() => setLayoutDirection((prev) => (prev === "TB" ? "LR" : "TB"))}
+              graphKind={viewMode === "packages" ? "package" : "service"}
+              filters={filters}
             />
           )}
 
@@ -178,6 +248,37 @@ export default function App() {
           {viewMode === "deadcode" && (
             <DeadCodeView analysisData={data} onSelectNode={handleSelectNode} />
           )}
+          {!(
+            [
+              "overview",
+              "graph",
+              "projects",
+              "packages",
+              "services",
+              "matrix",
+              "cycles",
+              "deadcode",
+            ] as ViewId[]
+          ).includes(viewMode) && (
+            <WorkspaceView
+              view={
+                viewMode as Exclude<
+                  ViewId,
+                  | "overview"
+                  | "graph"
+                  | "projects"
+                  | "packages"
+                  | "services"
+                  | "matrix"
+                  | "cycles"
+                  | "deadcode"
+                >
+              }
+              data={data}
+              onSelect={handleSelectNode}
+              filters={filters}
+            />
+          )}
         </main>
 
         {/* Desktop Right Impact Inspector Side Panel */}
@@ -186,6 +287,7 @@ export default function App() {
             selectedId={selectedId}
             impact={data.impact}
             analysisData={data}
+            selectedEdge={selectedEdge}
             onSelectNode={handleSelectNode}
           />
         </div>
@@ -202,6 +304,7 @@ export default function App() {
                 selectedId={selectedId}
                 impact={data.impact}
                 analysisData={data}
+                selectedEdge={selectedEdge}
                 onSelectNode={handleSelectNode}
                 onCloseMobile={() => setIsMobileRightOpen(false)}
               />
@@ -212,6 +315,16 @@ export default function App() {
 
       {/* Export Report Modal */}
       {isExportOpen && <ExportModal analysisData={data} onClose={() => setIsExportOpen(false)} />}
+      <CommandPalette
+        data={data}
+        open={isPaletteOpen}
+        onClose={() => setIsPaletteOpen(false)}
+        onView={setViewMode}
+        onNode={(id) => {
+          setSelectedId(id);
+          setViewMode("graph");
+        }}
+      />
     </div>
   );
 }

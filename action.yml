@@ -1,0 +1,58 @@
+name: Cascade
+description: Evidence-based pull-request impact and architecture-governance analysis.
+author: Cascade Contributors
+branding:
+  icon: git-pull-request
+  color: purple
+inputs:
+  path: { description: Repository-relative path to analyze., default: "." }
+  base: { description: Base Git ref. Defaults to the pull-request base SHA., required: false }
+  head: { description: Head Git ref. Defaults to the pull-request head SHA or HEAD., required: false }
+  config: { description: Repository-relative Cascade configuration file., default: "cascade.config.json" }
+  selected-projects: { description: Comma-separated selected project IDs., required: false }
+  fail-on-severity: { description: info, warning, error, or none., default: "error" }
+  fail-on-new-cycles: { description: Fail when Git comparison introduces cycles., default: "false" }
+  fail-on-architecture-violations: { description: Fail on new unbaselined, unsuppressed governance findings., default: "true" }
+  fail-on-unresolved-internal: { description: Fail on introduced unresolved dependencies., default: "false" }
+  max-graph-size: { description: Maximum scanned nodes before policy failure (0 disables)., default: "0" }
+  timeout-seconds: { description: Analysis timeout from 1 to 3600 seconds., default: "900" }
+  output-directory: { description: Repository-relative artifact directory., default: ".cascade-artifacts" }
+  cache: { description: Restore and save the action's dependency cache., default: "true" }
+outputs:
+  conclusion: { description: pass or fail according to the configured policy. }
+  risk-level: { description: Evidence-based risk level. }
+  risk-score: { description: Evidence-based risk score. }
+  markdown-summary-path: { description: Generated Markdown report path. }
+  json-path: { description: Generated JSON report path. }
+  sarif-path: { description: Generated SARIF report path. }
+  html-path: { description: Generated HTML report path. }
+runs:
+  using: composite
+  steps:
+    - name: Restore Cascade dependency cache
+      if: ${{ inputs.cache == 'true' }}
+      uses: actions/cache@0c45773b623bea8c8e75f6e9e5c444312a4a2c3a
+      with:
+        path: ${{ github.action_path }}/node_modules
+        key: cascade-action-${{ runner.os }}-${{ hashFiles(format('{0}/pnpm-lock.yaml', github.action_path)) }}
+    - name: Build Cascade action
+      shell: bash
+      working-directory: ${{ github.action_path }}
+      run: corepack pnpm install --frozen-lockfile --ignore-scripts && corepack pnpm run build
+    - name: Run Cascade analysis
+      shell: bash
+      env:
+        CASCADE_ACTION_PATH: ${{ github.action_path }}
+        CASCADE_INPUT_PATH: ${{ inputs.path }}
+        CASCADE_INPUT_BASE: ${{ inputs.base }}
+        CASCADE_INPUT_HEAD: ${{ inputs.head }}
+        CASCADE_INPUT_CONFIG: ${{ inputs.config }}
+        CASCADE_INPUT_SELECTED_PROJECTS: ${{ inputs.selected-projects }}
+        CASCADE_INPUT_FAIL_ON_SEVERITY: ${{ inputs.fail-on-severity }}
+        CASCADE_INPUT_FAIL_ON_NEW_CYCLES: ${{ inputs.fail-on-new-cycles }}
+        CASCADE_INPUT_FAIL_ON_ARCHITECTURE_VIOLATIONS: ${{ inputs.fail-on-architecture-violations }}
+        CASCADE_INPUT_FAIL_ON_UNRESOLVED_INTERNAL: ${{ inputs.fail-on-unresolved-internal }}
+        CASCADE_INPUT_MAX_GRAPH_SIZE: ${{ inputs.max-graph-size }}
+        CASCADE_INPUT_TIMEOUT_SECONDS: ${{ inputs.timeout-seconds }}
+        CASCADE_INPUT_OUTPUT_DIRECTORY: ${{ inputs.output-directory }}
+      run: node "$CASCADE_ACTION_PATH/scripts/run-action.mjs"

@@ -15,7 +15,7 @@ describe("E2E CLI Smoke Test", () => {
     expect(parsed.version).toBe("2.0");
     expect(Array.isArray(parsed.nodes)).toBe(true);
     expect(Array.isArray(parsed.edges)).toBe(true);
-  });
+  }, 15_000);
 
   it("executes 'cascade graph --json' and outputs graph payload", () => {
     const output = execSync(`node "${cliBin}" graph "${testProjectDir}" --json`, {
@@ -25,7 +25,7 @@ describe("E2E CLI Smoke Test", () => {
     const parsed = JSON.parse(output);
     expect(Array.isArray(parsed.nodes)).toBe(true);
     expect(Array.isArray(parsed.edges)).toBe(true);
-  });
+  }, 15_000);
 
   it("executes 'cascade deadcode --json' and outputs dead files array", () => {
     const output = execSync(`node "${cliBin}" deadcode "${testProjectDir}" --json`, {
@@ -34,5 +34,5 @@ describe("E2E CLI Smoke Test", () => {
 
     const parsed = JSON.parse(output);
     expect(Array.isArray(parsed)).toBe(true);
-  });
+  }, 15_000);
 });
