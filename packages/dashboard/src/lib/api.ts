@@ -15,6 +15,10 @@ export type AnalysisResult = {
     from: string;
     to: string;
     kind: string;
+    resolutionStatus?: string;
+    dependencyCategory?: string;
+    confidence?: number;
+    evidence?: string[];
   }[];
   cycles: string[][];
   deadFiles: string[];

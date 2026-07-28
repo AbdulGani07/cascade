@@ -5,6 +5,24 @@ All notable changes to Cascade will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] - 2026-07-28
+
+Released at `2026-07-28T10:51:41+06:00`.
+
+### Added
+
+- First-party `@cascade/language-python` plugin for `.py` and `.pyi`, including absolute, relative, conditional, local, `TYPE_CHECKING`, literal `importlib.import_module`, and literal `__import__` dependencies.
+- Python module resolution for packages, namespace packages, `src` layouts, internal modules, standard-library modules, declared third-party packages, ambiguous modules, and unresolved imports.
+- Python entry-point and project detection for `__main__.py`, main guards, Django, Flask, FastAPI, ASGI/WSGI, and common packaging metadata.
+- Python dependency categories, confidence, evidence, parser diagnostics, CLI language/unresolved summaries, and dashboard language filtering.
+- Python unit and integration regression coverage.
+
+### Changed
+
+- Virtual environments, Python caches, and generated environments are excluded by default.
+- Dead-code findings are suppressed when non-literal Python dynamic loading makes reachability unsafe.
+- Non-Node language plugins now use their own resolver without changing JavaScript or TypeScript resolution.
+
 ## [2.0.0] - 2026-07-28
 
 Released at `2026-07-28T09:54:18+06:00`.

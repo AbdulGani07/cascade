@@ -42,6 +42,16 @@ export function registerAnalyzeCommand(program: Command): void {
               ["Detected Entry Points", String(result.entryPoints.length)],
               ["Circular Import Loops", String(result.cycles.length)],
               ["Unreferenced Dead Files", String(result.deadFiles.length)],
+              [
+                "Unresolved Imports",
+                String(
+                  result.edges.filter((edge) => edge.resolutionStatus === "unresolved").length
+                ),
+              ],
+              [
+                "Languages",
+                [...new Set(result.nodes.map((node) => node.language))].sort().join(", "),
+              ],
             ]
           )
         );

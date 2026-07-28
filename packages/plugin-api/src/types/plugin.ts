@@ -60,6 +60,9 @@ export interface ExtractedDependency {
   isConditional: boolean;
   sourceLocation?: SourceLocation;
   rawText?: string;
+  importedNames?: string[];
+  confidence?: number;
+  evidence?: string[];
 }
 
 export interface ExtractionContext {
@@ -113,6 +116,8 @@ export interface ResolvedModuleResult {
   confidence: number;
   resolverId: string;
   diagnostics?: ParseDiagnostic[];
+  dependencyCategory?: "internal" | "standard-library" | "external" | "unresolved";
+  evidence?: string[];
 }
 
 export interface ModuleResolver {

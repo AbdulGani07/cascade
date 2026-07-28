@@ -20,6 +20,7 @@ export default defineConfig({
         __dirname,
         "packages/language-typescript/src/index.ts"
       ),
+      "@cascade/language-python": path.resolve(__dirname, "packages/language-python/src/index.ts"),
       "@cascade/test-utils": path.resolve(__dirname, "packages/test-utils/src/index.ts"),
       "@cascade/core": path.resolve(__dirname, "packages/core/src/index.ts"),
     },

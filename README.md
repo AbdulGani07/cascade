@@ -51,6 +51,7 @@ pnpm check
 - `@cascade/core` — PluginRegistry engine, graph algorithms, entry point detection, impact simulation, and JSON exporter
 - `@cascade/language-javascript` — Language plugin for JavaScript/JSX parsing and dependency extraction
 - `@cascade/language-typescript` — Language plugin for TypeScript/TSX parsing, type-only imports, and symbol extraction
+- `@cascade/language-python` — Python/Python-stub dependency extraction, package resolution, framework detection, and diagnostics
 - `@cascade/reporters` — Diagnostic reporters including Markdown summary (`MarkdownReporter`) and SARIF 2.1.0 (`SarifReporter`)
 - `@cascade/cli` — Command-line interface and terminal user interface
 - `@cascade/dashboard` — Interactive React Flow graph visualizer
@@ -64,3 +65,4 @@ pnpm check
 - [Code of Conduct](CODE_OF_CONDUCT.md)
 - [Architecture audit and roadmap](CASCADE_AUDIT_AND_ROADMAP.md)
 - [JavaScript/TypeScript support matrices](docs/LANGUAGE_SUPPORT.md)
+- [Python support and capability matrix](docs/PYTHON_SUPPORT.md)

@@ -10,6 +10,7 @@ import { AnalysisResult, ImpactReport, LanguagePlugin } from "@cascade/plugin-ap
 import { loadCascadeConfig, CascadeConfig } from "@cascade/config";
 import { createJavaScriptPlugin } from "@cascade/language-javascript";
 import { createTypeScriptPlugin } from "@cascade/language-typescript";
+import { createPythonPlugin } from "@cascade/language-python";
 import { PluginRegistry } from "./plugins/pluginRegistry.js";
 import { scanFiles } from "./parser/fileScanner.js";
 import { detectEntryPointEvidence } from "./analysis/entryPointDetector.js";
@@ -35,6 +36,7 @@ export function analyze(projectRoot: string, options?: AnalyzeOptions): Analysis
   // 1. Register first-party plugins
   registry.registerPlugin(createTypeScriptPlugin(), { priority: 100 });
   registry.registerPlugin(createJavaScriptPlugin(), { priority: 50 });
+  registry.registerPlugin(createPythonPlugin(), { priority: 80 });
 
   // 2. Register custom user plugins if provided
   if (options?.customPlugins) {
@@ -64,7 +66,7 @@ export function analyze(projectRoot: string, options?: AnalyzeOptions): Analysis
 
   // 7. Graph analysis algorithms
   const cycles = detectCycles(graph);
-  const deadCodeFindings = findDeadCode(graph, entryPointEvidence, diagnostics.length);
+  const deadCodeFindings = findDeadCode(graph, entryPointEvidence, diagnostics);
   const deadFiles = deadCodeFindings.map((finding) => finding.file);
 
   // 8. Build impact report map

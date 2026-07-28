@@ -144,6 +144,8 @@ export interface DependencyEdge {
   resolverProvenance: ResolverProvenance;
   /** Resolution confidence (0.0 to 1.0) */
   confidence: number;
+  dependencyCategory?: "internal" | "standard-library" | "external" | "unresolved";
+  evidence?: string[];
 }
 
 /** Complete Graph data structure with query methods. */

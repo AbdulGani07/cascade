@@ -105,6 +105,9 @@ importers:
       '@cascade/language-typescript':
         specifier: workspace:*
         version: link:../language-typescript
+      '@cascade/language-python':
+        specifier: workspace:*
+        version: link:../language-python
       '@cascade/plugin-api':
         specifier: workspace:*
         version: link:../plugin-api
@@ -172,6 +175,12 @@ importers:
       tree-sitter-typescript:
         specifier: ^0.23.2
         version: 0.23.2(tree-sitter@0.22.4)
+
+  packages/language-python:
+    dependencies:
+      '@cascade/plugin-api':
+        specifier: workspace:*
+        version: link:../plugin-api
 
   packages/plugin-api: {}
 

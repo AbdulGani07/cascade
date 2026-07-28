@@ -14,7 +14,8 @@
     { "path": "../config" },
     { "path": "../reporters" },
     { "path": "../language-javascript" },
-    { "path": "../language-typescript" }
+    { "path": "../language-typescript" },
+    { "path": "../language-python" }
   ],
   "include": ["src/**/*"]
 }

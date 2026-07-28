@@ -22,6 +22,7 @@ export default function Sidebar({
 }: SidebarProps) {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<FilterType>("all");
+  const [language, setLanguage] = useState("all");
 
   const cycleFiles = new Set(analysisData.cycles.flat());
 
@@ -36,7 +37,8 @@ export default function Sidebar({
     const matchesSearch = node.id.toLowerCase().includes(search.toLowerCase());
     const status = getFileStatus(node.id);
     const matchesFilter = filter === "all" || status === filter;
-    return matchesSearch && matchesFilter;
+    const matchesLanguage = language === "all" || node.language === language;
+    return matchesSearch && matchesFilter && matchesLanguage;
   });
 
   const counts = {
@@ -82,6 +84,20 @@ export default function Sidebar({
           )}
         </div>
       </div>
+
+      <select
+        value={language}
+        onChange={(event) => setLanguage(event.target.value)}
+        aria-label="Filter by language"
+        className="mb-3 w-full rounded-xl border border-slate-800 bg-slate-900 px-3 py-2 text-xs text-slate-300"
+      >
+        <option value="all">All languages</option>
+        {[...new Set(analysisData.nodes.map((node) => node.language))].sort().map((name) => (
+          <option key={name} value={name}>
+            {name}
+          </option>
+        ))}
+      </select>
 
       {/* Search Bar */}
       <div className="relative mb-3">

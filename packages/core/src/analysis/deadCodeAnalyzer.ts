@@ -1,4 +1,4 @@
-import { DeadCodeFinding, EntryPointEvidence, Graph } from "@cascade/plugin-api";
+import { DeadCodeFinding, EntryPointEvidence, Graph, ParseDiagnostic } from "@cascade/plugin-api";
 import { reachableFrom } from "../graph/graphAlgorithms.js";
 
 /**
@@ -33,8 +33,12 @@ export function findDeadFiles(graph: Graph, entryPoints: string[]): string[] {
 export function findDeadCode(
   graph: Graph,
   entryPointEvidence: EntryPointEvidence[],
-  diagnosticsCount: number
+  diagnostics: ParseDiagnostic[] | number
 ): DeadCodeFinding[] {
+  const diagnosticList = Array.isArray(diagnostics) ? diagnostics : [];
+  const diagnosticsCount = Array.isArray(diagnostics) ? diagnostics.length : diagnostics;
+  if (diagnosticList.some((diagnostic) => diagnostic.code === "PY_DYNAMIC_IMPORT_UNRESOLVED"))
+    return [];
   const strongRoots = entryPointEvidence.filter((entry) => entry.confidence >= 0.8);
   if (strongRoots.length === 0) return [];
   const dead = findDeadFiles(

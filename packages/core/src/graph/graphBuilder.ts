@@ -100,12 +100,17 @@ export function buildGraph(
 
     // 4. Resolve each extracted dependency & construct graph edge
     for (const dep of extractResult.dependencies) {
-      const resolution = projectResolver.resolve(
-        dep.specifier,
-        node.absolutePath,
-        node.relativePath,
-        dep
-      );
+      const resolution =
+        plugin.id === "cascade-language-javascript" || plugin.id === "cascade-language-typescript"
+          ? projectResolver.resolve(dep.specifier, node.absolutePath, node.relativePath, dep)
+          : pluginRegistry.safeResolveModule(plugin, {
+              specifier: dep.specifier,
+              importerFilePath: node.absolutePath,
+              importerRelativePath: node.relativePath,
+              projectRoot,
+              extractedDependency: dep,
+              allKnownFiles: allKnownRelativeFiles,
+            });
 
       if (resolution.diagnostics) {
         diagnostics.push(...resolution.diagnostics);
@@ -163,6 +168,8 @@ export function buildGraph(
             pluginId: plugin.id,
           },
           confidence: resolution.confidence,
+          dependencyCategory: resolution.dependencyCategory,
+          evidence: [...(dep.evidence ?? []), ...(resolution.evidence ?? [])],
         };
 
         edges.push(edge);

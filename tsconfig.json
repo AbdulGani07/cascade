@@ -6,6 +6,7 @@
     { "path": "./packages/reporters" },
     { "path": "./packages/language-javascript" },
     { "path": "./packages/language-typescript" },
+    { "path": "./packages/language-python" },
     { "path": "./packages/test-utils" },
     { "path": "./packages/core" },
     { "path": "./packages/cli" }

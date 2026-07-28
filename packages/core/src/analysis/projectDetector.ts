@@ -51,7 +51,60 @@ export function detectProjects(projectRoot: string, nodes: DependencyNode[]): Pr
 
   const root = projects.find((project) => project.id === ".");
   if (root) root.workspaces = workspaces.filter((workspace) => workspace.relativePath !== ".");
+  const pythonProjects = detectPythonProjects(projectRoot, nodes);
+  for (const pythonProject of pythonProjects) {
+    const existing = projects.find((project) => project.id === pythonProject.id);
+    if (existing) {
+      existing.languages = [...new Set([...existing.languages, "python"])];
+      existing.frameworks = [
+        ...new Set([...(existing.frameworks ?? []), ...(pythonProject.frameworks ?? [])]),
+      ];
+      existing.configFiles = [...new Set([...existing.configFiles, ...pythonProject.configFiles])];
+    } else projects.push(pythonProject);
+  }
   return projects;
+}
+
+function detectPythonProjects(projectRoot: string, nodes: DependencyNode[]): ProjectInfo[] {
+  if (!nodes.some((node) => node.language === "python")) return [];
+  const configs = ["pyproject.toml", "setup.py", "setup.cfg", "requirements.txt"].filter((name) =>
+    fs.existsSync(path.join(projectRoot, name))
+  );
+  const metadata = configs
+    .map((name) => {
+      try {
+        return fs.readFileSync(path.join(projectRoot, name), "utf8");
+      } catch {
+        return "";
+      }
+    })
+    .join("\n")
+    .toLowerCase();
+  const frameworks: string[] = [];
+  if (metadata.includes("django") || fs.existsSync(path.join(projectRoot, "manage.py")))
+    frameworks.push("Django");
+  if (metadata.includes("fastapi")) frameworks.push("FastAPI");
+  if (metadata.includes("flask")) frameworks.push("Flask");
+  const manager = metadata.includes("[tool.poetry")
+    ? "poetry"
+    : metadata.includes("[tool.uv")
+      ? "uv"
+      : metadata.includes("[tool.pdm")
+        ? "pdm"
+        : "pip";
+  const projectType = frameworks[0]?.toLowerCase() ?? `python-${manager}`;
+  return [
+    {
+      id: ".",
+      name: path.basename(projectRoot),
+      rootPath: projectRoot,
+      projectType,
+      languages: ["python"],
+      workspaces: [],
+      configFiles: configs,
+      frameworks,
+    },
+  ];
 }
 
 function detectFrameworks(dependencies: Record<string, string>, nodes: DependencyNode[]): string[] {

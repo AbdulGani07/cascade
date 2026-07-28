@@ -20,6 +20,8 @@ export interface CascadeConfig {
   caseSensitiveResolution?: boolean;
   conditions?: string[];
   maxDepth?: number;
+  pythonSourceRoots?: string[];
+  analyzeNotebooks?: boolean;
 }
 
 export const defaultConfig: CascadeConfig = {
@@ -33,11 +35,27 @@ export const defaultConfig: CascadeConfig = {
     "index.ts",
     "index.js",
   ],
-  ignore: ["**/node_modules/**", "**/dist/**", "**/build/**", "**/.git/**", "**/coverage/**"],
-  extensions: [".ts", ".tsx", ".mts", ".cts", ".js", ".jsx", ".mjs", ".cjs"],
+  ignore: [
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/build/**",
+    "**/.git/**",
+    "**/coverage/**",
+    "**/.venv/**",
+    "**/venv/**",
+    "**/__pycache__/**",
+    "**/.tox/**",
+    "**/.nox/**",
+    "**/.mypy_cache/**",
+    "**/.pytest_cache/**",
+    "**/.ruff_cache/**",
+    "**/site-packages/**",
+  ],
+  extensions: [".ts", ".tsx", ".mts", ".cts", ".js", ".jsx", ".mjs", ".cjs", ".py", ".pyi"],
   plugins: [
     { id: "cascade-language-typescript", enabled: true, priority: 100 },
     { id: "cascade-language-javascript", enabled: true, priority: 50 },
+    { id: "cascade-language-python", enabled: true, priority: 80 },
   ],
   pathAliases: {},
   assetExtensions: [
@@ -57,6 +75,8 @@ export const defaultConfig: CascadeConfig = {
   includeNonCodeEdges: true,
   respectGitignore: true,
   conditions: ["types", "import", "require", "node", "browser", "default"],
+  pythonSourceRoots: ["src"],
+  analyzeNotebooks: false,
 };
 
 export function loadCascadeConfig(projectRoot: string): CascadeConfig {
@@ -98,6 +118,10 @@ export function loadCascadeConfig(projectRoot: string): CascadeConfig {
       caseSensitiveResolution: parsed.caseSensitiveResolution,
       conditions: Array.isArray(parsed.conditions) ? parsed.conditions : defaultConfig.conditions,
       maxDepth: parsed.maxDepth,
+      pythonSourceRoots: Array.isArray(parsed.pythonSourceRoots)
+        ? parsed.pythonSourceRoots
+        : defaultConfig.pythonSourceRoots,
+      analyzeNotebooks: parsed.analyzeNotebooks === true,
     };
   } catch (err) {
     throw new Error(
