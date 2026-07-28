@@ -1,13 +1,21 @@
-﻿{
+{
   "compilerOptions": {
     "target": "ESNext",
-    "module": "ESNext",
-    "moduleResolution": "Bundler",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
     "strict": true,
     "baseUrl": ".",
-    
     "skipLibCheck": true,
     "ignoreDeprecations": "5.0",
-    "types": ["node"]
+    "types": ["node"],
+    "paths": {
+      "@cascade/plugin-api": ["packages/plugin-api/src/index.ts"],
+      "@cascade/config": ["packages/config/src/index.ts"],
+      "@cascade/reporters": ["packages/reporters/src/index.ts"],
+      "@cascade/language-javascript": ["packages/language-javascript/src/index.ts"],
+      "@cascade/language-typescript": ["packages/language-typescript/src/index.ts"],
+      "@cascade/test-utils": ["packages/test-utils/src/index.ts"],
+      "@cascade/core": ["packages/core/src/index.ts"]
+    }
   }
 }

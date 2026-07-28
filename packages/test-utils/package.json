@@ -1,0 +1,34 @@
+{
+  "name": "@cascade/test-utils",
+  "version": "1.0.0",
+  "description": "Test utilities and capability assertion helpers for Cascade plugins",
+  "type": "module",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -b tsconfig.json --force",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cascade-code/cascade.git",
+    "directory": "packages/test-utils"
+  },
+  "dependencies": {
+    "@cascade/plugin-api": "workspace:*"
+  },
+  "license": "MIT"
+}

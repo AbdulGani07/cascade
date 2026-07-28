@@ -1,8 +1,9 @@
 import { Command } from "commander";
-import { analyze } from "@cascade/core";
-import { printSuccess, printHeading, printError } from "../ui/printer.js";
+import { analyze, toJson } from "@cascade/core";
+import { printSuccess, printWarning, printHeading, printError } from "../ui/printer.js";
 import { renderTable } from "../ui/tableRenderer.js";
 import path from "node:path";
+import fs from "node:fs";
 
 /** Registers the 'deadcode' command to list unreachable files. */
 export function registerDeadcodeCommand(program: Command): void {
@@ -15,36 +16,51 @@ export function registerDeadcodeCommand(program: Command): void {
         projectPath: string,
         options: {
           json?: boolean;
-        },
+        }
       ) => {
         try {
           const absolutePath = path.resolve(projectPath);
+          if (!fs.existsSync(absolutePath)) {
+            printError(`Project path "${projectPath}" does not exist.`);
+            process.exitCode = 2;
+            return;
+          }
+
           const result = analyze(absolutePath);
+          const normalizedJson = JSON.parse(toJson(result));
 
           if (options.json) {
-            console.log(JSON.stringify(result.deadFiles, null, 2));
+            console.log(JSON.stringify(normalizedJson.deadFiles, null, 2));
+            process.exitCode = normalizedJson.deadFiles.length > 0 ? 1 : 0;
             return;
           }
 
-          printHeading("Dead Files");
+          printHeading("Dead Code Analysis");
 
-          if (result.deadFiles.length === 0) {
-            printSuccess("No dead files found");
+          if (normalizedJson.deadFiles.length === 0) {
+            printSuccess("No dead or unreachable files found across entry points.");
+            process.exitCode = 0;
             return;
           }
 
-          renderTable(
-            ["File"],
-            result.deadFiles.map((file: string) => [file]),
+          printWarning(`Found ${normalizedJson.deadFiles.length} unused / dead file(s)`);
+
+          console.log(
+            renderTable(
+              ["Unreferenced Dead File Path"],
+              normalizedJson.deadFiles.map((file: string) => [file])
+            )
           );
+
+          process.exitCode = 1;
         } catch (error) {
           printError(
             error instanceof Error
               ? error.message
-              : "An unexpected error occurred during dead code analysis.",
+              : "An unexpected error occurred during dead code analysis."
           );
-          process.exitCode = 1;
+          process.exitCode = 3;
         }
-      },
+      }
     );
 }

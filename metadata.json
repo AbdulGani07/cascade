@@ -1,0 +1,6 @@
+{
+  "name": "Cascade",
+  "description": "Codebase dependency analysis and impact visualization dashboard",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

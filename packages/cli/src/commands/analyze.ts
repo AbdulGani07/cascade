@@ -1,12 +1,8 @@
 import { Command } from "commander";
 import path from "node:path";
-import { analyze } from "@cascade/core";
-import {
-  printError,
-  printHeading,
-  printSuccess,
-  printWarning,
-} from "../ui/printer.js";
+import fs from "node:fs";
+import { analyze, toJson } from "@cascade/core";
+import { printError, printHeading, printSuccess, printWarning } from "../ui/printer.js";
 import { renderTable } from "../ui/tableRenderer.js";
 
 /**
@@ -21,26 +17,44 @@ export function registerAnalyzeCommand(program: Command): void {
     .action((projectPath: string, options: { json?: boolean; verbose?: boolean }) => {
       try {
         const absolutePath = path.resolve(projectPath);
-        const result = analyze(absolutePath);
-
-        if (options.json) {
-          console.log(JSON.stringify(result, null, 2));
+        if (!fs.existsSync(absolutePath)) {
+          printError(`Project path "${projectPath}" does not exist.`);
+          process.exitCode = 2;
           return;
         }
 
-        printHeading("Cascade Analysis");
+        const result = analyze(absolutePath);
 
-        printSuccess(`Files scanned: ${result.nodes.length}`);
+        if (options.json) {
+          console.log(toJson(result));
+          process.exitCode = result.cycles.length > 0 || result.deadFiles.length > 0 ? 1 : 0;
+          return;
+        }
+
+        printHeading("CASCADE Architecture Analysis Summary");
+
+        console.log(
+          renderTable(
+            ["Metric", "Value"],
+            [
+              ["Total Scanned Modules", String(result.nodes.length)],
+              ["Dependency Connections", String(result.edges.length)],
+              ["Detected Entry Points", String(result.entryPoints.length)],
+              ["Circular Import Loops", String(result.cycles.length)],
+              ["Unreferenced Dead Files", String(result.deadFiles.length)],
+            ]
+          )
+        );
 
         if (result.cycles.length === 0) {
           printSuccess("No dependency cycles found");
         } else {
-          printWarning(`${result.cycles.length} dependency cycle(s) detected`);
+          printWarning(`${result.cycles.length} dependency cycle(s) detected:`);
 
           console.log(
             renderTable(
-              ["Cycle"],
-              result.cycles.map((cycle: string[]) => [cycle.join(" → ")])
+              ["Circular Dependency Loop"],
+              result.cycles.map((cycle: string[]) => [cycle.join(" ➔ ")])
             )
           );
         }
@@ -48,25 +62,27 @@ export function registerAnalyzeCommand(program: Command): void {
         if (result.deadFiles.length === 0) {
           printSuccess("No dead files found");
         } else {
-          printWarning(`${result.deadFiles.length} dead file(s) detected`);
+          printWarning(`${result.deadFiles.length} dead file(s) detected:`);
 
           console.log(
             renderTable(
-              ["File"],
+              ["Dead File Path"],
               result.deadFiles.map((file: string) => [file])
             )
           );
         }
 
-        printHeading("Entry Points");
-
-        if (result.entryPoints.length === 0) {
-          printWarning("No entry points detected");
-        } else {
-          result.entryPoints.forEach((entry: string) => {
-            console.log(`- ${entry}`);
-          });
+        if (result.entryPoints.length > 0) {
+          printHeading("Entry Points");
+          console.log(
+            renderTable(
+              ["Entry Point Path"],
+              result.entryPoints.map((entry: string) => [entry])
+            )
+          );
         }
+
+        process.exitCode = result.cycles.length > 0 || result.deadFiles.length > 0 ? 1 : 0;
       } catch (error) {
         if (error instanceof Error) {
           printError(error.message);
@@ -78,7 +94,7 @@ export function registerAnalyzeCommand(program: Command): void {
           printError("An unknown error occurred during analysis");
         }
 
-        process.exitCode = 1;
+        process.exitCode = 3;
       }
     });
 }

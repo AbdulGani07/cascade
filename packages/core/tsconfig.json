@@ -1,4 +1,4 @@
-﻿{
+{
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "rootDir": "./src",
@@ -9,5 +9,12 @@
     "moduleResolution": "NodeNext",
     "ignoreDeprecations": "5.0"
   },
+  "references": [
+    { "path": "../plugin-api" },
+    { "path": "../config" },
+    { "path": "../reporters" },
+    { "path": "../language-javascript" },
+    { "path": "../language-typescript" }
+  ],
   "include": ["src/**/*"]
 }

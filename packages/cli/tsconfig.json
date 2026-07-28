@@ -1,4 +1,4 @@
-﻿{
+{
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "composite": true,
@@ -10,6 +10,9 @@
   },
   "include": ["src/**/*"],
   "references": [
+    { "path": "../plugin-api" },
+    { "path": "../config" },
+    { "path": "../reporters" },
     { "path": "../core" }
   ]
 }

@@ -40,9 +40,7 @@ export async function fetchAnalysis(): Promise<AnalysisResult> {
   const response = await fetch("/api/analysis");
 
   if (!response.ok) {
-    throw new Error(
-      `Failed to load analysis.json (${response.status} ${response.statusText})`,
-    );
+    throw new Error(`Failed to load analysis.json (${response.status} ${response.statusText})`);
   }
 
   return (await response.json()) as AnalysisResult;

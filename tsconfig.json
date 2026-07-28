@@ -1,0 +1,13 @@
+{
+  "files": [],
+  "references": [
+    { "path": "./packages/plugin-api" },
+    { "path": "./packages/config" },
+    { "path": "./packages/reporters" },
+    { "path": "./packages/language-javascript" },
+    { "path": "./packages/language-typescript" },
+    { "path": "./packages/test-utils" },
+    { "path": "./packages/core" },
+    { "path": "./packages/cli" }
+  ]
+}

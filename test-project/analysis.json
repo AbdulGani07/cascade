@@ -1,7 +1,7 @@
 {
   "version": "1.0",
-  "generatedAt": "2026-07-11T08:35:26.727Z",
-  "projectRoot": "D:\\Portfolio GitHub Projects\\cascade\\test-project",
+  "generatedAt": "2026-07-27T11:00:00.000Z",
+  "projectRoot": "test-project",
   "nodes": [
     {
       "id": "src/app.ts",
@@ -22,21 +22,33 @@
       "language": "typescript"
     }
   ],
-  "edges": [],
-  "cycles": [],
-  "deadFiles": [
-    "src/app.ts",
-    "src/utils.ts"
+  "edges": [
+    {
+      "from": "src/index.ts",
+      "to": "src/app.ts",
+      "kind": "static"
+    },
+    {
+      "from": "src/app.ts",
+      "to": "src/utils.ts",
+      "kind": "static"
+    }
   ],
+  "cycles": [],
+  "deadFiles": [],
   "entryPoints": [
     "src/index.ts"
   ],
   "impact": {
     "src/app.ts": {
       "target": "src/app.ts",
-      "directlyAffected": [],
-      "allAffected": [],
-      "isSafeToDelete": true
+      "directlyAffected": [
+        "src/index.ts"
+      ],
+      "allAffected": [
+        "src/index.ts"
+      ],
+      "isSafeToDelete": false
     },
     "src/index.ts": {
       "target": "src/index.ts",
@@ -46,23 +58,15 @@
     },
     "src/utils.ts": {
       "target": "src/utils.ts",
-      "directlyAffected": [],
-      "allAffected": [],
-      "isSafeToDelete": true
+      "directlyAffected": [
+        "src/app.ts"
+      ],
+      "allAffected": [
+        "src/app.ts",
+        "src/index.ts"
+      ],
+      "isSafeToDelete": false
     }
   },
-  "warnings": [
-    {
-      "file": "src/app.ts",
-      "message": "Failed to parse file: language.query is not a function"
-    },
-    {
-      "file": "src/index.ts",
-      "message": "Failed to parse file: language.query is not a function"
-    },
-    {
-      "file": "src/utils.ts",
-      "message": "Failed to parse file: language.query is not a function"
-    }
-  ]
+  "warnings": []
 }

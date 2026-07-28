@@ -1,4 +1,4 @@
-import { Graph, ImpactReport, DependencyEdge } from "../types/index.js";
+import { Graph, ImpactReport, DependencyEdge } from "@cascade/plugin-api";
 import { reverseReachableFrom } from "../graph/graphAlgorithms.js";
 
 /**
@@ -6,9 +6,8 @@ import { reverseReachableFrom } from "../graph/graphAlgorithms.js";
  */
 export function simulateDeletion(graph: Graph, target: string): ImpactReport {
   const reverseReachable = reverseReachableFrom(graph, [target]);
-  
-  // Exclude target itself from affected lists
-  const allAffected = Array.from(reverseReachable).filter(id => id !== target);
+
+  const allAffected = Array.from(reverseReachable).filter((id) => id !== target);
   const directlyAffected = graph.incomingTo(target);
 
   return {
@@ -23,11 +22,11 @@ export function simulateDeletion(graph: Graph, target: string): ImpactReport {
  * Identifies all edges that would break if a folder path were changed.
  */
 export function simulateFolderRename(
-  graph: Graph, 
-  oldFolderPath: string, 
-  newFolderPath: string
+  graph: Graph,
+  oldFolderPath: string,
+  _newFolderPath: string
 ): { affectedEdges: DependencyEdge[] } {
-  const affectedEdges = graph.edges.filter((edge: DependencyEdge) => 
+  const affectedEdges = graph.edges.filter((edge: DependencyEdge) =>
     edge.to.startsWith(oldFolderPath)
   );
 

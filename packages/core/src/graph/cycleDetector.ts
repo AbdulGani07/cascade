@@ -1,7 +1,7 @@
-import { Graph } from "../types/index.js";
+import { Graph } from "@cascade/plugin-api";
 
 /**
- * Detects circular dependencies using an iterative DFS.
+ * Detects circular dependencies in a language-agnostic graph using an iterative DFS.
  * Cycles are deduplicated by rotating them to the lexicographically smallest node.
  */
 export function detectCycles(graph: Graph): string[][] {
@@ -19,7 +19,7 @@ export function detectCycles(graph: Graph): string[][] {
 
     while (stack.length > 0) {
       const top = stack[stack.length - 1];
-      
+
       if (!activePath.has(top.id)) {
         activePath.add(top.id);
         pathStack.push(top.id);
@@ -28,7 +28,7 @@ export function detectCycles(graph: Graph): string[][] {
       if (top.neighbors.length > 0) {
         const neighbor = top.neighbors.pop()!;
         if (activePath.has(neighbor)) {
-          // Cycle found: extract the segment from pathStack
+          // Cycle found: extract segment
           const cycle = pathStack.slice(pathStack.indexOf(neighbor));
           cycle.push(neighbor);
           addUniqueCycle(cycles, cycle);
@@ -47,11 +47,10 @@ export function detectCycles(graph: Graph): string[][] {
 }
 
 function addUniqueCycle(cycles: string[][], cycle: string[]): void {
-  // Rotate cycle to start with the smallest ID to canonicalize
   const minIdx = cycle.slice(0, -1).reduce((min, cur, i, arr) => (cur < arr[min] ? i : min), 0);
   const canonical = [...cycle.slice(minIdx, -1), ...cycle.slice(0, minIdx), cycle[minIdx]];
   const key = canonical.join("->");
-  if (!cycles.some(c => c.join("->") === key)) {
+  if (!cycles.some((c) => c.join("->") === key)) {
     cycles.push(canonical);
   }
 }

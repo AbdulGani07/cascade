@@ -4,7 +4,31 @@ import { printHeading, printSuccess, printError } from "../ui/printer.js";
 import http from "node:http";
 import open from "open";
 import path from "node:path";
+import fs from "node:fs";
+import { fileURLToPath } from "node:url";
 import sirv from "sirv";
+
+function resolveDashboardDist(): string | null {
+  const currentFile = fileURLToPath(import.meta.url);
+  const currentDir = path.dirname(currentFile);
+
+  const candidates = [
+    path.resolve(currentDir, "../../../dashboard/dist"),
+    path.resolve(currentDir, "../../dashboard/dist"),
+    path.resolve(currentDir, "../node_modules/@cascade/dashboard/dist"),
+    path.resolve(currentDir, "../../../node_modules/@cascade/dashboard/dist"),
+    path.resolve(process.cwd(), "packages/dashboard/dist"),
+    path.resolve(process.cwd(), "dist"),
+  ];
+
+  for (const candidate of candidates) {
+    if (fs.existsSync(candidate) && fs.existsSync(path.join(candidate, "index.html"))) {
+      return candidate;
+    }
+  }
+
+  return null;
+}
 
 /**
  * Registers the dashboard command.
@@ -22,21 +46,29 @@ export function registerDashboardCommand(program: Command): void {
     .action((dir: string) => {
       try {
         const absPath = path.resolve(dir);
+        if (!fs.existsSync(absPath)) {
+          printError(`Project directory "${dir}" does not exist.`);
+          process.exitCode = 2;
+          return;
+        }
+
         const result = analyze(absPath);
 
         const jsonPath = path.join(absPath, "analysis.json");
         writeJsonFile(result, jsonPath);
 
-        const dashboardDist = path.resolve(
-          process.cwd(),
-          "packages/dashboard/dist"
-        );
+        const dashboardDist = resolveDashboardDist();
+        if (!dashboardDist) {
+          printError(
+            "Dashboard assets not found. Please build @cascade/dashboard (`pnpm run build`) before opening dashboard."
+          );
+          process.exitCode = 2;
+          return;
+        }
 
         const serveDashboard = sirv(dashboardDist, { single: true });
 
-
         const server = http.createServer((req, res) => {
-
           if (req.url === "/api/analysis") {
             res.setHeader("Content-Type", "application/json");
             res.end(JSON.stringify(result));
@@ -44,7 +76,6 @@ export function registerDashboardCommand(program: Command): void {
           }
 
           serveDashboard(req, res);
-
         });
 
         server.listen(4000, "127.0.0.1", () => {
@@ -72,7 +103,7 @@ export function registerDashboardCommand(program: Command): void {
         });
       } catch (e) {
         printError((e as Error).message);
-        process.exitCode = 1;
+        process.exitCode = 3;
       }
     });
 }

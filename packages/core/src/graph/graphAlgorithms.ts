@@ -1,8 +1,7 @@
-import { Graph } from "../types/index.js";
+import { Graph } from "@cascade/plugin-api";
 
 /**
  * Performs a BFS to find all nodes reachable from the starting set.
- * Uses an array with a pointer to avoid O(n) shift overhead.
  */
 export function reachableFrom(graph: Graph, starts: string[]): Set<string> {
   const visited = new Set<string>(starts);

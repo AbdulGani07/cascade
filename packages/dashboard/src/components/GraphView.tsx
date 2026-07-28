@@ -1,19 +1,27 @@
+import { useMemo, useState } from "react";
 import ReactFlow, {
   Background,
   Controls,
+  MiniMap,
+  MarkerType,
   type Edge,
   type Node,
+  Position,
 } from "reactflow";
 import "reactflow/dist/style.css";
+import dagre from "dagre";
+import { LayoutGrid, Info, Compass } from "lucide-react";
 
-import FileNode from "./FileNode";
+import FileNode, { type FileNodeData } from "./FileNode";
 import type { AnalysisResult } from "../lib/api";
 
 interface GraphViewProps {
   analysisData: AnalysisResult;
   selectedId: string | null;
   highlightedIds: Set<string>;
-  onSelect: (id: string) => void;
+  onSelect: (id: string | null) => void;
+  layoutDirection?: "TB" | "LR";
+  onToggleLayout?: () => void;
 }
 
 const nodeTypes = {
@@ -21,83 +29,59 @@ const nodeTypes = {
 };
 
 /**
- * Creates a simple top-down layered layout using BFS depth from entry points.
+ * Calculates node positions using Dagre for optimal hierarchical layout.
  */
-function createLayeredLayout(
-  analysisData: AnalysisResult
-): Record<string, { x: number; y: number }> {
-  const layers: Record<number, string[]> = {};
-  const depthMap = new Map<string, number>();
+function getLayoutedElements(
+  analysisData: AnalysisResult,
+  selectedId: string | null,
+  highlightedIds: Set<string>,
+  direction: "TB" | "LR" = "TB"
+) {
+  const dagreGraph = new dagre.graphlib.Graph();
+  dagreGraph.setDefaultEdgeLabel(() => ({}));
 
-  const queue: string[] = [...analysisData.entryPoints];
-
-  analysisData.entryPoints.forEach((id) => {
-    depthMap.set(id, 0);
+  const isHorizontal = direction === "LR";
+  dagreGraph.setGraph({
+    rankdir: direction,
+    nodesep: 60,
+    ranksep: 100,
+    marginx: 40,
+    marginy: 40,
   });
 
-  while (queue.length > 0) {
-    const current = queue.shift()!;
-    const currentDepth = depthMap.get(current) ?? 0;
+  const cycleFiles = new Set(analysisData.cycles.flat());
 
-    const outgoing = analysisData.edges
-      .filter((edge) => edge.from === current)
-      .map((edge) => edge.to);
+  // Calculate in-degrees and out-degrees
+  const inDegrees: Record<string, number> = {};
+  const outDegrees: Record<string, number> = {};
 
-    for (const next of outgoing) {
-      if (!depthMap.has(next)) {
-        depthMap.set(next, currentDepth + 1);
-        queue.push(next);
-      }
-    }
-  }
-
-  for (const node of analysisData.nodes) {
-    if (!depthMap.has(node.id)) {
-      depthMap.set(node.id, 0);
-    }
-
-    const depth = depthMap.get(node.id)!;
-
-    if (!layers[depth]) {
-      layers[depth] = [];
-    }
-
-    layers[depth].push(node.id);
-  }
-
-  const positions: Record<string, { x: number; y: number }> = {};
-
-  Object.entries(layers).forEach(([layer, ids]) => {
-    const y = Number(layer) * 150;
-
-    ids.forEach((id, index) => {
-      positions[id] = {
-        x: index * 220,
-        y,
-      };
-    });
+  analysisData.nodes.forEach((node) => {
+    inDegrees[node.id] = 0;
+    outDegrees[node.id] = 0;
   });
 
-  return positions;
-}
+  analysisData.edges.forEach((edge) => {
+    outDegrees[edge.from] = (outDegrees[edge.from] || 0) + 1;
+    inDegrees[edge.to] = (inDegrees[edge.to] || 0) + 1;
+  });
 
-/**
- * Renders the dependency graph using React Flow.
- */
-export default function GraphView({
-  analysisData,
-  highlightedIds,
-  onSelect,
-}: GraphViewProps) {
-  const positions = createLayeredLayout(analysisData);
+  const nodeWidth = 200;
+  const nodeHeight = 80;
 
-  const cycleFiles = new Set(
-    analysisData.cycles.flat()
-  );
+  analysisData.nodes.forEach((node) => {
+    dagreGraph.setNode(node.id, { width: nodeWidth, height: nodeHeight });
+  });
 
-  const nodes: Node[] = analysisData.nodes.map((node) => {
+  analysisData.edges.forEach((edge) => {
+    dagreGraph.setEdge(edge.from, edge.to);
+  });
+
+  dagre.layout(dagreGraph);
+
+  const nodes: Node<FileNodeData>[] = analysisData.nodes.map((node) => {
+    const nodeWithPosition = dagreGraph.node(node.id);
+
     let status: "normal" | "cycle" | "dead" | "entry" = "normal";
-
     if (analysisData.entryPoints.includes(node.id)) {
       status = "entry";
     } else if (cycleFiles.has(node.id)) {
@@ -106,43 +90,189 @@ export default function GraphView({
       status = "dead";
     }
 
+    const isSelected = selectedId === node.id;
+    const isHighlighted = highlightedIds.has(node.id);
+
     return {
       id: node.id,
       type: "file",
       data: {
         label: node.id.split(/[\\/]/).pop() ?? node.id,
+        fullPath: node.id,
         status,
+        isSelected,
+        isHighlighted,
+        inDegree: inDegrees[node.id] ?? 0,
+        outDegree: outDegrees[node.id] ?? 0,
+        layoutDirection: direction,
       },
-      position: positions[node.id] ?? { x: 0, y: 0 },
+      position: {
+        x: (nodeWithPosition?.x ?? 0) - nodeWidth / 2,
+        y: (nodeWithPosition?.y ?? 0) - nodeHeight / 2,
+      },
+      targetPosition: isHorizontal ? Position.Left : Position.Top,
+      sourcePosition: isHorizontal ? Position.Right : Position.Bottom,
     };
   });
 
-  const edges: Edge[] = analysisData.edges.map((edge) => ({
-    id: `${edge.from}-${edge.to}`,
-    source: edge.from,
-    target: edge.to,
-    animated: false,
-    style: {
-      stroke:
-        highlightedIds.has(edge.from) &&
-        highlightedIds.has(edge.to)
-          ? "red"
-          : "#999",
-    },
-  }));
+  const edges: Edge[] = analysisData.edges.map((edge) => {
+    const isHighlightedEdge =
+      selectedId === edge.from || (highlightedIds.has(edge.from) && highlightedIds.has(edge.to));
+
+    let strokeColor = "#334155"; // slate-700
+    let strokeWidth = 1.8;
+
+    if (isHighlightedEdge) {
+      strokeColor = "#38bdf8"; // cyan-400
+      strokeWidth = 3;
+    } else if (edge.kind === "dynamic") {
+      strokeColor = "#a855f7"; // purple-500
+    } else if (edge.kind === "re-export") {
+      strokeColor = "#f59e0b"; // amber-500
+    }
+
+    return {
+      id: `${edge.from}-${edge.to}`,
+      source: edge.from,
+      target: edge.to,
+      animated: isHighlightedEdge,
+      type: "smoothstep",
+      markerEnd: {
+        type: MarkerType.ArrowClosed,
+        color: strokeColor,
+        width: 16,
+        height: 16,
+      },
+      style: {
+        stroke: strokeColor,
+        strokeWidth,
+        opacity: isHighlightedEdge ? 1 : selectedId ? 0.25 : 0.75,
+      },
+    };
+  });
+
+  return { nodes, edges };
+}
+
+/**
+ * Renders the interactive dependency graph using React Flow.
+ */
+export default function GraphView({
+  analysisData,
+  selectedId,
+  highlightedIds,
+  onSelect,
+  layoutDirection = "TB",
+  onToggleLayout,
+}: GraphViewProps) {
+  const [showLegend, setShowLegend] = useState(true);
+
+  const { nodes, edges } = useMemo(() => {
+    return getLayoutedElements(analysisData, selectedId, highlightedIds, layoutDirection);
+  }, [analysisData, selectedId, highlightedIds, layoutDirection]);
 
   return (
-    <div className="h-full w-full">
+    <div className="relative h-full w-full bg-slate-950 overflow-hidden select-none">
       <ReactFlow
         nodes={nodes}
         edges={edges}
         nodeTypes={nodeTypes}
         onNodeClick={(_, node) => onSelect(node.id)}
+        onPaneClick={() => onSelect(null)}
         fitView
+        fitViewOptions={{ padding: 0.2 }}
+        minZoom={0.2}
+        maxZoom={2.5}
       >
-        <Background />
-        <Controls />
+        <Background color="#334155" gap={24} size={1.5} />
+        <Controls className="!bg-slate-900/80 !border-slate-800 backdrop-blur-md" />
+        <MiniMap
+          nodeColor={(node) => {
+            const status = (node.data as FileNodeData)?.status;
+            if (status === "entry") return "#f59e0b";
+            if (status === "cycle") return "#f43f5e";
+            if (status === "dead") return "#64748b";
+            return "#38bdf8";
+          }}
+          maskColor="rgba(15, 23, 42, 0.75)"
+          className="!bg-slate-900/90 !border-slate-800 !rounded-xl overflow-hidden shadow-2xl"
+          style={{ height: 110, width: 160 }}
+        />
       </ReactFlow>
+
+      {/* Floating Toolbar Controls */}
+      <div className="absolute top-4 right-4 flex items-center gap-2 z-10 bg-slate-900/80 backdrop-blur-md border border-slate-800 p-1.5 rounded-xl shadow-2xl">
+        <button
+          type="button"
+          onClick={onToggleLayout}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition-colors border border-slate-700/50"
+          title="Toggle Layout Direction"
+        >
+          <LayoutGrid className="w-3.5 h-3.5 text-cyan-400" />
+          <span>Layout: {layoutDirection === "TB" ? "Top-Down" : "Left-Right"}</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setShowLegend(!showLegend)}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border ${
+            showLegend
+              ? "bg-cyan-500/20 text-cyan-300 border-cyan-500/40"
+              : "text-slate-400 border-slate-800 hover:text-slate-200 hover:bg-slate-800"
+          }`}
+        >
+          <Info className="w-3.5 h-3.5" />
+          <span>Legend</span>
+        </button>
+      </div>
+
+      {/* Floating Graph Legend */}
+      {showLegend && (
+        <div className="absolute bottom-4 left-4 z-10 bg-slate-900/90 backdrop-blur-xl border border-slate-800 p-3.5 rounded-2xl shadow-2xl text-xs max-w-xs space-y-2 text-slate-300">
+          <div className="flex items-center justify-between font-semibold text-slate-200 border-b border-slate-800 pb-1.5 mb-2">
+            <span className="flex items-center gap-1.5">
+              <Compass className="w-3.5 h-3.5 text-cyan-400" /> Graph Key
+            </span>
+            <button
+              type="button"
+              onClick={() => setShowLegend(false)}
+              className="text-slate-500 hover:text-slate-300 text-[10px]"
+            >
+              ✕
+            </button>
+          </div>
+
+          <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-[11px]">
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.6)]" />
+              <span>Entry Point</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 shadow-[0_0_8px_rgba(56,189,248,0.6)]" />
+              <span>Normal Module</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.6)]" />
+              <span>Cycle File</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-slate-500" />
+              <span>Dead Code</span>
+            </div>
+          </div>
+
+          <div className="border-t border-slate-800 pt-2 text-[10px] text-slate-400 space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="w-4 h-0.5 bg-cyan-400 rounded-full" />
+              <span>Static Import</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="w-4 h-0.5 bg-purple-500 rounded-full" />
+              <span>Dynamic Import()</span>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

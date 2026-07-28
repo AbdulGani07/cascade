@@ -1,8 +1,10 @@
 import { Command } from "commander";
-import { analyze } from "@cascade/core";
+import { analyze, toJson } from "@cascade/core";
+import { DependencyEdge } from "@cascade/plugin-api";
 import { printHeading, printError } from "../ui/printer.js";
 import { renderTable } from "../ui/tableRenderer.js";
 import path from "node:path";
+import fs from "node:fs";
 
 /** Registers the 'graph' command to visualize dependency edges. */
 export function registerGraphCommand(program: Command): void {
@@ -17,14 +19,22 @@ export function registerGraphCommand(program: Command): void {
         }
       ) => {
         try {
-          const result = analyze(projectPath);
+          const absolutePath = path.resolve(projectPath);
+          if (!fs.existsSync(absolutePath)) {
+            printError(`Project path "${projectPath}" does not exist.`);
+            process.exitCode = 2;
+            return;
+          }
+
+          const result = analyze(absolutePath);
 
           if (options.json) {
+            const parsed = JSON.parse(toJson(result));
             console.log(
               JSON.stringify(
                 {
-                  nodes: result.nodes,
-                  edges: result.edges,
+                  nodes: parsed.nodes,
+                  edges: parsed.edges,
                 },
                 null,
                 2
@@ -38,10 +48,10 @@ export function registerGraphCommand(program: Command): void {
           console.log(
             renderTable(
               ["From", "To", "Kind"],
-              result.edges.map((edge: { from: string; to: string; kind: string }) => [
+              result.edges.map((edge: DependencyEdge) => [
                 edge.from,
                 edge.to,
-                edge.kind,
+                edge.importKind || edge.kind || "static",
               ])
             )
           );
@@ -52,7 +62,7 @@ export function registerGraphCommand(program: Command): void {
             printError("An unknown error occurred while generating graph");
           }
 
-          process.exitCode = 1;
+          process.exitCode = 3;
         }
       }
     );

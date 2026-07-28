@@ -1,15 +1,39 @@
 {
   "name": "@cascade/cli",
   "version": "1.0.0",
+  "description": "Command-line interface for Cascade code-intelligence analysis",
   "type": "module",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "bin": {
     "cascade": "./dist/index.js"
   },
+  "files": [
+    "dist"
+  ],
   "scripts": {
-    "build": "tsc -b tsconfig.json --force"
+    "build": "tsc -b tsconfig.json --force",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cascade-code/cascade.git",
+    "directory": "packages/cli"
+  },
+  "keywords": [
+    "cli",
+    "code-analysis",
+    "dependency-graph",
+    "impact-analysis"
+  ],
+  "license": "MIT",
   "dependencies": {
+    "@cascade/config": "workspace:*",
     "@cascade/core": "workspace:*",
+    "@cascade/plugin-api": "workspace:*",
+    "@cascade/reporters": "workspace:*",
     "cli-table3": "^0.6.5",
     "commander": "^15.0.0",
     "open": "^11.0.0",
