@@ -237,7 +237,7 @@ function frameworks(root: string, files: string[]): FrameworkMetadata[] {
 export class KotlinLanguagePlugin implements LanguagePlugin {
   id = "cascade-language-kotlin";
   name = "Cascade Kotlin Language Plugin";
-  version = "3.1.1";
+  version = "3.3.0";
   supportedExtensions = [".kt", ".kts"];
   fileDetectionRules = [
     { type: "extension" as const, pattern: ".kt" },

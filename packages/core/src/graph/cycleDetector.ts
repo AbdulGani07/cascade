@@ -1,56 +1,63 @@
 import { Graph } from "@cascade/plugin-api";
 
 /**
- * Detects circular dependencies in a language-agnostic graph using an iterative DFS.
- * Cycles are deduplicated by rotating them to the lexicographically smallest node.
+ * Finds cyclic strongly connected components in O(V + E) using iterative
+ * Kosaraju passes. One deterministic representative cycle is emitted per SCC;
+ * this deliberately avoids enumerating exponentially many simple cycles in a
+ * dense component.
  */
 export function detectCycles(graph: Graph): string[][] {
-  const fullyExplored = new Set<string>();
-  const activePath = new Set<string>();
-  const pathStack: string[] = [];
-  const cycles: string[][] = [];
+  const known = new Set(graph.nodes.keys());
+  const visited = new Set<string>();
+  const finishOrder: string[] = [];
 
-  for (const nodeId of graph.nodes.keys()) {
-    if (fullyExplored.has(nodeId)) continue;
-
-    const stack: { id: string; neighbors: string[] }[] = [
-      { id: nodeId, neighbors: graph.neighborsOf(nodeId) },
+  for (const start of graph.nodes.keys()) {
+    if (visited.has(start)) continue;
+    visited.add(start);
+    const stack: Array<{ id: string; neighbors: string[]; index: number }> = [
+      { id: start, neighbors: graph.neighborsOf(start).filter((id) => known.has(id)), index: 0 },
     ];
-
-    while (stack.length > 0) {
-      const top = stack[stack.length - 1];
-
-      if (!activePath.has(top.id)) {
-        activePath.add(top.id);
-        pathStack.push(top.id);
-      }
-
-      if (top.neighbors.length > 0) {
-        const neighbor = top.neighbors.pop()!;
-        if (activePath.has(neighbor)) {
-          // Cycle found: extract segment
-          const cycle = pathStack.slice(pathStack.indexOf(neighbor));
-          cycle.push(neighbor);
-          addUniqueCycle(cycles, cycle);
-        } else if (!fullyExplored.has(neighbor)) {
-          stack.push({ id: neighbor, neighbors: graph.neighborsOf(neighbor) });
+    while (stack.length) {
+      const frame = stack[stack.length - 1];
+      if (frame.index < frame.neighbors.length) {
+        const neighbor = frame.neighbors[frame.index++];
+        if (!visited.has(neighbor)) {
+          visited.add(neighbor);
+          stack.push({
+            id: neighbor,
+            neighbors: graph.neighborsOf(neighbor).filter((id) => known.has(id)),
+            index: 0,
+          });
         }
       } else {
-        fullyExplored.add(top.id);
-        activePath.delete(top.id);
-        pathStack.pop();
+        finishOrder.push(frame.id);
         stack.pop();
       }
     }
   }
-  return cycles;
-}
 
-function addUniqueCycle(cycles: string[][], cycle: string[]): void {
-  const minIdx = cycle.slice(0, -1).reduce((min, cur, i, arr) => (cur < arr[min] ? i : min), 0);
-  const canonical = [...cycle.slice(minIdx, -1), ...cycle.slice(0, minIdx), cycle[minIdx]];
-  const key = canonical.join("->");
-  if (!cycles.some((c) => c.join("->") === key)) {
-    cycles.push(canonical);
+  const assigned = new Set<string>();
+  const cycles: string[][] = [];
+  for (let index = finishOrder.length - 1; index >= 0; index--) {
+    const start = finishOrder[index];
+    if (assigned.has(start)) continue;
+    assigned.add(start);
+    const component: string[] = [];
+    const stack = [start];
+    while (stack.length) {
+      const current = stack.pop()!;
+      component.push(current);
+      for (const parent of graph.incomingTo(current)) {
+        if (known.has(parent) && !assigned.has(parent)) {
+          assigned.add(parent);
+          stack.push(parent);
+        }
+      }
+    }
+    component.sort();
+    const selfLoop =
+      component.length === 1 && graph.neighborsOf(component[0]).includes(component[0]);
+    if (component.length > 1 || selfLoop) cycles.push([...component, component[0]]);
   }
+  return cycles.sort((left, right) => left[0].localeCompare(right[0]));
 }

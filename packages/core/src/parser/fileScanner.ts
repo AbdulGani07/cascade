@@ -12,10 +12,13 @@ import { toPosixRelativePath } from "../utils/pathUtils.js";
 export function scanFiles(
   projectRoot: string,
   config: CascadeConfig,
-  pluginRegistry: PluginRegistry
+  pluginRegistry: PluginRegistry,
+  shouldCancel?: () => boolean
 ): DependencyNode[] {
   const nodes: DependencyNode[] = [];
   const visitedDirectories = new Set<string>();
+  const canonicalRoot = fs.realpathSync(projectRoot);
+  let totalBytes = 0;
   const gitignorePatterns =
     config.respectGitignore !== false
       ? readIgnorePatterns(path.join(projectRoot, ".gitignore"))
@@ -23,6 +26,7 @@ export function scanFiles(
   const ignorePatterns = [...config.ignore, ...gitignorePatterns];
 
   function walk(currentDir: string) {
+    if (shouldCancel?.()) throw new Error("Analysis cancelled");
     let realDirectory: string;
     try {
       realDirectory = fs.realpathSync(currentDir);
@@ -30,11 +34,16 @@ export function scanFiles(
       return;
     }
     if (visitedDirectories.has(realDirectory)) return;
+    if (!isInside(canonicalRoot, realDirectory))
+      throw new Error(
+        `SECURITY_PATH_ESCAPE: directory resolves outside project root: ${currentDir}`
+      );
     visitedDirectories.add(realDirectory);
 
     const entries = fs.readdirSync(currentDir, { withFileTypes: true });
 
     for (const entry of entries) {
+      if (shouldCancel?.()) throw new Error("Analysis cancelled");
       const absolutePath = path.join(currentDir, entry.name);
       const relativePath = toPosixRelativePath(absolutePath, projectRoot);
 
@@ -43,7 +52,22 @@ export function scanFiles(
         continue;
       }
 
-      if (entry.isDirectory() || (entry.isSymbolicLink() && safeIsDirectory(absolutePath))) {
+      if (entry.isSymbolicLink()) {
+        if (config.symlinks !== "internal") continue;
+        let target: string;
+        try {
+          target = fs.realpathSync(absolutePath);
+        } catch {
+          continue;
+        }
+        if (!isInside(canonicalRoot, target))
+          throw new Error(
+            `SECURITY_PATH_ESCAPE: symlink resolves outside project root: ${relativePath}`
+          );
+        if (safeIsDirectory(absolutePath)) walk(absolutePath);
+        continue;
+      }
+      if (entry.isDirectory()) {
         walk(absolutePath);
       } else {
         const plugin = pluginRegistry.findPluginForFile(absolutePath, relativePath);
@@ -60,15 +84,22 @@ export function scanFiles(
 
           const langName = plugin ? plugin.id.replace("cascade-language-", "") : "unknown";
 
-          let lineCount = 0;
           let byteSize = 0;
           try {
             const stat = fs.statSync(absolutePath);
             byteSize = stat.size;
-            const content = fs.readFileSync(absolutePath, "utf-8");
-            lineCount = content.split("\n").length;
-          } catch {
-            // Ignore stat read failure
+            if (byteSize > (config.maxFileSizeBytes ?? Number.POSITIVE_INFINITY))
+              throw new Error(
+                `RESOURCE_LIMIT: '${relativePath}' is ${byteSize} bytes; maxFileSizeBytes is ${config.maxFileSizeBytes}.`
+              );
+            totalBytes += byteSize;
+            if (totalBytes > (config.maxTotalBytes ?? Number.POSITIVE_INFINITY))
+              throw new Error(
+                `RESOURCE_LIMIT: repository source bytes exceed maxTotalBytes (${config.maxTotalBytes}).`
+              );
+          } catch (error) {
+            if ((error as Error).message.startsWith("RESOURCE_LIMIT")) throw error;
+            throw new Error(`SECURITY_FILE_READ: cannot safely inspect '${relativePath}'.`);
           }
 
           nodes.push({
@@ -90,17 +121,19 @@ export function scanFiles(
             isGeneratedFile: isGen,
             parseStatus: "success",
             metrics: {
-              lineCount,
+              lineCount: 0,
               byteSize,
               symbolCount: 0,
               dependencyCount: 0,
             },
             pluginProvenance: {
               pluginId: plugin ? plugin.id : "cascade-core",
-              pluginVersion: plugin ? plugin.version : "3.1.1",
+              pluginVersion: plugin ? plugin.version : "3.3.0",
             },
             diagnostics: [],
           });
+          if (nodes.length > (config.maxFiles ?? Number.POSITIVE_INFINITY))
+            throw new Error(`RESOURCE_LIMIT: repository exceeds maxFiles (${config.maxFiles}).`);
         }
       }
     }
@@ -108,6 +141,14 @@ export function scanFiles(
 
   walk(projectRoot);
   return nodes;
+}
+
+function isInside(root: string, candidate: string): boolean {
+  const relative = path.relative(root, candidate);
+  return (
+    relative === "" ||
+    (relative !== ".." && !relative.startsWith(`..${path.sep}`) && !path.isAbsolute(relative))
+  );
 }
 
 function safeIsDirectory(filePath: string): boolean {

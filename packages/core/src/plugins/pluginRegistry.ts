@@ -20,6 +20,8 @@ export interface RegisteredPluginEntry {
 
 export class PluginRegistry {
   private entries: RegisteredPluginEntry[] = [];
+  private extensionIndex = new Map<string, RegisteredPluginEntry[]>();
+  private filenameEntries: RegisteredPluginEntry[] = [];
 
   registerPlugin(plugin: LanguagePlugin, options?: { enabled?: boolean; priority?: number }): void {
     const existingIndex = this.entries.findIndex((e) => e.plugin.id === plugin.id);
@@ -41,6 +43,7 @@ export class PluginRegistry {
       }
       return a.plugin.id.localeCompare(b.plugin.id);
     });
+    this.rebuildFileIndex();
   }
 
   configureWithCascadeConfig(config: CascadeConfig): void {
@@ -58,6 +61,7 @@ export class PluginRegistry {
       if (b.priority !== a.priority) return b.priority - a.priority;
       return a.plugin.id.localeCompare(b.plugin.id);
     });
+    this.rebuildFileIndex();
   }
 
   getRegisteredPlugins(): LanguagePlugin[] {
@@ -65,27 +69,38 @@ export class PluginRegistry {
   }
 
   findPluginForFile(filePath: string, _relativePath?: string): LanguagePlugin | null {
-    const enabledEntries = this.entries.filter((e) => e.enabled);
-
-    for (const entry of enabledEntries) {
-      const plugin = entry.plugin;
-
-      const ext = filePath.slice(filePath.lastIndexOf(".")).toLowerCase();
-      if (plugin.supportedExtensions.some((e) => e.toLowerCase() === ext)) {
-        return plugin;
-      }
-
-      for (const rule of plugin.fileDetectionRules) {
-        if (rule.type === "extension" && ext === rule.pattern.toLowerCase()) {
-          return plugin;
-        }
-        if (rule.type === "filename" && filePath.endsWith(rule.pattern)) {
-          return plugin;
-        }
+    const dot = filePath.lastIndexOf(".");
+    const ext = dot >= 0 ? filePath.slice(dot).toLowerCase() : "";
+    const indexed = this.extensionIndex.get(ext);
+    if (indexed?.length) return indexed[0].plugin;
+    for (const entry of this.filenameEntries) {
+      for (const rule of entry.plugin.fileDetectionRules) {
+        if (rule.type === "filename" && filePath.endsWith(rule.pattern)) return entry.plugin;
       }
     }
-
     return null;
+  }
+
+  private rebuildFileIndex(): void {
+    this.extensionIndex = new Map();
+    this.filenameEntries = [];
+    for (const entry of this.entries) {
+      if (!entry.enabled) continue;
+      const extensions = new Set(
+        entry.plugin.supportedExtensions.map((value) => value.toLowerCase())
+      );
+      for (const rule of entry.plugin.fileDetectionRules) {
+        if (rule.type === "extension") extensions.add(rule.pattern.toLowerCase());
+      }
+      for (const extension of extensions) {
+        const candidates = this.extensionIndex.get(extension) ?? [];
+        candidates.push(entry);
+        this.extensionIndex.set(extension, candidates);
+      }
+      if (entry.plugin.fileDetectionRules.some((rule) => rule.type === "filename")) {
+        this.filenameEntries.push(entry);
+      }
+    }
   }
 
   /**

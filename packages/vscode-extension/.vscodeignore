@@ -1,0 +1,7 @@
+src/**
+scripts/**
+tsconfig.json
+*.tsbuildinfo
+*.vsix
+.vsix-stage*/**
+packages/**

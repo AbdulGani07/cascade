@@ -1,6 +1,6 @@
 {
   "name": "@cascade/language-cpp",
-  "version": "3.2.0",
+  "version": "3.3.0",
   "description": "First-party C++ language plugin for Cascade",
   "type": "module",
   "engines": {

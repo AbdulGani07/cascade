@@ -5,6 +5,61 @@ All notable changes to Cascade will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+## [3.3.0] - 2026-07-28
+
+### Added
+
+- Reusable `@cascade/editor-service` with a versioned local protocol, multi-root snapshots,
+  debounced saved-file refreshes, cancellation workers, bounded caching, diagnostics, impact
+  queries, affected-test candidates, explanation paths, and repository-size safeguards.
+- Official VS Code extension source package with CodeLens, dependency navigation, diagnostics,
+  affected tests, local dashboard launch, opt-in background analysis, and analysis-health status.
+- Editor integration architecture, privacy, performance, configuration, troubleshooting, and
+  publishing documentation plus deterministic service and extension tests.
+- Deterministic performance fixtures for 100, 1,000, 10,000, and opt-in 50,000-file
+  repositories, deep chains, dense graphs, large cycles, unresolved dependencies, serialization,
+  dashboard preparation, memory, warm runs, and one-file updates.
+- Security threat model and adversarial tests covering traversal, symlinks, malicious
+  configuration, resource exhaustion, report injection, secret leakage, and dashboard exposure.
+- CI dependency auditing, dependency review, secret scanning, CodeQL, and a stable graph
+  performance regression threshold.
+
+### Changed
+
+- File discovery no longer reads every source file solely to count lines; parser selection uses a
+  priority-preserving extension index.
+- Cycle analysis now uses iterative strongly connected components, avoiding exponential cycle
+  enumeration and recursion limits on dense or deep graphs.
+- Analysis accepts cancellation, timeouts, phase timing, and a structural mode that avoids
+  materializing quadratic all-file impact payloads.
+- Configuration is strict JSON with validated resource limits and explicit symlink policy.
+- All package and first-party plugin versions now report `3.3.0`.
+
+### Security
+
+- Symlinks are ignored by default and optional symlink traversal is restricted to canonical
+  targets within the analyzed root.
+- File count, individual file size, and total included-byte limits are enforced before parsing;
+  containment and size are rechecked before source reads.
+- JSON, Markdown, and SARIF reports use project-relative paths, neutralize injection-prone
+  filenames, and redact common credential forms.
+- The local dashboard is loopback-only with a random HttpOnly session token, CSP, no-store
+  responses, frame denial, MIME protection, and bounded HTTP timeouts.
+- Git revisions reject option-like or control-character input; Action paths and editor workspaces
+  are canonicalized within their permitted roots.
+- GitHub workflows use explicit minimum permissions and do not upload fork-PR SARIF.
+
+### Performance
+
+- On the documented Windows/Node 22 development machine, the legacy linear benchmark improved
+  from 650.2 ms to 309.1 ms at 100 files, 4,019.3 ms to 2,400.9 ms at 1,000 files, and
+  23,106.9 ms to 12,027.0 ms at 5,000 files.
+- Dense 250-node/4,000-edge graph analysis fell from 5,149 ms to 1.7 ms after SCC condensation.
+- The opt-in 50,000-file structural run completed in 127.7 seconds with approximately 566 MiB RSS
+  growth; these measurements are expectations for regression analysis, not guarantees.
+
 ## [3.2.0] - 2026-07-28
 
 ### Added
@@ -189,6 +244,7 @@ Released at `2026-07-28T09:54:18+06:00`.
 - JavaScript and TypeScript file scanning, dependency graph construction, cycle detection, dead-file analysis, and impact simulation.
 - CLI commands for analysis, graph inspection, impact reports, dead-code reports, and the dashboard server.
 
+[3.3.0]: https://github.com/AbdulGani07/cascade/releases/tag/v3.3.0
 [3.2.0]: https://github.com/AbdulGani07/cascade/releases/tag/v3.2.0
 [3.1.1]: https://github.com/AbdulGani07/cascade/releases/tag/v3.1.1
 [3.1.0]: https://github.com/AbdulGani07/cascade/releases/tag/v3.1.0

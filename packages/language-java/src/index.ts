@@ -330,7 +330,7 @@ function javaFrameworks(root: string, files: string[]): FrameworkMetadata[] {
 export class JavaLanguagePlugin implements LanguagePlugin {
   id = "cascade-language-java";
   name = "Cascade Java Language Plugin";
-  version = "3.1.1";
+  version = "3.3.0";
   supportedExtensions = [".java"];
   fileDetectionRules = [{ type: "extension" as const, pattern: ".java" }];
   capabilities = {

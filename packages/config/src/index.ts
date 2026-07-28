@@ -22,6 +22,12 @@ export interface CascadeConfig {
   maxDepth?: number;
   pythonSourceRoots?: string[];
   analyzeNotebooks?: boolean;
+  /** Symlinks are ignored by default; "internal" follows only targets inside projectRoot. */
+  symlinks?: "ignore" | "internal";
+  /** Hard resource limits applied before parser invocation. */
+  maxFiles?: number;
+  maxFileSizeBytes?: number;
+  maxTotalBytes?: number;
   /** Analyze only these project/workspace IDs; omitted means the complete repository. */
   selectedProjects?: string[];
   /** Deterministic local corrections for unusual repository layouts. */
@@ -200,6 +206,10 @@ export const defaultConfig: CascadeConfig = {
   conditions: ["types", "import", "require", "node", "browser", "default"],
   pythonSourceRoots: ["src"],
   analyzeNotebooks: false,
+  symlinks: "ignore",
+  maxFiles: 100_000,
+  maxFileSizeBytes: 5 * 1024 * 1024,
+  maxTotalBytes: 1024 * 1024 * 1024,
   selectedProjects: [],
   projectOverrides: {},
   gitImpact: {
@@ -213,9 +223,12 @@ export const defaultConfig: CascadeConfig = {
 };
 
 export function loadCascadeConfig(projectRoot: string): CascadeConfig {
+  const canonicalRoot = fs.realpathSync(projectRoot);
   const configPath = process.env.CASCADE_CONFIG_PATH
     ? path.resolve(process.env.CASCADE_CONFIG_PATH)
     : path.join(projectRoot, "cascade.config.json");
+  if (!isInside(canonicalRoot, configPath))
+    throw new Error("Cascade configuration must be inside the analyzed project root.");
   const selectedProjectsOverride = process.env.CASCADE_SELECTED_PROJECTS?.split(",")
     .map((item) => item.trim())
     .filter(Boolean);
@@ -228,7 +241,10 @@ export function loadCascadeConfig(projectRoot: string): CascadeConfig {
 
   try {
     const raw = fs.readFileSync(configPath, "utf-8");
+    if (Buffer.byteLength(raw, "utf8") > 1024 * 1024)
+      throw new Error("Cascade configuration exceeds the 1 MiB security limit.");
     const parsed = JSON.parse(raw) as Partial<CascadeConfig>;
+    validateConfigObject(parsed);
 
     return {
       entryPoints: Array.isArray(parsed.entryPoints)
@@ -263,6 +279,22 @@ export function loadCascadeConfig(projectRoot: string): CascadeConfig {
         ? parsed.pythonSourceRoots
         : defaultConfig.pythonSourceRoots,
       analyzeNotebooks: parsed.analyzeNotebooks === true,
+      symlinks: parsed.symlinks ?? defaultConfig.symlinks,
+      maxFiles: boundedInteger(parsed.maxFiles, "maxFiles", 1, 10_000_000, defaultConfig.maxFiles!),
+      maxFileSizeBytes: boundedInteger(
+        parsed.maxFileSizeBytes,
+        "maxFileSizeBytes",
+        1,
+        1024 * 1024 * 1024,
+        defaultConfig.maxFileSizeBytes!
+      ),
+      maxTotalBytes: boundedInteger(
+        parsed.maxTotalBytes,
+        "maxTotalBytes",
+        1,
+        1024 * 1024 * 1024 * 1024,
+        defaultConfig.maxTotalBytes!
+      ),
       selectedProjects:
         selectedProjectsOverride ||
         (Array.isArray(parsed.selectedProjects)
@@ -283,6 +315,73 @@ export function loadCascadeConfig(projectRoot: string): CascadeConfig {
       `Failed to load cascade.config.json at ${configPath}: ${(err as Error).message}`
     );
   }
+}
+
+const ALLOWED_CONFIG_KEYS = new Set([
+  "entryPoints",
+  "ignore",
+  "extensions",
+  "plugins",
+  "pathAliases",
+  "assetExtensions",
+  "includeNonCodeEdges",
+  "respectGitignore",
+  "caseSensitiveResolution",
+  "conditions",
+  "maxDepth",
+  "pythonSourceRoots",
+  "analyzeNotebooks",
+  "selectedProjects",
+  "projectOverrides",
+  "gitImpact",
+  "architectureGovernance",
+  "symlinks",
+  "maxFiles",
+  "maxFileSizeBytes",
+  "maxTotalBytes",
+]);
+
+function validateConfigObject(value: unknown): asserts value is Partial<CascadeConfig> {
+  if (!value || typeof value !== "object" || Array.isArray(value))
+    throw new Error("Cascade configuration must be a JSON object.");
+  rejectPrototypeKeys(value);
+  for (const key of Object.keys(value)) {
+    if (!ALLOWED_CONFIG_KEYS.has(key))
+      throw new Error(`Unknown Cascade configuration key '${key}'.`);
+  }
+  const symlinks = (value as Partial<CascadeConfig>).symlinks;
+  if (symlinks !== undefined && symlinks !== "ignore" && symlinks !== "internal")
+    throw new Error("symlinks must be 'ignore' or 'internal'.");
+}
+
+function rejectPrototypeKeys(value: unknown): void {
+  if (!value || typeof value !== "object") return;
+  for (const [key, child] of Object.entries(value as Record<string, unknown>)) {
+    if (key === "__proto__" || key === "prototype" || key === "constructor")
+      throw new Error(`Unsafe configuration key '${key}' is not allowed.`);
+    rejectPrototypeKeys(child);
+  }
+}
+
+function boundedInteger(
+  value: unknown,
+  name: string,
+  minimum: number,
+  maximum: number,
+  fallback: number
+): number {
+  if (value === undefined) return fallback;
+  if (!Number.isSafeInteger(value) || (value as number) < minimum || (value as number) > maximum)
+    throw new Error(`${name} must be an integer from ${minimum} to ${maximum}.`);
+  return value as number;
+}
+
+function isInside(root: string, candidate: string): boolean {
+  const relative = path.relative(root, path.resolve(candidate));
+  return (
+    relative === "" ||
+    (relative !== ".." && !relative.startsWith(`..${path.sep}`) && !path.isAbsolute(relative))
+  );
 }
 
 function validateGovernance(value: unknown): CascadeConfig["architectureGovernance"] {

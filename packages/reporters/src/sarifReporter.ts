@@ -1,4 +1,5 @@
 import { AnalysisResult, Reporter, ReporterOptions } from "@cascade/plugin-api";
+import { safePath, safeReportResult } from "./security.js";
 
 export class SarifReporter implements Reporter {
   id = "cascade-reporter-sarif";
@@ -6,6 +7,7 @@ export class SarifReporter implements Reporter {
   format = "sarif" as const;
 
   render(result: AnalysisResult, _options?: ReporterOptions): string {
+    result = safeReportResult(result);
     const rules = [
       {
         id: "CASCADE001",
@@ -28,7 +30,7 @@ export class SarifReporter implements Reporter {
         message: { text: `Circular dependency detected: ${cycle.join(" -> ")}` },
         locations: cycle.map((f: string) => ({
           physicalLocation: {
-            artifactLocation: { uri: f },
+            artifactLocation: { uri: encodeURI(safePath(f)) },
           },
         })),
       });
@@ -42,7 +44,7 @@ export class SarifReporter implements Reporter {
         locations: [
           {
             physicalLocation: {
-              artifactLocation: { uri: deadFile },
+              artifactLocation: { uri: encodeURI(safePath(deadFile)) },
             },
           },
         ],
@@ -58,7 +60,7 @@ export class SarifReporter implements Reporter {
           tool: {
             driver: {
               name: "Cascade",
-              version: "3.1.1",
+              version: "3.3.0",
               rules,
             },
           },

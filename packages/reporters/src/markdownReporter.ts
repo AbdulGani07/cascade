@@ -1,4 +1,5 @@
 import { AnalysisResult, Reporter, ReporterOptions } from "@cascade/plugin-api";
+import { markdownCode, safeReportResult } from "./security.js";
 
 export class MarkdownReporter implements Reporter {
   id = "cascade-reporter-markdown";
@@ -6,10 +7,11 @@ export class MarkdownReporter implements Reporter {
   format = "markdown" as const;
 
   render(result: AnalysisResult, _options?: ReporterOptions): string {
+    result = safeReportResult(result);
     const lines: string[] = [];
     lines.push(`# Cascade Analysis Report`);
     lines.push(`**Generated at**: ${result.generatedAt}`);
-    lines.push(`**Project Root**: ${result.projectRoot}`);
+    lines.push(`**Project Root**: \`.\``);
     lines.push(`**Schema Version**: ${result.version}`);
     lines.push(``);
     lines.push(`## Summary Metrics`);
@@ -22,7 +24,7 @@ export class MarkdownReporter implements Reporter {
     if (result.cycles.length > 0) {
       lines.push(`## Circular Dependencies`);
       result.cycles.forEach((cycle: string[], idx: number) => {
-        lines.push(`${idx + 1}. \`${cycle.join(" -> ")}\``);
+        lines.push(`${idx + 1}. \`${cycle.map(markdownCode).join(" -> ")}\``);
       });
       lines.push(``);
     }
@@ -30,7 +32,7 @@ export class MarkdownReporter implements Reporter {
     if (result.deadFiles.length > 0) {
       lines.push(`## Dead Code Files`);
       result.deadFiles.forEach((f: string) => {
-        lines.push(`- \`${f}\``);
+        lines.push(`- \`${markdownCode(f)}\``);
       });
       lines.push(``);
     }

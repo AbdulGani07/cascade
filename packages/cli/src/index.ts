@@ -23,7 +23,7 @@ const program = new Command();
 program
   .name("cascade")
   .description("Fast, evidence-based dependency intelligence for codebases and monorepos.")
-  .version("3.2.0")
+  .version("3.3.0")
   .option("--quiet", "suppress non-essential terminal output")
   .option("--verbose", "show additional diagnostic detail")
   .option("--debug", "show stack traces for command failures")

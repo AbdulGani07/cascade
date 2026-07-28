@@ -30,6 +30,8 @@ export function analyzeGitImpact(
   ensureGitRepository(root);
   const base = options.base ?? "HEAD";
   const head = options.head ?? "WORKING_TREE";
+  validateGitRevision(base, "base");
+  if (head !== "WORKING_TREE") validateGitRevision(head, "head");
   const comparisonMode = head === "WORKING_TREE" ? "working-tree" : "commit";
   const changedFiles = readChangedFiles(root, base, head, diagnostics);
   const baseRoot = checkoutSnapshot(root, base, diagnostics);
@@ -76,6 +78,16 @@ export function analyzeGitImpact(
     cleanupSnapshot(baseRoot, root);
     cleanupSnapshot(headRoot, root);
   }
+}
+
+function validateGitRevision(value: string, label: string): void {
+  if (
+    !value ||
+    value.length > 256 ||
+    value.startsWith("-") ||
+    /[\u0000-\u001f\u007f\s]/.test(value)
+  )
+    throw new Error(`Invalid ${label} Git revision.`);
 }
 
 function runGit(root: string, args: string[]): string {

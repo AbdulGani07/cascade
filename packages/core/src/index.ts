@@ -1,4 +1,5 @@
 // packages/core/src/index.ts
+import { performance } from "node:perf_hooks";
 
 export * from "./types/index.js";
 export * from "./config/configLoader.js";
@@ -8,6 +9,7 @@ export * from "./utils/pathUtils.js";
 export * from "./analysis/projectGraph.js";
 export * from "./analysis/gitImpact.js";
 export * from "./analysis/governance.js";
+export * from "./graph/cycleDetector.js";
 
 import { AnalysisResult, ImpactReport, LanguagePlugin } from "@cascade/plugin-api";
 import { loadCascadeConfig, CascadeConfig } from "@cascade/config";
@@ -50,12 +52,29 @@ import { evaluateGovernance } from "./analysis/governance.js";
 export interface AnalyzeOptions {
   config?: CascadeConfig;
   customPlugins?: LanguagePlugin[];
+  /** Skip the potentially quadratic compatibility impact payload for structural scans. */
+  impact?: "full" | "none";
+  signal?: AbortSignal;
+  timeoutMs?: number;
+  onPhase?: (phase: string, elapsedMs: number) => void;
 }
 
 /**
  * Orchestrates the full static analysis pipeline using language plugins.
  */
 export function analyze(projectRoot: string, options?: AnalyzeOptions): AnalysisResult {
+  const analysisStarted = performance.now();
+  let phaseStarted = analysisStarted;
+  const phase = (name: string) => {
+    const now = performance.now();
+    options?.onPhase?.(name, now - phaseStarted);
+    phaseStarted = now;
+  };
+  const deadline =
+    options?.timeoutMs === undefined
+      ? Number.POSITIVE_INFINITY
+      : analysisStarted + options.timeoutMs;
+  const shouldCancel = () => Boolean(options?.signal?.aborted) || performance.now() > deadline;
   const config = options?.config || loadCascadeConfig(projectRoot);
 
   const registry = new PluginRegistry();
@@ -95,9 +114,11 @@ export function analyze(projectRoot: string, options?: AnalyzeOptions): Analysis
 
   // 3. Configure priorities & toggles from loaded CascadeConfig
   registry.configureWithCascadeConfig(config);
+  phase("pluginLoading");
 
   // 4. Discover project files using plugins
-  let nodes = scanFiles(projectRoot, config, registry);
+  let nodes = scanFiles(projectRoot, config, registry, shouldCancel);
+  phase("fileDiscovery");
   let intelligence = detectProjectIntelligence(projectRoot, nodes, registry.getRegisteredPlugins());
   let projects = intelligence.projects;
   const selected = new Set(config.selectedProjects ?? []);
@@ -140,6 +161,7 @@ export function analyze(projectRoot: string, options?: AnalyzeOptions): Analysis
         ![...ignoredProjects].some((id) => node.relativePath.startsWith(id === "." ? "" : `${id}/`))
     );
   for (const node of nodes) {
+    if (shouldCancel()) throw new Error("Analysis cancelled or timed out");
     const project = [...projects]
       .filter((candidate) => {
         const relative = candidate.id === "." ? "" : `${candidate.id.replace(/\\/g, "/")}/`;
@@ -151,6 +173,7 @@ export function analyze(projectRoot: string, options?: AnalyzeOptions): Analysis
       node.packageOrWorkspace = project.name;
     }
   }
+  phase("projectDetection");
 
   // 5. Detect entry points
   const entryPointEvidence = detectEntryPointEvidence(projectRoot, nodes, config, registry);
@@ -160,20 +183,34 @@ export function analyze(projectRoot: string, options?: AnalyzeOptions): Analysis
   nodes.forEach((n) => {
     n.isEntryPoint = entryPointIds.includes(n.id) || entryPointIds.includes(n.relativePath);
   });
+  phase("entryPointDetection");
 
   // 6. Build language-agnostic dependency graph
-  const { graph, warnings, diagnostics } = buildGraph(nodes, registry, projectRoot, config);
+  const { graph, warnings, diagnostics } = buildGraph(
+    nodes,
+    registry,
+    projectRoot,
+    config,
+    shouldCancel,
+    (name, elapsedMs) => options?.onPhase?.(name, elapsedMs)
+  );
+  phaseStarted = performance.now();
 
   // 7. Graph analysis algorithms
   const cycles = detectCycles(graph);
   const deadCodeFindings = findDeadCode(graph, entryPointEvidence, diagnostics);
   const deadFiles = deadCodeFindings.map((finding) => finding.file);
+  phase("graphAnalysis");
 
   // 8. Build impact report map
   const impact: Record<string, ImpactReport> = {};
-  for (const id of graph.nodes.keys()) {
-    impact[id] = simulateDeletion(graph, id);
+  if (options?.impact !== "none") {
+    for (const id of graph.nodes.keys()) {
+      if (shouldCancel()) throw new Error("Analysis cancelled or timed out");
+      impact[id] = simulateDeletion(graph, id);
+    }
   }
+  phase("impactAnalysis");
 
   // Collect plugin summary manifest
   const pluginManifests = registry.getRegisteredPlugins().map((p) => ({

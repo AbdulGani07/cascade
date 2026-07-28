@@ -1,0 +1,132 @@
+{
+  "name": "cascade-code-intelligence",
+  "displayName": "Cascade Code Intelligence",
+  "description": "Local dependency, impact, cycle, and architecture intelligence powered by Cascade",
+  "version": "3.3.0",
+  "publisher": "cascade-code",
+  "private": false,
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "vscode": "^1.96.0",
+    "node": ">=22.13.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Linters",
+    "Visualization"
+  ],
+  "keywords": [
+    "dependencies",
+    "architecture",
+    "impact analysis",
+    "cycles",
+    "monorepo"
+  ],
+  "main": "./dist/extension.js",
+  "activationEvents": [
+    "onCommand:cascade.analyzeCurrentFile",
+    "onCommand:cascade.showDependents",
+    "onCommand:cascade.showDependencyPath",
+    "onCommand:cascade.showAffectedTests",
+    "onCommand:cascade.openDashboard",
+    "workspaceContains:cascade.config.json"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "cascade.analyzeCurrentFile",
+        "title": "Cascade: Analyze Current File"
+      },
+      {
+        "command": "cascade.showDependents",
+        "title": "Cascade: Show Dependents"
+      },
+      {
+        "command": "cascade.showDependencyPath",
+        "title": "Cascade: Show Dependency Path"
+      },
+      {
+        "command": "cascade.showAffectedTests",
+        "title": "Cascade: Show Affected Tests"
+      },
+      {
+        "command": "cascade.openDashboard",
+        "title": "Cascade: Open Dashboard"
+      },
+      {
+        "command": "cascade.refreshWorkspace",
+        "title": "Cascade: Refresh Workspace"
+      }
+    ],
+    "configuration": {
+      "title": "Cascade",
+      "properties": {
+        "cascade.backgroundAnalysis": {
+          "type": "boolean",
+          "default": false,
+          "description": "Opt in to local analysis after saved file changes."
+        },
+        "cascade.debounceMs": {
+          "type": "number",
+          "default": 750,
+          "minimum": 100,
+          "maximum": 10000,
+          "description": "Delay before locally analyzing saved changes."
+        },
+        "cascade.maxFiles": {
+          "type": "number",
+          "default": 100000,
+          "minimum": 100,
+          "description": "Stop analysis when the file graph exceeds this limit."
+        },
+        "cascade.maxEdges": {
+          "type": "number",
+          "default": 300000,
+          "minimum": 100,
+          "description": "Stop analysis when the dependency graph exceeds this limit."
+        },
+        "cascade.maxTraversalDepth": {
+          "type": "number",
+          "default": 30,
+          "minimum": 1,
+          "maximum": 100,
+          "description": "Maximum depth for transitive editor queries."
+        },
+        "cascade.codeLens": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show dependency and impact counts above the first line."
+        },
+        "cascade.servicePath": {
+          "type": "string",
+          "default": "",
+          "description": "Optional path to cascade-editor-service. Empty uses the bundled workspace package or PATH."
+        },
+        "cascade.cliPath": {
+          "type": "string",
+          "default": "",
+          "description": "Optional path to the Cascade CLI used to open the dashboard."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "build": "tsc -b tsconfig.json --force",
+    "typecheck": "tsc --noEmit",
+    "package:validate": "node scripts/package.mjs --validate",
+    "package": "pnpm run build && vsce package --no-yarn --no-dependencies --out cascade-code-intelligence.vsix",
+    "clean": "rm -rf dist"
+  },
+  "devDependencies": {
+    "@cascade/cli": "workspace:*",
+    "@cascade/editor-service": "workspace:*",
+    "@types/vscode": "^1.96.0",
+    "@vscode/vsce": "^3.9.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AbdulGani07/cascade.git",
+    "directory": "packages/vscode-extension"
+  }
+}

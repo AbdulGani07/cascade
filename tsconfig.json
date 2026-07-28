@@ -17,6 +17,8 @@
     { "path": "./packages/language-expanded" },
     { "path": "./packages/test-utils" },
     { "path": "./packages/core" },
-    { "path": "./packages/cli" }
+    { "path": "./packages/cli" },
+    { "path": "./packages/editor-service" },
+    { "path": "./packages/vscode-extension" }
   ]
 }

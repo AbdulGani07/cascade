@@ -19,7 +19,8 @@
       "@cascade/language-cpp": ["packages/language-cpp/src/index.ts"],
       "@cascade/language-expanded": ["packages/language-expanded/src/index.ts"],
       "@cascade/test-utils": ["packages/test-utils/src/index.ts"],
-      "@cascade/core": ["packages/core/src/index.ts"]
+      "@cascade/core": ["packages/core/src/index.ts"],
+      "@cascade/editor-service": ["packages/editor-service/src/index.ts"]
     }
   }
 }

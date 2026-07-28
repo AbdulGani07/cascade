@@ -1,6 +1,6 @@
 # Cascade
 
-Current release: **3.2.0** (2026-07-28)
+Current release: **3.3.0** (2026-07-28)
 
 Cascade is a modular, pluggable dependency-analysis and code-intelligence toolkit that predicts the impact of code changes. It scans multi-language repositories, builds dependency graphs, detects cycles and unreachable code, and exposes actionable results through a CLI, reporters (Markdown, SARIF), and a React dashboard.
 
@@ -80,6 +80,8 @@ pnpm check
 - `@cascade/reporters` — Diagnostic reporters including Markdown summary (`MarkdownReporter`) and SARIF 2.1.0 (`SarifReporter`)
 - `@cascade/cli` — Command-line interface and terminal user interface
 - `@cascade/dashboard` — Interactive React Flow graph visualizer
+- `@cascade/editor-service` — Local, versioned, multi-root analysis service for editor integrations
+- `cascade-code-intelligence` — Official VS Code extension source package
 - `@cascade/test-utils` — Mock plugin generation and isolated graph testing harness
 
 ## Project Documentation
@@ -98,8 +100,11 @@ pnpm check
 - [C and C++ capability matrices](docs/C_CPP_SUPPORT.md)
 - [Expanded Batches B–D capability matrices](docs/EXPANDED_LANGUAGE_SUPPORT.md)
 - [Project and workspace intelligence](docs/PROJECT_WORKSPACE_INTELLIGENCE.md)
+- [Editor service and VS Code extension](docs/EDITOR_INTEGRATIONS.md)
 - [Git change-impact analysis](docs/GIT_CHANGE_IMPACT.md)
 - [CLI reference and troubleshooting](docs/CLI.md)
 - [GitHub Action setup, permissions, and release process](docs/GITHUB_ACTION.md)
 - [Dashboard workspace, security, exports, and performance](docs/DASHBOARD.md)
+- [Performance methodology, measurements, and limits](docs/PERFORMANCE.md)
+- [Security threat model, mitigations, and residual risks](docs/SECURITY_THREAT_MODEL.md)
 - Architecture governance is configured through versioned `architectureGovernance` rules in `cascade.config.json`; use `cascade governance` for terminal, JSON, Markdown, or SARIF findings.

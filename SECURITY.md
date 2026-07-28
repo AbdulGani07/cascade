@@ -1,29 +1,42 @@
-# Security Policy
+# Security policy
 
-## Supported Versions
+## Supported versions
 
-| Version | Supported          |
-| ------- | ------------------ |
-| 2.x     | :white_check_mark: |
-| 1.x     | :white_check_mark: |
-| < 1.0   | :x:                |
+Security fixes are provided for the latest released major version. Older
+versions may receive a fix at the maintainers' discretion.
 
-## Reporting a Vulnerability
+## Reporting a vulnerability
 
-The Cascade project takes security vulnerabilities seriously. If you discover a security vulnerability in Cascade, please report it responsibly rather than opening a public issue.
+Do not open a public issue for a suspected vulnerability. Use GitHub's
+**Security → Report a vulnerability** private advisory flow for this repository,
+or email `abdulgani10525@gmail.com`.
 
-### How to Report
+Include:
 
-Please report security issues directly by emailing to the lead developer abdulgani10525@gmail.com or submitting a private security advisory on GitHub.
+- affected version, package, command, and operating system;
+- a minimal reproduction using non-sensitive test data;
+- impact and required attacker access;
+- whether symlinks, plugins, custom configuration, the dashboard, IDE extension,
+  or GitHub Actions are involved;
+- suggested mitigations, if known.
 
-Include as much detail as possible:
+Do not include real credentials, proprietary source, customer data, or public
+exploit links. We aim to acknowledge reports within 48 hours. Remediation and
+disclosure timing depends on severity, reproducibility, and release safety; the
+project does not promise a fixed resolution deadline.
 
-- Type of issue (e.g. arbitrary file read, local server exposure, command injection)
-- Step-by-step instructions to reproduce
-- Affected versions or packages
-- Any proposed mitigation or fix
+## Security posture
 
-### Response Timeline
+Cascade treats analyzed repositories as hostile data. It does not intentionally
+run repository source, package scripts, build tools, Gradle, Maven, CMake,
+`setup.py`, compiler plugins, or framework configuration. Build files are
+inspected as text or structured data. Dependency installation is never part of
+analysis.
 
-- **Initial Acknowledgment:** Within 48 hours.
-- **Assessment & Fix:** We aim to release a patch within 14 days of confirmation for critical issues.
+Third-party Cascade plugins execute in the Cascade process and therefore have
+the user's filesystem and process permissions. Only install plugins from
+publishers you trust. Plugin isolation is a residual risk, not a security
+boundary.
+
+See [docs/SECURITY_THREAT_MODEL.md](docs/SECURITY_THREAT_MODEL.md) for the full
+threat model, operational guidance, and remaining risks.

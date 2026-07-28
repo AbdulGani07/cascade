@@ -1,14 +1,16 @@
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, writeFileSync, realpathSync, statSync } from "node:fs";
 import { resolve, relative, isAbsolute } from "node:path";
 import { spawnSync } from "node:child_process";
 
 const root = process.env.GITHUB_WORKSPACE || process.cwd();
 const input = (name, fallback = "") => process.env[`CASCADE_INPUT_${name}`] ?? fallback;
-const safeRelative = (value, label) => { if (!value || isAbsolute(value) || value.split(/[\\/]/).includes("..")) throw new Error(`${label} must be a non-empty repository-relative path without '..'.`); return resolve(root, value); };
+const inside = (candidate) => { const rel = relative(realpathSync(root), candidate); return rel === "" || (!rel.startsWith("..") && !isAbsolute(rel)); };
+const safeRelative = (value, label, optional = false) => { if (!value || isAbsolute(value) || value.split(/[\\/]/).includes("..")) throw new Error(`${label} must be a non-empty repository-relative path without '..'.`); const candidate = resolve(root, value); let canonical; try { canonical = realpathSync(candidate); } catch (error) { if (!optional) throw error; canonical = realpathSync(resolve(candidate, "..")); } if (!inside(canonical)) throw new Error(`${label} resolves outside the repository.`); return candidate; };
 const bool = (name) => { const value = input(name).toLowerCase(); if (!["true", "false"].includes(value)) throw new Error(`${name} must be true or false.`); return value === "true"; };
 const integer = (name, min, max) => { const value = Number(input(name)); if (!Number.isInteger(value) || value < min || value > max) throw new Error(`${name} must be an integer from ${min} to ${max}.`); return value; };
-const target = safeRelative(input("PATH", "."), "path"); const output = safeRelative(input("OUTPUT_DIRECTORY", ".cascade-artifacts"), "output-directory");
-const config = safeRelative(input("CONFIG", "cascade.config.json"), "config");
+const target = safeRelative(input("PATH", "."), "path"); const outputValue = input("OUTPUT_DIRECTORY", ".cascade-artifacts"); if (isAbsolute(outputValue) || outputValue.split(/[\\/]/).includes("..")) throw new Error("output-directory must remain inside the repository."); const output = resolve(root, outputValue); if (!inside(realpathSync(resolve(output, "..")))) throw new Error("output-directory parent resolves outside the repository.");
+const config = safeRelative(input("CONFIG", "cascade.config.json"), "config", true);
+if (!statSync(target).isDirectory()) throw new Error("path must resolve to a directory.");
 const selectedProjects = input("SELECTED_PROJECTS").split(",").map((value) => value.trim()).filter(Boolean);
 const failSeverity = input("FAIL_ON_SEVERITY", "error"); if (!["none", "info", "warning", "error"].includes(failSeverity)) throw new Error("fail-on-severity must be none, info, warning, or error.");
 const timeout = integer("TIMEOUT_SECONDS", 1, 3600); const maxGraphSize = integer("MAX_GRAPH_SIZE", 0, 10_000_000); const base = input("BASE") || process.env.GITHUB_BASE_REF || "HEAD"; const head = input("HEAD") || process.env.GITHUB_SHA || "HEAD";

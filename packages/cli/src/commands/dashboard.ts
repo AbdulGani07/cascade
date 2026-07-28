@@ -1,5 +1,5 @@
 import { Command } from "commander";
-import { analyze, writeJsonFile } from "@cascade/core";
+import { analyze } from "@cascade/core";
 import { printHeading, printSuccess, printError } from "../ui/printer.js";
 import http from "node:http";
 import open from "open";
@@ -7,6 +7,7 @@ import path from "node:path";
 import fs from "node:fs";
 import { fileURLToPath } from "node:url";
 import sirv from "sirv";
+import crypto from "node:crypto";
 
 function resolveDashboardDist(): string | null {
   const currentFile = fileURLToPath(import.meta.url);
@@ -54,9 +55,6 @@ export function registerDashboardCommand(program: Command): void {
 
         const result = analyze(absPath);
 
-        const jsonPath = path.join(absPath, "analysis.json");
-        writeJsonFile(result, jsonPath);
-
         const dashboardDist = resolveDashboardDist();
         if (!dashboardDist) {
           printError(
@@ -67,9 +65,38 @@ export function registerDashboardCommand(program: Command): void {
         }
 
         const serveDashboard = sirv(dashboardDist, { single: true });
+        const token = crypto.randomBytes(32).toString("base64url");
 
         const server = http.createServer((req, res) => {
+          res.setHeader("Cache-Control", "no-store");
+          res.setHeader("X-Content-Type-Options", "nosniff");
+          res.setHeader("Referrer-Policy", "no-referrer");
+          res.setHeader("Cross-Origin-Resource-Policy", "same-origin");
+          res.setHeader(
+            "Content-Security-Policy",
+            "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'"
+          );
+          const requestUrl = new URL(req.url ?? "/", "http://127.0.0.1");
+          if (requestUrl.searchParams.get("token") === token) {
+            res.statusCode = 302;
+            res.setHeader(
+              "Set-Cookie",
+              `cascade_dashboard=${token}; HttpOnly; SameSite=Strict; Path=/`
+            );
+            res.setHeader("Location", "/");
+            res.end();
+            return;
+          }
           if (req.url === "/api/analysis") {
+            if (
+              !req.headers.cookie
+                ?.split(";")
+                .some((value) => value.trim() === `cascade_dashboard=${token}`)
+            ) {
+              res.statusCode = 403;
+              res.end("Forbidden");
+              return;
+            }
             res.setHeader("Content-Type", "application/json");
             res.end(JSON.stringify(result));
             return;
@@ -77,9 +104,13 @@ export function registerDashboardCommand(program: Command): void {
 
           serveDashboard(req, res);
         });
+        server.requestTimeout = 15_000;
+        server.headersTimeout = 10_000;
+        server.keepAliveTimeout = 5_000;
+        server.maxHeadersCount = 100;
 
         server.listen(4000, "127.0.0.1", () => {
-          const url = "http://localhost:4000";
+          const url = `http://127.0.0.1:4000/?token=${token}`;
 
           printHeading("Cascade Dashboard");
           printSuccess(`Dashboard running at ${url}`);
@@ -92,7 +123,7 @@ export function registerDashboardCommand(program: Command): void {
             const address = server.address();
 
             if (typeof address === "object" && address) {
-              const url = `http://localhost:${address.port}`;
+              const url = `http://127.0.0.1:${address.port}/?token=${token}`;
 
               printHeading("Cascade Dashboard");
               printSuccess(`Dashboard running at ${url}`);

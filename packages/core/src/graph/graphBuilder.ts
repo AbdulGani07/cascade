@@ -1,4 +1,6 @@
 import fs from "node:fs";
+import path from "node:path";
+import { performance } from "node:perf_hooks";
 import {
   Graph,
   DependencyNode,
@@ -18,8 +20,14 @@ export function buildGraph(
   nodes: DependencyNode[],
   pluginRegistry: PluginRegistry,
   projectRoot: string,
-  config: CascadeConfig
+  config: CascadeConfig,
+  shouldCancel?: () => boolean,
+  onTiming?: (
+    phase: "parsing" | "moduleResolution" | "graphConstruction",
+    elapsedMs: number
+  ) => void
 ): { graph: Graph; warnings: Warning[]; diagnostics: ParseDiagnostic[] } {
+  const canonicalRoot = fs.realpathSync(projectRoot);
   const nodesMap = new Map<string, DependencyNode>();
   nodes.forEach((n) => {
     nodesMap.set(n.id, n);
@@ -31,13 +39,24 @@ export function buildGraph(
   const warnings: Warning[] = [];
   const diagnostics: ParseDiagnostic[] = [];
   const projectResolver = new ProjectModuleResolver(projectRoot, allKnownRelativeFiles, config);
+  let parsingMs = 0;
+  let resolutionMs = 0;
+  const graphStarted = performance.now();
 
   for (const node of nodes) {
+    if (shouldCancel?.()) throw new Error("Analysis cancelled");
     const plugin = pluginRegistry.findPluginForFile(node.absolutePath, node.relativePath);
 
     let content = "";
     try {
       if (fs.existsSync(node.absolutePath)) {
+        const canonicalFile = fs.realpathSync(node.absolutePath);
+        const relative = path.relative(canonicalRoot, canonicalFile);
+        if (relative === ".." || relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative))
+          throw new Error("SECURITY_PATH_ESCAPE: file resolved outside project root");
+        const stat = fs.statSync(canonicalFile);
+        if (stat.size > (config.maxFileSizeBytes ?? Number.POSITIVE_INFINITY))
+          throw new Error("RESOURCE_LIMIT: file grew beyond maxFileSizeBytes after discovery");
         content = fs.readFileSync(node.absolutePath, "utf-8");
       }
     } catch (err) {
@@ -51,8 +70,10 @@ export function buildGraph(
     if (!plugin) {
       continue;
     }
+    if (node.metrics) node.metrics.lineCount = countLines(content);
 
     // 1. Safe Parse
+    const parseStarted = performance.now();
     const parseResult = pluginRegistry.safeParse(plugin, {
       filePath: node.absolutePath,
       relativePath: node.relativePath,
@@ -93,6 +114,7 @@ export function buildGraph(
         node.metrics.symbolCount = symResult.declarations.length;
       }
     }
+    parsingMs += performance.now() - parseStarted;
 
     if (node.metrics) {
       node.metrics.dependencyCount = extractResult.dependencies.length;
@@ -100,6 +122,8 @@ export function buildGraph(
 
     // 4. Resolve each extracted dependency & construct graph edge
     for (const dep of extractResult.dependencies) {
+      if (shouldCancel?.()) throw new Error("Analysis cancelled");
+      const resolutionStarted = performance.now();
       const resolution =
         plugin.id === "cascade-language-javascript" || plugin.id === "cascade-language-typescript"
           ? projectResolver.resolve(dep.specifier, node.absolutePath, node.relativePath, dep)
@@ -111,6 +135,7 @@ export function buildGraph(
               extractedDependency: dep,
               allKnownFiles: allKnownRelativeFiles,
             });
+      resolutionMs += performance.now() - resolutionStarted;
 
       if (resolution.diagnostics) {
         diagnostics.push(...resolution.diagnostics);
@@ -199,6 +224,18 @@ export function buildGraph(
     neighborsOf: (id: string) => Array.from(neighborsMap.get(id) || []),
     incomingTo: (id: string) => Array.from(incomingMap.get(id) || []),
   };
+  onTiming?.("parsing", parsingMs);
+  onTiming?.("moduleResolution", resolutionMs);
+  onTiming?.("graphConstruction", performance.now() - graphStarted - parsingMs - resolutionMs);
 
   return { graph, warnings, diagnostics };
+}
+
+function countLines(content: string): number {
+  if (content.length === 0) return 0;
+  let lines = 1;
+  for (let index = 0; index < content.length; index++) {
+    if (content.charCodeAt(index) === 10) lines++;
+  }
+  return lines;
 }

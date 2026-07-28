@@ -22,9 +22,11 @@ export function toJson(result: AnalysisResult): string {
 
   const relativeResult: AnalysisResult = {
     ...result,
+    projectRoot: ".",
     nodes: result.nodes.map((n) => ({
       ...n,
       id: toRelative(n.id),
+      absolutePath: toRelative(n.absolutePath),
       relativePath: toRelative(n.relativePath || n.id),
     })),
     edges: result.edges.map((e) => ({
@@ -74,7 +76,35 @@ export function toJson(result: AnalysisResult): string {
       : undefined,
   };
 
-  return JSON.stringify(relativeResult, null, 2);
+  return JSON.stringify(redactSecrets(relativeResult), null, 2);
+}
+
+function redactSecrets<T>(value: T): T {
+  if (typeof value === "string") return redactString(value) as T;
+  if (Array.isArray(value)) return value.map(redactSecrets) as T;
+  if (value && typeof value === "object") {
+    const safe = Object.create(null) as Record<string, unknown>;
+    for (const [key, child] of Object.entries(value as Record<string, unknown>)) {
+      if (key === "__proto__" || key === "prototype" || key === "constructor") continue;
+      safe[key] = redactSecrets(child);
+    }
+    return safe as T;
+  }
+  return value;
+}
+
+function redactString(value: string): string {
+  return value
+    .replace(/\b(?:gh[pousr]_[A-Za-z0-9_]{20,}|github_pat_[A-Za-z0-9_]{20,})\b/g, "[REDACTED]")
+    .replace(/\bAKIA[0-9A-Z]{16}\b/g, "[REDACTED]")
+    .replace(
+      /((?:api[_-]?key|token|secret|password|authorization)\s*[:=]\s*["']?)[^\s"',;]+/gi,
+      "$1[REDACTED]"
+    )
+    .replace(
+      /-----BEGIN [A-Z ]*PRIVATE KEY-----[\s\S]*?-----END [A-Z ]*PRIVATE KEY-----/g,
+      "[REDACTED PRIVATE KEY]"
+    );
 }
 
 /**
