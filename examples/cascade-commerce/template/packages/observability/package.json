@@ -1,0 +1,4 @@
+{
+  "name": "@cascade-demo/observability",
+  "types": "src/index.ts"
+}

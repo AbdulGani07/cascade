@@ -49,6 +49,10 @@ jobs:
       - name: Validate documentation
         run: pnpm run test:docs
 
+      - name: Verify reproducible product demo
+        if: matrix.node-version == 22
+        run: pnpm run demo:setup && pnpm run demo:verify
+
       - name: Stable graph performance regression
         if: matrix.node-version == 22
         run: pnpm run benchmark:regression

@@ -26,6 +26,9 @@
     "benchmark": "node benchmarks/run.mjs",
     "benchmark:performance": "node --expose-gc benchmarks/performance.mjs",
     "benchmark:regression": "node benchmarks/regression.mjs",
+    "demo:setup": "node examples/cascade-commerce/scripts/setup-demo.mjs",
+    "demo:reports": "node examples/cascade-commerce/scripts/generate-reports.mjs",
+    "demo:verify": "node examples/cascade-commerce/scripts/verify-demo.mjs",
     "clean": "npm run clean --workspaces",
     "check": "npm run lint && npm run build && npm run typecheck && npm run test && npm run test:docs"
   },

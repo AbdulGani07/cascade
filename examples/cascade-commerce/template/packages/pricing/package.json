@@ -1,0 +1,7 @@
+{
+  "name": "@cascade-demo/pricing",
+  "types": "src/index.ts",
+  "dependencies": {
+    "@cascade-demo/contracts": "workspace:*"
+  }
+}

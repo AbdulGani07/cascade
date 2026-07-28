@@ -1,0 +1,7 @@
+services:
+  api:
+    build: ../services/api
+  fulfillment-worker:
+    build: ../services/fulfillment-worker
+  notification:
+    build: ../services/notification

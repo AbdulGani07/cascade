@@ -1,0 +1,9 @@
+{
+  "name": "cascade-commerce-demo",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "services/api",
+    "packages/*"
+  ]
+}

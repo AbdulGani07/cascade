@@ -5,6 +5,8 @@ dist/
 *.vsix
 **/.vsix-stage*/
 packages/vscode-extension/packages/
+.cascade-demo/
+examples/cascade-commerce/media-assets/generated/
 
 .DS_Store
 Thumbs.db

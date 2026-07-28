@@ -10,6 +10,7 @@ const ignoredDirectories = new Set([
   "dist",
   "coverage",
   ".cascade-cache",
+  ".cascade-demo",
   ".vsix-stage",
   ".vsix-stage2",
 ]);

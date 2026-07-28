@@ -45,6 +45,14 @@ Languages                  typescript
 Counts depend on the repository. `analyze` exits with `1` when cycles or dead
 files are reported, `2` for invalid input, and `3` for analysis failure.
 
+## Reproducible product demo
+
+The [Cascade Commerce demo](examples/cascade-commerce/README.md) generates a
+small TypeScript, Node.js, Python, and Go repository with real Git refs for a
+cycle-introducing PR and a safe dead-code removal. Its scripts invoke the built
+CLI to produce terminal, JSON, Markdown, SARIF, HTML, and dashboard artifacts;
+the committed screenshots are captured from that generated dataset.
+
 ## What Cascade provides
 
 - File and project dependency graphs with forward and reverse indexes

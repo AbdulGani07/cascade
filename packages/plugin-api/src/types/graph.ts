@@ -215,4 +215,6 @@ export interface AnalysisResult {
   projectGraph?: import("./project.js").ProjectGraph;
   projectImpact?: Record<string, import("./project.js").ProjectImpactReport>;
   governance?: import("./governance.js").ArchitectureGovernanceReport;
+  /** Optional Git comparison attached for dashboard and exported dataset views. */
+  gitImpact?: import("./gitImpact.js").GitImpactReport;
 }

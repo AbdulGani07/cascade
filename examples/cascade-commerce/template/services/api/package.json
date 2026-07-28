@@ -1,0 +1,9 @@
+{
+  "name": "@cascade-demo/api",
+  "private": true,
+  "dependencies": {
+    "@cascade-demo/contracts": "workspace:*",
+    "@cascade-demo/observability": "workspace:*",
+    "@cascade-demo/pricing": "workspace:*"
+  }
+}

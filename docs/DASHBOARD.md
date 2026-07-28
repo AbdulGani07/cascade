@@ -9,9 +9,15 @@ The dashboard is a local interface for exploring repository, project, file, pack
 ```bash
 pnpm run build
 node packages/cli/dist/index.js dashboard .
+node packages/cli/dist/index.js dashboard . --base main --head HEAD
 ```
 
 The server binds to `127.0.0.1`, chooses port 4000 or an available fallback, and opens a tokenized URL. It remains active until the CLI process stops.
+Use `--no-open` for scripted capture and `--output <file>` to retain the exact
+dataset. Supplying `--base` attaches Git change impact, affected tests, and risk
+evidence to the pull-request dashboard views.
+Use `--output-only` with `--output` when generating a dataset without starting
+the local server.
 
 ## Interaction
 

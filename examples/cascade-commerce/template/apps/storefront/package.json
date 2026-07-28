@@ -1,0 +1,8 @@
+{
+  "name": "@cascade-demo/storefront",
+  "private": true,
+  "dependencies": {
+    "@cascade-demo/contracts": "workspace:*",
+    "@cascade-demo/pricing": "workspace:*"
+  }
+}

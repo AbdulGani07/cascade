@@ -1,0 +1,4 @@
+{
+  "name": "@cascade-demo/contracts",
+  "types": "src/index.ts"
+}

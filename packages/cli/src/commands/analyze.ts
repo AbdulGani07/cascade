@@ -5,6 +5,12 @@ import { analyze, toJson } from "@cascade/core";
 import { printError, printHeading, printSuccess, printWarning } from "../ui/printer.js";
 import { renderTable } from "../ui/tableRenderer.js";
 
+interface AnalyzeCommandOptions {
+  json?: boolean;
+  compact?: boolean;
+  verbose?: boolean;
+}
+
 /**
  * Registers the analyze command that runs a complete Cascade project analysis.
  */
@@ -13,8 +19,9 @@ export function registerAnalyzeCommand(program: Command): void {
     .command("analyze <path>")
     .description("Run full analysis and print a summary")
     .option("--json", "output raw JSON instead of a formatted summary")
+    .option("--compact", "print a concise summary for narrow terminals")
     .option("--verbose", "show detailed error information")
-    .action((projectPath: string, options: { json?: boolean; verbose?: boolean }) => {
+    .action((projectPath: string, options: AnalyzeCommandOptions) => {
       try {
         const absolutePath = path.resolve(projectPath);
         if (!fs.existsSync(absolutePath)) {
@@ -33,43 +40,36 @@ export function registerAnalyzeCommand(program: Command): void {
 
         printHeading("CASCADE Architecture Analysis Summary");
 
-        console.log(
-          renderTable(
-            ["Metric", "Value"],
+        const summaryRows = [
+          ["Total Scanned Modules", String(result.nodes.length)],
+          ["Dependency Connections", String(result.edges.length)],
+          [
+            "Detected Projects",
+            String(result.projectGraph?.nodes.length ?? result.projects?.length ?? 0),
+          ],
+          ["Project Relationships", String(result.projectGraph?.edges.length ?? 0)],
+          ["Package Cycles", String(result.projectGraph?.cycles.length ?? 0)],
+          ["Detected Entry Points", String(result.entryPoints.length)],
+          ["Circular Import Loops", String(result.cycles.length)],
+          ["Unreferenced Dead Files", String(result.deadFiles.length)],
+          [
+            "Unresolved Imports",
+            String(result.edges.filter((edge) => edge.resolutionStatus === "unresolved").length),
+          ],
+          ["Languages", [...new Set(result.nodes.map((node) => node.language))].sort().join(", ")],
+          [
+            "Analysis Levels",
             [
-              ["Total Scanned Modules", String(result.nodes.length)],
-              ["Dependency Connections", String(result.edges.length)],
-              [
-                "Detected Projects",
-                String(result.projectGraph?.nodes.length ?? result.projects?.length ?? 0),
-              ],
-              ["Project Relationships", String(result.projectGraph?.edges.length ?? 0)],
-              ["Package Cycles", String(result.projectGraph?.cycles.length ?? 0)],
-              ["Detected Entry Points", String(result.entryPoints.length)],
-              ["Circular Import Loops", String(result.cycles.length)],
-              ["Unreferenced Dead Files", String(result.deadFiles.length)],
-              [
-                "Unresolved Imports",
-                String(
-                  result.edges.filter((edge) => edge.resolutionStatus === "unresolved").length
-                ),
-              ],
-              [
-                "Languages",
-                [...new Set(result.nodes.map((node) => node.language))].sort().join(", "),
-              ],
-              [
-                "Analysis Levels",
-                [
-                  ...new Set(
-                    (result.pluginManifests ?? []).flatMap((plugin) => plugin.analysisLevels ?? [])
-                  ),
-                ]
-                  .sort()
-                  .join(", "),
-              ],
+              ...new Set(
+                (result.pluginManifests ?? []).flatMap((plugin) => plugin.analysisLevels ?? [])
+              ),
             ]
-          )
+              .sort()
+              .join(", "),
+          ],
+        ];
+        console.log(
+          renderTable(["Metric", "Value"], options.compact ? summaryRows.slice(0, 9) : summaryRows)
         );
 
         if (result.cycles.length === 0) {
@@ -77,12 +77,20 @@ export function registerAnalyzeCommand(program: Command): void {
         } else {
           printWarning(`${result.cycles.length} dependency cycle(s) detected:`);
 
-          console.log(
-            renderTable(
-              ["Circular Dependency Loop"],
-              result.cycles.map((cycle: string[]) => [cycle.join(" ➔ ")])
-            )
-          );
+          if (options.compact) {
+            console.log(
+              result.cycles
+                .map((cycle, index) => `  Cycle ${index + 1}:\n    ${cycle.join("\n    → ")}`)
+                .join("\n")
+            );
+          } else {
+            console.log(
+              renderTable(
+                ["Circular Dependency Loop"],
+                result.cycles.map((cycle: string[]) => [cycle.join(" ➔ ")])
+              )
+            );
+          }
         }
 
         if (result.deadFiles.length === 0) {
@@ -98,7 +106,7 @@ export function registerAnalyzeCommand(program: Command): void {
           );
         }
 
-        if (result.entryPoints.length > 0) {
+        if (result.entryPoints.length > 0 && !options.compact) {
           printHeading("Entry Points");
           console.log(
             renderTable(

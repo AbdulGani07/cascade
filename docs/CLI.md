@@ -27,10 +27,13 @@ Cascade checkout.
 ```bash
 cascade analyze .
 cascade analyze . --json
+cascade analyze . --compact
 ```
 
 `--json` prints schema 2.0 analysis JSON. Exit status is `1` when cycles or dead
 files are present.
+`--compact` omits capability and entry-point detail for readable narrow-terminal
+demos while preserving measured finding counts.
 
 ### `graph <path>`
 
@@ -107,9 +110,15 @@ cascade governance . --format sarif
 
 ```bash
 cascade dashboard .
+cascade dashboard . --base main --head HEAD --output cascade-dashboard.json
+cascade dashboard . --base main --head HEAD --output cascade-dashboard.json --output-only
+cascade dashboard . --no-open
 ```
 
 Starts a token-protected loopback server and opens the browser.
+`--base` attaches the implemented Git change-impact report to the dashboard;
+`--output` writes the same dataset served by the local API.
+`--output-only` requires `--output` and exits without starting the local server.
 
 ## Setup and diagnostics
 
