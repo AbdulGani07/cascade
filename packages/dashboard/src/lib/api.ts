@@ -87,6 +87,15 @@ export type AnalysisResult = {
     analysisLevels: string[];
     limitations: { knownIssues: string[]; unsupportedFeatures: string[] };
   }[];
+  gitImpact?: {
+    base: string;
+    head: string;
+    changedFiles: { path: string; kind: string }[];
+    affected: { id: string; category: string; confidence: string }[];
+    affectedTests: { id: string; confidence: string }[];
+    introducedCycles: string[][];
+    risk: { score: number; level: string; disclaimer: string };
+  };
 };
 
 /**

@@ -214,4 +214,5 @@ export interface AnalysisResult {
   projects?: import("./project.js").ProjectInfo[];
   projectGraph?: import("./project.js").ProjectGraph;
   projectImpact?: Record<string, import("./project.js").ProjectImpactReport>;
+  governance?: import("./governance.js").ArchitectureGovernanceReport;
 }

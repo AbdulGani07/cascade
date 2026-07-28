@@ -39,6 +39,12 @@ Additional commands:
 node packages/cli/dist/index.js graph test-project
 node packages/cli/dist/index.js graph test-project --project
 node packages/cli/dist/index.js projects test-project
+node packages/cli/dist/index.js diff . --base main --head HEAD --format json
+node packages/cli/dist/index.js affected . --base main
+node packages/cli/dist/index.js affected-tests . --base main
+node packages/cli/dist/index.js risk . --base main --format markdown
+node packages/cli/dist/index.js explain . --base main --item src/index.ts
+node packages/cli/dist/index.js governance test-project --format markdown
 node packages/cli/dist/index.js deadcode test-project
 node packages/cli/dist/index.js impact test-project
 node packages/cli/dist/index.js dashboard test-project
@@ -87,3 +93,5 @@ pnpm check
 - [C and C++ capability matrices](docs/C_CPP_SUPPORT.md)
 - [Expanded Batches B–D capability matrices](docs/EXPANDED_LANGUAGE_SUPPORT.md)
 - [Project and workspace intelligence](docs/PROJECT_WORKSPACE_INTELLIGENCE.md)
+- [Git change-impact analysis](docs/GIT_CHANGE_IMPACT.md)
+- Architecture governance is configured through versioned `architectureGovernance` rules in `cascade.config.json`; use `cascade governance` for terminal, JSON, Markdown, or SARIF findings.

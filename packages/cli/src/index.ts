@@ -7,6 +7,8 @@ import { registerImpactCommand } from "./commands/impact.js";
 import { registerDeadcodeCommand } from "./commands/deadcode.js";
 import { registerDashboardCommand } from "./commands/dashboard.js";
 import { registerProjectsCommand } from "./commands/projects.js";
+import { registerChangeImpactCommands } from "./commands/changeImpact.js";
+import { registerGovernanceCommand } from "./commands/governance.js";
 
 /**
  * Cascade CLI entry point.
@@ -28,5 +30,7 @@ registerImpactCommand(program);
 registerDeadcodeCommand(program);
 registerDashboardCommand(program);
 registerProjectsCommand(program);
+registerChangeImpactCommands(program);
+registerGovernanceCommand(program);
 
 program.parse(process.argv);

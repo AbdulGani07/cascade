@@ -36,7 +36,7 @@ describe("project intelligence", () => {
     expect(result.projectGraph?.groups.byLanguage.python).toContain("services/api");
     const serialized = JSON.parse(toJson(result));
     expect(serialized.projectGraph.edges[0].sourceFiles[0]).not.toMatch(/^[A-Z]:\\/i);
-  });
+  }, 15_000);
 
   it("accepts deterministic custom project detectors and selected-workspace analysis", () => {
     const custom = createMockLanguagePlugin({

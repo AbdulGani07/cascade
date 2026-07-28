@@ -26,6 +26,34 @@ export interface CascadeConfig {
   selectedProjects?: string[];
   /** Deterministic local corrections for unusual repository layouts. */
   projectOverrides?: Record<string, { name?: string; projectType?: string; ignore?: boolean }>;
+  gitImpact?: {
+    riskWeights?: Partial<
+      Record<
+        | "changedFiles"
+        | "directDependents"
+        | "transitiveDependents"
+        | "entryPoints"
+        | "publicSymbols"
+        | "tests"
+        | "services"
+        | "introducedCycles"
+        | "architectureViolations"
+        | "unresolvedDependencies"
+        | "ownershipBoundaries"
+        | "criticalPath",
+        number
+      >
+    >;
+    testMappings?: Record<string, string[]>;
+    coverageMap?: Record<string, string[]>;
+    criticalPaths?: string[];
+    architectureRules?: Array<{ id: string; from: string; to: string }>;
+  };
+  architectureGovernance?: {
+    version: "1";
+    rules: import("@cascade/plugin-api").ArchitectureRule[];
+    suppressions?: import("@cascade/plugin-api").ArchitectureSuppression[];
+  };
 }
 
 export const defaultConfig: CascadeConfig = {
@@ -174,6 +202,14 @@ export const defaultConfig: CascadeConfig = {
   analyzeNotebooks: false,
   selectedProjects: [],
   projectOverrides: {},
+  gitImpact: {
+    riskWeights: {},
+    testMappings: {},
+    coverageMap: {},
+    criticalPaths: [],
+    architectureRules: [],
+  },
+  architectureGovernance: { version: "1", rules: [], suppressions: [] },
 };
 
 export function loadCascadeConfig(projectRoot: string): CascadeConfig {
@@ -226,10 +262,31 @@ export function loadCascadeConfig(projectRoot: string): CascadeConfig {
         parsed.projectOverrides && typeof parsed.projectOverrides === "object"
           ? parsed.projectOverrides
           : defaultConfig.projectOverrides,
+      gitImpact:
+        parsed.gitImpact && typeof parsed.gitImpact === "object"
+          ? parsed.gitImpact
+          : defaultConfig.gitImpact,
+      architectureGovernance: validateGovernance(parsed.architectureGovernance),
     };
   } catch (err) {
     throw new Error(
       `Failed to load cascade.config.json at ${configPath}: ${(err as Error).message}`
     );
   }
+}
+
+function validateGovernance(value: unknown): CascadeConfig["architectureGovernance"] {
+  if (!value) return defaultConfig.architectureGovernance;
+  if (
+    !value ||
+    typeof value !== "object" ||
+    (value as { version?: unknown }).version !== "1" ||
+    !Array.isArray((value as { rules?: unknown }).rules)
+  )
+    throw new Error("architectureGovernance must use version '1' and contain a rules array.");
+  const rules = (value as { rules: unknown[] }).rules;
+  for (const rule of rules)
+    if (!rule || typeof rule !== "object" || typeof (rule as { id?: unknown }).id !== "string")
+      throw new Error("Each architectureGovernance rule requires a string id.");
+  return value as NonNullable<CascadeConfig["architectureGovernance"]>;
 }

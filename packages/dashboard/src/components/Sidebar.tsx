@@ -175,6 +175,21 @@ export default function Sidebar({
           </div>
         </div>
       )}
+      {analysisData.gitImpact && (
+        <div className="mb-3 rounded-xl border border-amber-500/30 bg-amber-950/20 p-2 text-[10px] text-amber-200">
+          <div className="mb-1 flex justify-between font-semibold">
+            <span>Git change impact</span>
+            <span>
+              {analysisData.gitImpact.risk.score}/100 · {analysisData.gitImpact.risk.level}
+            </span>
+          </div>
+          <div className="font-mono text-amber-300/80">
+            {analysisData.gitImpact.changedFiles.length} changed ·{" "}
+            {analysisData.gitImpact.affected.length} affected ·{" "}
+            {analysisData.gitImpact.affectedTests.length} test candidates
+          </div>
+        </div>
+      )}
 
       {/* Search Bar */}
       <div className="relative mb-3">

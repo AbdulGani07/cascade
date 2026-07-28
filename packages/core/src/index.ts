@@ -6,6 +6,8 @@ export * from "./export/jsonExporter.js";
 export * from "./plugins/pluginRegistry.js";
 export * from "./utils/pathUtils.js";
 export * from "./analysis/projectGraph.js";
+export * from "./analysis/gitImpact.js";
+export * from "./analysis/governance.js";
 
 import { AnalysisResult, ImpactReport, LanguagePlugin } from "@cascade/plugin-api";
 import { loadCascadeConfig, CascadeConfig } from "@cascade/config";
@@ -43,6 +45,7 @@ import { detectCycles } from "./graph/cycleDetector.js";
 import { findDeadCode } from "./analysis/deadCodeAnalyzer.js";
 import { simulateDeletion } from "./analysis/impactSimulator.js";
 import { detectProjectIntelligence } from "./analysis/projectGraph.js";
+import { evaluateGovernance } from "./analysis/governance.js";
 
 export interface AnalyzeOptions {
   config?: CascadeConfig;
@@ -218,6 +221,21 @@ export function analyze(projectRoot: string, options?: AnalyzeOptions): Analysis
             ),
           },
         ])
+    ),
+    governance: evaluateGovernance(
+      {
+        version: "2.0",
+        generatedAt: "",
+        projectRoot,
+        nodes: Array.from(graph.nodes.values()),
+        edges: graph.edges,
+        cycles,
+        deadFiles,
+        entryPoints: entryPointIds,
+        impact,
+        warnings,
+      },
+      config
     ),
   };
 }
