@@ -17,6 +17,10 @@ export interface ProjectInfo {
   workspaces: WorkspacePackage[];
   configFiles: string[];
   frameworks?: string[];
+  /** Build ecosystem inferred from structured manifests. */
+  buildSystem?: "npm" | "pnpm" | "yarn" | "maven" | "gradle" | "dotnet" | "go" | "python" | "mixed";
+  /** Logical modules/projects declared by the build system. */
+  modules?: Array<{ name: string; relativePath: string; kind?: string }>;
 }
 
 export interface ProjectDetector {

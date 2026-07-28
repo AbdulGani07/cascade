@@ -1,0 +1,6 @@
+<project>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.acme</groupId><artifactId>platform</artifactId><version>1.0.0</version>
+  <packaging>pom</packaging>
+  <modules><module>api</module><module>app</module></modules>
+</project>

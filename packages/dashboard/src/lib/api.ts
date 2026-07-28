@@ -10,6 +10,8 @@ export type AnalysisResult = {
     id: string;
     isEntryPoint: boolean;
     language: string;
+    project?: string;
+    packageOrWorkspace?: string;
   }[];
   edges: {
     from: string;
@@ -34,6 +36,21 @@ export type AnalysisResult = {
   warnings: {
     file: string;
     message: string;
+  }[];
+  projects?: {
+    id: string;
+    name: string;
+    projectType: string;
+    buildSystem?: string;
+    frameworks?: string[];
+    modules?: { name: string; relativePath: string; kind?: string }[];
+  }[];
+  pluginManifests?: {
+    id: string;
+    name: string;
+    version: string;
+    supportedExtensions: string[];
+    capabilities: Record<string, boolean>;
   }[];
 };
 

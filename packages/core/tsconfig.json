@@ -15,7 +15,11 @@
     { "path": "../reporters" },
     { "path": "../language-javascript" },
     { "path": "../language-typescript" },
-    { "path": "../language-python" }
+    { "path": "../language-python" },
+    { "path": "../language-java" },
+    { "path": "../language-kotlin" },
+    { "path": "../language-csharp" },
+    { "path": "../language-go" }
   ],
   "include": ["src/**/*"]
 }

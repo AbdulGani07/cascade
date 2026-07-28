@@ -21,6 +21,10 @@ export default defineConfig({
         "packages/language-typescript/src/index.ts"
       ),
       "@cascade/language-python": path.resolve(__dirname, "packages/language-python/src/index.ts"),
+      "@cascade/language-java": path.resolve(__dirname, "packages/language-java/src/index.ts"),
+      "@cascade/language-kotlin": path.resolve(__dirname, "packages/language-kotlin/src/index.ts"),
+      "@cascade/language-csharp": path.resolve(__dirname, "packages/language-csharp/src/index.ts"),
+      "@cascade/language-go": path.resolve(__dirname, "packages/language-go/src/index.ts"),
       "@cascade/test-utils": path.resolve(__dirname, "packages/test-utils/src/index.ts"),
       "@cascade/core": path.resolve(__dirname, "packages/core/src/index.ts"),
     },

@@ -7,6 +7,10 @@
     { "path": "./packages/language-javascript" },
     { "path": "./packages/language-typescript" },
     { "path": "./packages/language-python" },
+    { "path": "./packages/language-java" },
+    { "path": "./packages/language-kotlin" },
+    { "path": "./packages/language-csharp" },
+    { "path": "./packages/language-go" },
     { "path": "./packages/test-utils" },
     { "path": "./packages/core" },
     { "path": "./packages/cli" }

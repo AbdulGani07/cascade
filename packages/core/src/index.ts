@@ -11,6 +11,10 @@ import { loadCascadeConfig, CascadeConfig } from "@cascade/config";
 import { createJavaScriptPlugin } from "@cascade/language-javascript";
 import { createTypeScriptPlugin } from "@cascade/language-typescript";
 import { createPythonPlugin } from "@cascade/language-python";
+import { createJavaPlugin } from "@cascade/language-java";
+import { createKotlinPlugin } from "@cascade/language-kotlin";
+import { createCSharpPlugin } from "@cascade/language-csharp";
+import { createGoPlugin } from "@cascade/language-go";
 import { PluginRegistry } from "./plugins/pluginRegistry.js";
 import { scanFiles } from "./parser/fileScanner.js";
 import { detectEntryPointEvidence } from "./analysis/entryPointDetector.js";
@@ -37,6 +41,10 @@ export function analyze(projectRoot: string, options?: AnalyzeOptions): Analysis
   registry.registerPlugin(createTypeScriptPlugin(), { priority: 100 });
   registry.registerPlugin(createJavaScriptPlugin(), { priority: 50 });
   registry.registerPlugin(createPythonPlugin(), { priority: 80 });
+  registry.registerPlugin(createJavaPlugin(), { priority: 75 });
+  registry.registerPlugin(createKotlinPlugin(), { priority: 75 });
+  registry.registerPlugin(createCSharpPlugin(), { priority: 75 });
+  registry.registerPlugin(createGoPlugin(), { priority: 75 });
 
   // 2. Register custom user plugins if provided
   if (options?.customPlugins) {
@@ -51,6 +59,18 @@ export function analyze(projectRoot: string, options?: AnalyzeOptions): Analysis
   // 4. Discover project files using plugins
   const nodes = scanFiles(projectRoot, config, registry);
   const projects = detectProjects(projectRoot, nodes);
+  for (const node of nodes) {
+    const project = [...projects]
+      .filter((candidate) => {
+        const relative = candidate.id === "." ? "" : `${candidate.id.replace(/\\/g, "/")}/`;
+        return node.relativePath.startsWith(relative);
+      })
+      .sort((left, right) => right.id.length - left.id.length)[0];
+    if (project) {
+      node.project = project.id;
+      node.packageOrWorkspace = project.name;
+    }
+  }
 
   // 5. Detect entry points
   const entryPointEvidence = detectEntryPointEvidence(projectRoot, nodes, config, registry);

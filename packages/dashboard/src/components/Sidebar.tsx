@@ -23,6 +23,8 @@ export default function Sidebar({
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<FilterType>("all");
   const [language, setLanguage] = useState("all");
+  const [project, setProject] = useState("all");
+  const [buildSystem, setBuildSystem] = useState("all");
 
   const cycleFiles = new Set(analysisData.cycles.flat());
 
@@ -38,7 +40,10 @@ export default function Sidebar({
     const status = getFileStatus(node.id);
     const matchesFilter = filter === "all" || status === filter;
     const matchesLanguage = language === "all" || node.language === language;
-    return matchesSearch && matchesFilter && matchesLanguage;
+    const matchesProject = project === "all" || node.project === project;
+    const nodeProject = analysisData.projects?.find((candidate) => candidate.id === node.project);
+    const matchesBuild = buildSystem === "all" || nodeProject?.buildSystem === buildSystem;
+    return matchesSearch && matchesFilter && matchesLanguage && matchesProject && matchesBuild;
   });
 
   const counts = {
@@ -98,6 +103,59 @@ export default function Sidebar({
           </option>
         ))}
       </select>
+      <div className="mb-3 grid grid-cols-2 gap-2">
+        <select
+          value={project}
+          onChange={(event) => setProject(event.target.value)}
+          aria-label="Filter by project"
+          className="w-full rounded-xl border border-slate-800 bg-slate-900 px-2 py-2 text-xs text-slate-300"
+        >
+          <option value="all">All projects</option>
+          {(analysisData.projects ?? []).map((item) => (
+            <option key={item.id} value={item.id}>
+              {item.name}
+            </option>
+          ))}
+        </select>
+        <select
+          value={buildSystem}
+          onChange={(event) => setBuildSystem(event.target.value)}
+          aria-label="Filter by build system"
+          className="w-full rounded-xl border border-slate-800 bg-slate-900 px-2 py-2 text-xs text-slate-300"
+        >
+          <option value="all">All builds</option>
+          {[
+            ...new Set(
+              (analysisData.projects ?? []).map((item) => item.buildSystem).filter(Boolean)
+            ),
+          ]
+            .sort()
+            .map((item) => (
+              <option key={item} value={item}>
+                {item}
+              </option>
+            ))}
+        </select>
+      </div>
+      <div className="mb-3 flex flex-wrap gap-1" aria-label="Language capabilities">
+        {(analysisData.pluginManifests ?? []).map((plugin) => (
+          <span
+            key={plugin.id}
+            title={Object.entries(plugin.capabilities)
+              .filter(([, enabled]) => enabled)
+              .map(([name]) => name)
+              .join(", ")}
+            className="rounded border border-slate-700 bg-slate-900 px-1.5 py-0.5 text-[10px] text-slate-400"
+          >
+            {plugin.id.replace("cascade-language-", "")} · AST
+          </span>
+        ))}
+        {new Set(analysisData.nodes.map((node) => node.language)).size > 1 && (
+          <span className="rounded border border-violet-500/40 bg-violet-950/40 px-1.5 py-0.5 text-[10px] text-violet-300">
+            mixed-language
+          </span>
+        )}
+      </div>
 
       {/* Search Bar */}
       <div className="relative mb-3">

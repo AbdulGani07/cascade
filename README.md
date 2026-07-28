@@ -52,6 +52,10 @@ pnpm check
 - `@cascade/language-javascript` — Language plugin for JavaScript/JSX parsing and dependency extraction
 - `@cascade/language-typescript` — Language plugin for TypeScript/TSX parsing, type-only imports, and symbol extraction
 - `@cascade/language-python` — Python/Python-stub dependency extraction, package resolution, framework detection, and diagnostics
+- `@cascade/language-java` — Java AST analysis with Maven, Gradle, JPMS, Spring Boot, and JUnit awareness
+- `@cascade/language-kotlin` — Kotlin AST analysis for JVM, Gradle Kotlin DSL, Android, and multiplatform projects
+- `@cascade/language-csharp` — C# AST analysis with SDK projects, solutions, project references, and ASP.NET Core awareness
+- `@cascade/language-go` — Go AST analysis with modules, workspaces, replace directives, internal packages, and cgo evidence
 - `@cascade/reporters` — Diagnostic reporters including Markdown summary (`MarkdownReporter`) and SARIF 2.1.0 (`SarifReporter`)
 - `@cascade/cli` — Command-line interface and terminal user interface
 - `@cascade/dashboard` — Interactive React Flow graph visualizer
@@ -66,3 +70,6 @@ pnpm check
 - [Architecture audit and roadmap](CASCADE_AUDIT_AND_ROADMAP.md)
 - [JavaScript/TypeScript support matrices](docs/LANGUAGE_SUPPORT.md)
 - [Python support and capability matrix](docs/PYTHON_SUPPORT.md)
+- [Java and Kotlin capability matrices](docs/JVM_LANGUAGE_SUPPORT.md)
+- [C# capability matrix](docs/languages/csharp.md)
+- [Go capability matrix](docs/GO_SUPPORT.md)

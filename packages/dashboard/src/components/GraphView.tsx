@@ -136,6 +136,11 @@ function getLayoutedElements(
       source: edge.from,
       target: edge.to,
       animated: isHighlightedEdge,
+      label:
+        edge.confidence !== undefined && edge.confidence < 1
+          ? `${Math.round(edge.confidence * 100)}%`
+          : undefined,
+      labelStyle: { fill: "#94a3b8", fontSize: 9 },
       type: "smoothstep",
       markerEnd: {
         type: MarkerType.ArrowClosed,

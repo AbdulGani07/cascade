@@ -1,0 +1,31 @@
+{
+  "name": "@cascade/language-kotlin",
+  "version": "2.2.0",
+  "description": "First-party Kotlin language analysis plugin for Cascade",
+  "type": "module",
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -b tsconfig.json --force",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@cascade/plugin-api": "workspace:*",
+    "tree-sitter": "^0.22.4",
+    "@tree-sitter-grammars/tree-sitter-kotlin": "^1.1.0"
+  },
+  "license": "MIT"
+}

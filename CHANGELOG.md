@@ -5,6 +5,25 @@ All notable changes to Cascade will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.2.0] - 2026-07-28
+
+Released at `2026-07-28T13:28:17+06:00`.
+
+### Added
+
+- First-party structured Tree-sitter plugins for Java, Kotlin, C#, and Go.
+- Maven, Gradle, Android, Kotlin Multiplatform, `.csproj`, `.sln`, Go module, and Go workspace metadata awareness.
+- Language-specific package/module resolution, entry-point detection, test/generated-source detection, parse diagnostics, resolution diagnostics, confidence, and evidence.
+- Project/build-system grouping, language capability badges, confidence labels, and mixed-language indicators in the dashboard.
+- Realistic JVM, Android, .NET, ASP.NET Core, Go module/workspace, and mixed-language fixtures with regression coverage.
+- Language-specific parser benchmarks in addition to graph-scale benchmarks.
+
+### Changed
+
+- Source nodes are assigned to the most specific detected build project.
+- Build outputs and generated JVM/.NET directories are ignored by default.
+- Cross-language edges remain restricted to resolvers that identify an actual target file; unresolved build relationships remain diagnostics.
+
 ## [2.1.0] - 2026-07-28
 
 Released at `2026-07-28T10:51:41+06:00`.
