@@ -41,6 +41,7 @@ Community process: [Contributing](../CONTRIBUTING.md), [Governance](GOVERNANCE.m
 
 ## Operations and project
 
+- [Product positioning and competitive evidence](STRATEGY.md)
 - [Performance](PERFORMANCE.md)
 - [Security](SECURITY.md)
 - [Troubleshooting](TROUBLESHOOTING.md)
