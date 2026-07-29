@@ -1,11 +1,23 @@
 import { execFileSync } from "node:child_process";
-import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync } from "node:fs";
+import {
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  readdirSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 
 const root = path.resolve(import.meta.dirname, "..");
 const packageRoot = path.join(root, "packages");
 const repositoryUrl = "https://github.com/AbdulGani07/cascade.git";
+const runPackageManager = (command, args, options) =>
+  process.platform === "win32"
+    ? execFileSync(process.env.ComSpec ?? "cmd.exe", ["/d", "/s", "/c", command, ...args], options)
+    : execFileSync(command, args, options);
 const publicNames = new Set([
   "@cascade-code/cli",
   "@cascade-code/config",
@@ -116,13 +128,12 @@ if (process.argv.includes("--pack")) {
   try {
     const tarballs = [];
     for (const { directory, manifest } of manifests.filter(({ manifest }) => !manifest.private)) {
-      const output = execFileSync(
+      const output = runPackageManager(
         "pnpm",
         ["pack", ".", "--pack-destination", temp, "--json"],
         {
           cwd: path.join(packageRoot, directory),
           encoding: "utf8",
-          shell: process.platform === "win32",
         },
       );
       const parsed = JSON.parse(output);
@@ -136,21 +147,71 @@ if (process.argv.includes("--pack")) {
       );
       tarballs.push(path.isAbsolute(result.filename) ? result.filename : path.join(temp, result.filename));
     }
-    execFileSync("npm", ["init", "-y"], {
+    runPackageManager("npm", ["init", "-y"], {
       cwd: smoke,
       stdio: "ignore",
-      shell: process.platform === "win32",
     });
-    execFileSync("npm", ["install", "--ignore-scripts", "--no-audit", "--no-fund", ...tarballs], {
-      cwd: smoke,
-      stdio: "inherit",
-      shell: process.platform === "win32",
-    });
+    runPackageManager(
+      "npm",
+      ["install", "--ignore-scripts", "--no-audit", "--no-fund", ...tarballs],
+      {
+        cwd: smoke,
+        stdio: "inherit",
+      },
+    );
     execFileSync(
       process.execPath,
       [path.join(smoke, "node_modules", "@cascade-code", "cli", "dist", "index.js"), "--help"],
       { cwd: smoke, stdio: "inherit" },
     );
+    const installedCli = path.join(
+      smoke,
+      "node_modules",
+      "@cascade-code",
+      "cli",
+      "dist",
+      "index.js",
+    );
+    const consumer = path.join(smoke, "consumer project (\u03b2)");
+    mkdirSync(path.join(consumer, "src"), { recursive: true });
+    writeFileSync(
+      path.join(consumer, "package.json"),
+      JSON.stringify({ name: "cascade-release-smoke", private: true, main: "src/index.ts" }),
+    );
+    writeFileSync(
+      path.join(consumer, "src", "index.ts"),
+      'import { value } from "./value.js";\nconsole.log(value);\n',
+    );
+    writeFileSync(path.join(consumer, "src", "value.ts"), "export const value = 42;\n");
+    const analysisOutput = execFileSync(
+      process.execPath,
+      [installedCli, "analyze", consumer, "--json"],
+      { cwd: smoke, encoding: "utf8" },
+    );
+    const analysis = JSON.parse(analysisOutput);
+    const analyzedPaths = new Set(analysis.nodes.map((node) => node.relativePath));
+    assert(analyzedPaths.has("src/index.ts"), "installed CLI analysis missed src/index.ts");
+    assert(analyzedPaths.has("src/value.ts"), "installed CLI analysis missed src/value.ts");
+    assert(
+      analysis.edges.length === 1,
+      `installed CLI analysis resolved ${analysis.edges.length} smoke imports instead of 1`,
+    );
+    assert(!analysisOutput.includes(consumer), "installed CLI output leaked the absolute project path");
+    const dashboardOutput = path.join(smoke, "reports", "dashboard.json");
+    execFileSync(
+      process.execPath,
+      [
+        installedCli,
+        "dashboard",
+        consumer,
+        "--output",
+        dashboardOutput,
+        "--output-only",
+        "--no-open",
+      ],
+      { cwd: smoke, stdio: "inherit" },
+    );
+    assert(statSync(dashboardOutput).isFile(), "installed CLI dashboard report was not generated");
     assert(
       statSync(
         path.join(smoke, "node_modules", "@cascade-code", "cli", "dist", "dashboard", "index.html"),
