@@ -57,8 +57,8 @@ export interface CascadeConfig {
   };
   architectureGovernance?: {
     version: "1";
-    rules: import("@cascade/plugin-api").ArchitectureRule[];
-    suppressions?: import("@cascade/plugin-api").ArchitectureSuppression[];
+    rules: import("@cascade-code/plugin-api").ArchitectureRule[];
+    suppressions?: import("@cascade-code/plugin-api").ArchitectureSuppression[];
   };
 }
 

@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import { DependencyNode, ProjectInfo, WorkspacePackage } from "@cascade/plugin-api";
+import { DependencyNode, ProjectInfo, WorkspacePackage } from "@cascade-code/plugin-api";
 import { toPosixRelativePath } from "../utils/pathUtils.js";
 
 export function detectProjects(projectRoot: string, nodes: DependencyNode[]): ProjectInfo[] {

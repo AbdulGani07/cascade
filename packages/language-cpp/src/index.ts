@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import Parser from "tree-sitter";
 import Cpp from "tree-sitter-cpp";
-import { extractCDependencies, resolveNativeInclude } from "@cascade/language-c";
+import { extractCDependencies, resolveNativeInclude } from "@cascade-code/language-c";
 import type {
   EntryPointHint,
   ExtractionContext,
@@ -14,7 +14,7 @@ import type {
   SourceLocation,
   SymbolDeclaration,
   SymbolExtractionResult,
-} from "@cascade/plugin-api";
+} from "@cascade-code/plugin-api";
 
 type CppTree = Parser.Tree;
 type CppNode = Parser.SyntaxNode;

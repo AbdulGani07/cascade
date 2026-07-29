@@ -1,5 +1,5 @@
 import { Command } from "commander";
-import { analyze, analyzeGitImpact, toJson } from "@cascade/core";
+import { analyze, analyzeGitImpact, toJson } from "@cascade-code/core";
 import { printHeading, printSuccess, printError } from "../ui/printer.js";
 import http from "node:http";
 import open from "open";
@@ -17,8 +17,8 @@ function resolveDashboardDist(): string | null {
     path.resolve(currentDir, "../dashboard"),
     path.resolve(currentDir, "../../../dashboard/dist"),
     path.resolve(currentDir, "../../dashboard/dist"),
-    path.resolve(currentDir, "../node_modules/@cascade/dashboard/dist"),
-    path.resolve(currentDir, "../../../node_modules/@cascade/dashboard/dist"),
+    path.resolve(currentDir, "../node_modules/@cascade-code/dashboard/dist"),
+    path.resolve(currentDir, "../../../node_modules/@cascade-code/dashboard/dist"),
     path.resolve(process.cwd(), "packages/dashboard/dist"),
     path.resolve(process.cwd(), "dist"),
   ];
@@ -96,7 +96,7 @@ export function registerDashboardCommand(program: Command): void {
           const dashboardDist = resolveDashboardDist();
           if (!dashboardDist) {
             printError(
-              "Dashboard assets not found. Please build @cascade/dashboard (`pnpm run build`) before opening dashboard."
+              "Dashboard assets not found. Please build @cascade-code/dashboard (`pnpm run build`) before opening dashboard."
             );
             process.exitCode = 2;
             return;

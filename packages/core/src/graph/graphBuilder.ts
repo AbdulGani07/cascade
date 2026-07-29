@@ -7,10 +7,10 @@ import {
   DependencyEdge,
   Warning,
   ParseDiagnostic,
-} from "@cascade/plugin-api";
+} from "@cascade-code/plugin-api";
 import { PluginRegistry } from "../plugins/pluginRegistry.js";
 import { toPosixRelativePath } from "../utils/pathUtils.js";
-import { CascadeConfig } from "@cascade/config";
+import { CascadeConfig } from "@cascade-code/config";
 import { ProjectModuleResolver } from "../resolution/projectResolver.js";
 
 /**

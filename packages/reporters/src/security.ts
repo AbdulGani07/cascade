@@ -1,4 +1,4 @@
-import type { AnalysisResult } from "@cascade/plugin-api";
+import type { AnalysisResult } from "@cascade-code/plugin-api";
 
 export function safeReportResult(result: AnalysisResult): AnalysisResult {
   const serialized = JSON.stringify(result, (_key, value) =>

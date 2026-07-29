@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import readline from "node:readline";
 import { Worker } from "node:worker_threads";
-import type { AnalysisResult } from "@cascade/plugin-api";
+import type { AnalysisResult } from "@cascade-code/plugin-api";
 import {
   EDITOR_PROTOCOL_VERSION,
   type EditorRequest,

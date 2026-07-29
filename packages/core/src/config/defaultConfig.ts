@@ -1,1 +1,1 @@
-export { defaultConfig } from "@cascade/config";
+export { defaultConfig } from "@cascade-code/config";

@@ -1,5 +1,5 @@
 {
-  "name": "@cascade/config",
+  "name": "@cascade-code/config",
   "version": "3.3.0",
   "description": "Configuration schema, loader, and plugin prioritization settings for Cascade",
   "type": "module",
@@ -28,7 +28,7 @@
     "directory": "packages/config"
   },
   "dependencies": {
-    "@cascade/plugin-api": "workspace:^"
+    "@cascade-code/plugin-api": "workspace:^"
   },
   "license": "MIT",
   "private": false,

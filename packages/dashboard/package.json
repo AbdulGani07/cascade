@@ -1,5 +1,5 @@
 {
-  "name": "@cascade/dashboard",
+  "name": "@cascade-code/dashboard",
   "version": "3.3.0",
   "description": "Visual dependency graph dashboard interface for Cascade",
   "type": "module",

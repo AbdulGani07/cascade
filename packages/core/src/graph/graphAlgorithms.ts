@@ -1,4 +1,4 @@
-import { Graph } from "@cascade/plugin-api";
+import { Graph } from "@cascade-code/plugin-api";
 
 /**
  * Performs a BFS to find all nodes reachable from the starting set.

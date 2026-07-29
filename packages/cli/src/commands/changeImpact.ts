@@ -1,8 +1,8 @@
 import fs from "node:fs";
 import path from "node:path";
 import { Command } from "commander";
-import { analyzeGitImpact } from "@cascade/core";
-import type { GitImpactReport } from "@cascade/plugin-api";
+import { analyzeGitImpact } from "@cascade-code/core";
+import type { GitImpactReport } from "@cascade-code/plugin-api";
 import { printError } from "../ui/printer.js";
 import { renderTable } from "../ui/tableRenderer.js";
 

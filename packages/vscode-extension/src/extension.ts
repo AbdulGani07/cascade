@@ -2,7 +2,11 @@ import { spawn, type ChildProcess } from "node:child_process";
 import { createRequire } from "node:module";
 import path from "node:path";
 import * as vscode from "vscode";
-import type { EditorDiagnostic, ServiceLimits, WorkspaceHealth } from "@cascade/editor-service";
+import type {
+  EditorDiagnostic,
+  ServiceLimits,
+  WorkspaceHealth,
+} from "@cascade-code/editor-service";
 import { ProcessServiceClient } from "./client.js";
 import { CascadeEditorController, type EditorHost, type EditorWorkspace } from "./controller.js";
 
@@ -107,7 +111,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
       if (!configuredCli) {
         try {
           command = process.execPath;
-          args = [require.resolve("@cascade/cli"), "dashboard", workspace.root];
+          args = [require.resolve("@cascade-code/cli"), "dashboard", workspace.root];
         } catch {
           // Use the globally installed cascade command.
         }
@@ -122,7 +126,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
       child.once("exit", () => dashboardProcesses.delete(child));
       child.once("error", (error) =>
         vscode.window.showErrorMessage(
-          `Cannot start Cascade dashboard: ${error.message}. Install @cascade/cli or configure cascade.cliPath.`
+          `Cannot start Cascade dashboard: ${error.message}. Install @cascade-code/cli or configure cascade.cliPath.`
         )
       );
       child.unref();

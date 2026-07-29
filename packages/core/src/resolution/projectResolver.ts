@@ -1,8 +1,12 @@
 import fs from "node:fs";
 import path from "node:path";
 import ts from "typescript";
-import { ExtractedDependency, ParseDiagnostic, ResolvedModuleResult } from "@cascade/plugin-api";
-import { CascadeConfig } from "@cascade/config";
+import {
+  ExtractedDependency,
+  ParseDiagnostic,
+  ResolvedModuleResult,
+} from "@cascade-code/plugin-api";
+import { CascadeConfig } from "@cascade-code/config";
 import { toPosixRelativePath } from "../utils/pathUtils.js";
 
 const CODE_EXTENSIONS = [

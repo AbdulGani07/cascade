@@ -6,9 +6,28 @@ import path from "node:path";
 const root = path.resolve(import.meta.dirname, "..");
 const packageRoot = path.join(root, "packages");
 const repositoryUrl = "https://github.com/AbdulGani07/cascade.git";
+const publicNames = new Set([
+  "@cascade-code/cli",
+  "@cascade-code/config",
+  "@cascade-code/core",
+  "@cascade-code/editor-service",
+  "@cascade-code/language-c",
+  "@cascade-code/language-cpp",
+  "@cascade-code/language-csharp",
+  "@cascade-code/language-expanded",
+  "@cascade-code/language-go",
+  "@cascade-code/language-java",
+  "@cascade-code/language-javascript",
+  "@cascade-code/language-kotlin",
+  "@cascade-code/language-python",
+  "@cascade-code/language-rust",
+  "@cascade-code/language-typescript",
+  "@cascade-code/plugin-api",
+  "@cascade-code/reporters",
+]);
 const privateNames = new Set([
-  "@cascade/dashboard",
-  "@cascade/test-utils",
+  "@cascade-code/dashboard",
+  "@cascade-code/test-utils",
   "cascade-code-intelligence",
 ]);
 const manifests = readdirSync(packageRoot)
@@ -34,6 +53,10 @@ const assert = (condition, message) => {
 };
 
 assert(manifests.length === 20, `expected 20 workspaces, found ${manifests.length}`);
+assert(
+  manifests.filter(({ manifest }) => !manifest.private).length === publicNames.size,
+  `expected ${publicNames.size} public packages`,
+);
 for (const { directory, manifest } of manifests) {
   const isPrivate = privateNames.has(manifest.name);
   assert(manifest.version === "3.3.0", `${manifest.name}: expected lockstep version 3.3.0`);
@@ -48,6 +71,7 @@ for (const { directory, manifest } of manifests) {
   if (isPrivate) {
     assert(!manifest.publishConfig, `${manifest.name}: private package has publishConfig`);
   } else {
+    assert(publicNames.has(manifest.name), `${manifest.name}: unexpected public package name`);
     assert(manifest.publishConfig?.access === "public", `${manifest.name}: public access missing`);
     assert(
       manifest.publishConfig?.provenance === true,
@@ -60,18 +84,19 @@ for (const { directory, manifest } of manifests) {
   }
   for (const field of ["dependencies", "peerDependencies", "optionalDependencies"]) {
     for (const [name, version] of Object.entries(manifest[field] ?? {})) {
-      if (name.startsWith("@cascade/")) {
+      assert(!name.startsWith("@cascade/"), `${manifest.name}: stale dependency ${name}`);
+      if (name.startsWith("@cascade-code/")) {
         assert(version === "workspace:^", `${manifest.name}: ${field}.${name} must use workspace:^`);
       }
     }
   }
 }
 
-const cli = manifests.find(({ manifest }) => manifest.name === "@cascade/cli")?.manifest;
-assert(cli?.files?.includes("dist/dashboard"), "@cascade/cli: dashboard assets not allowlisted");
+const cli = manifests.find(({ manifest }) => manifest.name === "@cascade-code/cli")?.manifest;
+assert(cli?.files?.includes("dist/dashboard"), "@cascade-code/cli: dashboard assets not allowlisted");
 assert(
   statSync(path.join(packageRoot, "cli", "dist", "dashboard", "index.html")).isFile(),
-  "@cascade/cli: built dashboard index is missing",
+  "@cascade-code/cli: built dashboard index is missing",
 );
 
 if (failures.length) {
@@ -123,12 +148,12 @@ if (process.argv.includes("--pack")) {
     });
     execFileSync(
       process.execPath,
-      [path.join(smoke, "node_modules", "@cascade", "cli", "dist", "index.js"), "--help"],
+      [path.join(smoke, "node_modules", "@cascade-code", "cli", "dist", "index.js"), "--help"],
       { cwd: smoke, stdio: "inherit" },
     );
     assert(
       statSync(
-        path.join(smoke, "node_modules", "@cascade", "cli", "dist", "dashboard", "index.html"),
+        path.join(smoke, "node_modules", "@cascade-code", "cli", "dist", "dashboard", "index.html"),
       ).isFile(),
       "installed CLI dashboard asset missing",
     );

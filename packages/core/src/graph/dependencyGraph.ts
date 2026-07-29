@@ -1,5 +1,5 @@
 import path from "node:path";
-import { DependencyNode } from "@cascade/plugin-api";
+import { DependencyNode } from "@cascade-code/plugin-api";
 
 /**
  * Legacy specifier resolver retained for backwards compatibility.

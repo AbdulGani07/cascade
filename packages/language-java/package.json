@@ -1,5 +1,5 @@
 {
-  "name": "@cascade/language-java",
+  "name": "@cascade-code/language-java",
   "version": "3.3.0",
   "description": "First-party Java language analysis plugin for Cascade",
   "type": "module",
@@ -23,7 +23,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@cascade/plugin-api": "workspace:^",
+    "@cascade-code/plugin-api": "workspace:^",
     "tree-sitter": "^0.22.4",
     "tree-sitter-java": "^0.23.5"
   },

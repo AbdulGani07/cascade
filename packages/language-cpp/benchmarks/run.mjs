@@ -1,7 +1,7 @@
 import { performance } from "node:perf_hooks";
 import Parser from "tree-sitter";
 import Cpp from "tree-sitter-cpp";
-import { extractCDependencies } from "@cascade/language-c";
+import { extractCDependencies } from "@cascade-code/language-c";
 
 const parser = new Parser();
 parser.setLanguage(Cpp);

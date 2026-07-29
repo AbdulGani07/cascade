@@ -1,7 +1,11 @@
 import { spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
 import { createRequire } from "node:module";
 import readline from "node:readline";
-import type { EditorRequestMethod, EditorResponse, ServiceLimits } from "@cascade/editor-service";
+import type {
+  EditorRequestMethod,
+  EditorResponse,
+  ServiceLimits,
+} from "@cascade-code/editor-service";
 
 export interface ServiceClient {
   request<T>(
@@ -42,7 +46,7 @@ export class ProcessServiceClient implements ServiceClient {
       for (const pending of this.pending.values())
         pending.reject(
           new Error(
-            `Cannot start the local Cascade editor service: ${error.message}. Install @cascade/editor-service or configure cascade.servicePath.`
+            `Cannot start the local Cascade editor service: ${error.message}. Install @cascade-code/editor-service or configure cascade.servicePath.`
           )
         );
       this.pending.clear();
@@ -113,7 +117,10 @@ function resolveServerLaunch(configuredServerPath?: string): { command: string; 
   }
   const require = createRequire(import.meta.url);
   try {
-    return { command: process.execPath, args: [require.resolve("@cascade/editor-service/server")] };
+    return {
+      command: process.execPath,
+      args: [require.resolve("@cascade-code/editor-service/server")],
+    };
   } catch {
     return { command: "cascade-editor-service", args: [] };
   }

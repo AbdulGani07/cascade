@@ -8,7 +8,7 @@ import type {
   ProjectImpactReport,
   ProjectInfo,
   ProjectRelationship,
-} from "@cascade/plugin-api";
+} from "@cascade-code/plugin-api";
 import { toPosixRelativePath } from "../utils/pathUtils.js";
 import { detectCycles } from "../graph/cycleDetector.js";
 import { detectProjects } from "./projectDetector.js";

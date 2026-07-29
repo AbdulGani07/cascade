@@ -2,9 +2,9 @@ import {
   loadCascadeConfig,
   defaultConfig as pkgDefaultConfig,
   CascadeConfig,
-} from "@cascade/config";
+} from "@cascade-code/config";
 
-export { defaultConfig } from "@cascade/config";
+export { defaultConfig } from "@cascade-code/config";
 
 export function loadConfig(projectRoot: string): CascadeConfig {
   try {

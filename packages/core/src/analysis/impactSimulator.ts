@@ -1,4 +1,4 @@
-import { Graph, ImpactReport, DependencyEdge } from "@cascade/plugin-api";
+import { Graph, ImpactReport, DependencyEdge } from "@cascade-code/plugin-api";
 import { reverseReachableFrom } from "../graph/graphAlgorithms.js";
 
 /**

@@ -1,8 +1,8 @@
 import fs from "node:fs";
 import path from "node:path";
 import { minimatch } from "minimatch";
-import { DependencyNode } from "@cascade/plugin-api";
-import { CascadeConfig } from "@cascade/config";
+import { DependencyNode } from "@cascade-code/plugin-api";
+import { CascadeConfig } from "@cascade-code/config";
 import { PluginRegistry } from "../plugins/pluginRegistry.js";
 import { toPosixRelativePath } from "../utils/pathUtils.js";
 

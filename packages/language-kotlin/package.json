@@ -1,5 +1,5 @@
 {
-  "name": "@cascade/language-kotlin",
+  "name": "@cascade-code/language-kotlin",
   "version": "3.3.0",
   "description": "First-party Kotlin language analysis plugin for Cascade",
   "type": "module",
@@ -23,7 +23,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@cascade/plugin-api": "workspace:^",
+    "@cascade-code/plugin-api": "workspace:^",
     "tree-sitter": "^0.22.4",
     "@tree-sitter-grammars/tree-sitter-kotlin": "^1.1.0"
   },

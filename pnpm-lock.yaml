@@ -63,16 +63,16 @@ importers:
 
   packages/cli:
     dependencies:
-      '@cascade/config':
+      '@cascade-code/config':
         specifier: workspace:^
         version: link:../config
-      '@cascade/core':
+      '@cascade-code/core':
         specifier: workspace:^
         version: link:../core
-      '@cascade/plugin-api':
+      '@cascade-code/plugin-api':
         specifier: workspace:^
         version: link:../plugin-api
-      '@cascade/reporters':
+      '@cascade-code/reporters':
         specifier: workspace:^
         version: link:../reporters
       cli-table3:
@@ -93,52 +93,52 @@ importers:
 
   packages/config:
     dependencies:
-      '@cascade/plugin-api':
+      '@cascade-code/plugin-api':
         specifier: workspace:^
         version: link:../plugin-api
 
   packages/core:
     dependencies:
-      '@cascade/config':
+      '@cascade-code/config':
         specifier: workspace:^
         version: link:../config
-      '@cascade/language-c':
+      '@cascade-code/language-c':
         specifier: workspace:^
         version: link:../language-c
-      '@cascade/language-cpp':
+      '@cascade-code/language-cpp':
         specifier: workspace:^
         version: link:../language-cpp
-      '@cascade/language-csharp':
+      '@cascade-code/language-csharp':
         specifier: workspace:^
         version: link:../language-csharp
-      '@cascade/language-expanded':
+      '@cascade-code/language-expanded':
         specifier: workspace:^
         version: link:../language-expanded
-      '@cascade/language-go':
+      '@cascade-code/language-go':
         specifier: workspace:^
         version: link:../language-go
-      '@cascade/language-java':
+      '@cascade-code/language-java':
         specifier: workspace:^
         version: link:../language-java
-      '@cascade/language-javascript':
+      '@cascade-code/language-javascript':
         specifier: workspace:^
         version: link:../language-javascript
-      '@cascade/language-kotlin':
+      '@cascade-code/language-kotlin':
         specifier: workspace:^
         version: link:../language-kotlin
-      '@cascade/language-python':
+      '@cascade-code/language-python':
         specifier: workspace:^
         version: link:../language-python
-      '@cascade/language-rust':
+      '@cascade-code/language-rust':
         specifier: workspace:^
         version: link:../language-rust
-      '@cascade/language-typescript':
+      '@cascade-code/language-typescript':
         specifier: workspace:^
         version: link:../language-typescript
-      '@cascade/plugin-api':
+      '@cascade-code/plugin-api':
         specifier: workspace:^
         version: link:../plugin-api
-      '@cascade/reporters':
+      '@cascade-code/reporters':
         specifier: workspace:^
         version: link:../reporters
       minimatch:
@@ -202,19 +202,19 @@ importers:
 
   packages/editor-service:
     dependencies:
-      '@cascade/config':
+      '@cascade-code/config':
         specifier: workspace:^
         version: link:../config
-      '@cascade/core':
+      '@cascade-code/core':
         specifier: workspace:^
         version: link:../core
-      '@cascade/plugin-api':
+      '@cascade-code/plugin-api':
         specifier: workspace:^
         version: link:../plugin-api
 
   packages/language-c:
     dependencies:
-      '@cascade/plugin-api':
+      '@cascade-code/plugin-api':
         specifier: workspace:^
         version: link:../plugin-api
       tree-sitter:
@@ -226,10 +226,10 @@ importers:
 
   packages/language-cpp:
     dependencies:
-      '@cascade/language-c':
+      '@cascade-code/language-c':
         specifier: workspace:^
         version: link:../language-c
-      '@cascade/plugin-api':
+      '@cascade-code/plugin-api':
         specifier: workspace:^
         version: link:../plugin-api
       tree-sitter:
@@ -241,7 +241,7 @@ importers:
 
   packages/language-csharp:
     dependencies:
-      '@cascade/plugin-api':
+      '@cascade-code/plugin-api':
         specifier: workspace:^
         version: link:../plugin-api
       tree-sitter:
@@ -253,7 +253,7 @@ importers:
 
   packages/language-expanded:
     dependencies:
-      '@cascade/plugin-api':
+      '@cascade-code/plugin-api':
         specifier: workspace:^
         version: link:../plugin-api
     devDependencies:
@@ -266,7 +266,7 @@ importers:
 
   packages/language-go:
     dependencies:
-      '@cascade/plugin-api':
+      '@cascade-code/plugin-api':
         specifier: workspace:^
         version: link:../plugin-api
       tree-sitter:
@@ -278,7 +278,7 @@ importers:
 
   packages/language-java:
     dependencies:
-      '@cascade/plugin-api':
+      '@cascade-code/plugin-api':
         specifier: workspace:^
         version: link:../plugin-api
       tree-sitter:
@@ -290,7 +290,7 @@ importers:
 
   packages/language-javascript:
     dependencies:
-      '@cascade/plugin-api':
+      '@cascade-code/plugin-api':
         specifier: workspace:^
         version: link:../plugin-api
       tree-sitter:
@@ -305,7 +305,7 @@ importers:
 
   packages/language-kotlin:
     dependencies:
-      '@cascade/plugin-api':
+      '@cascade-code/plugin-api':
         specifier: workspace:^
         version: link:../plugin-api
       '@tree-sitter-grammars/tree-sitter-kotlin':
@@ -317,13 +317,13 @@ importers:
 
   packages/language-python:
     dependencies:
-      '@cascade/plugin-api':
+      '@cascade-code/plugin-api':
         specifier: workspace:^
         version: link:../plugin-api
 
   packages/language-rust:
     dependencies:
-      '@cascade/plugin-api':
+      '@cascade-code/plugin-api':
         specifier: workspace:^
         version: link:../plugin-api
       tree-sitter:
@@ -335,10 +335,10 @@ importers:
 
   packages/language-typescript:
     dependencies:
-      '@cascade/language-javascript':
+      '@cascade-code/language-javascript':
         specifier: workspace:^
         version: link:../language-javascript
-      '@cascade/plugin-api':
+      '@cascade-code/plugin-api':
         specifier: workspace:^
         version: link:../plugin-api
       tree-sitter:
@@ -352,22 +352,22 @@ importers:
 
   packages/reporters:
     dependencies:
-      '@cascade/plugin-api':
+      '@cascade-code/plugin-api':
         specifier: workspace:^
         version: link:../plugin-api
 
   packages/test-utils:
     dependencies:
-      '@cascade/plugin-api':
+      '@cascade-code/plugin-api':
         specifier: workspace:^
         version: link:../plugin-api
 
   packages/vscode-extension:
     devDependencies:
-      '@cascade/cli':
+      '@cascade-code/cli':
         specifier: workspace:^
         version: link:../cli
-      '@cascade/editor-service':
+      '@cascade-code/editor-service':
         specifier: workspace:^
         version: link:../editor-service
       '@types/vscode':

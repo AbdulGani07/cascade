@@ -1,7 +1,7 @@
 import path from "node:path";
 import fs from "node:fs";
-import { analyze } from "@cascade/core";
-import type { AnalysisResult, DependencyEdge } from "@cascade/plugin-api";
+import { analyze } from "@cascade-code/core";
+import type { AnalysisResult, DependencyEdge } from "@cascade-code/plugin-api";
 import type {
   AffectedTest,
   DependencyLookup,

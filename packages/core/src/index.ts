@@ -11,18 +11,18 @@ export * from "./analysis/gitImpact.js";
 export * from "./analysis/governance.js";
 export * from "./graph/cycleDetector.js";
 
-import { AnalysisResult, ImpactReport, LanguagePlugin } from "@cascade/plugin-api";
-import { loadCascadeConfig, CascadeConfig } from "@cascade/config";
-import { createJavaScriptPlugin } from "@cascade/language-javascript";
-import { createTypeScriptPlugin } from "@cascade/language-typescript";
-import { createPythonPlugin } from "@cascade/language-python";
-import { createJavaPlugin } from "@cascade/language-java";
-import { createKotlinPlugin } from "@cascade/language-kotlin";
-import { createCSharpPlugin } from "@cascade/language-csharp";
-import { createGoPlugin } from "@cascade/language-go";
-import { createRustPlugin } from "@cascade/language-rust";
-import { createCPlugin } from "@cascade/language-c";
-import { createCppPlugin } from "@cascade/language-cpp";
+import { AnalysisResult, ImpactReport, LanguagePlugin } from "@cascade-code/plugin-api";
+import { loadCascadeConfig, CascadeConfig } from "@cascade-code/config";
+import { createJavaScriptPlugin } from "@cascade-code/language-javascript";
+import { createTypeScriptPlugin } from "@cascade-code/language-typescript";
+import { createPythonPlugin } from "@cascade-code/language-python";
+import { createJavaPlugin } from "@cascade-code/language-java";
+import { createKotlinPlugin } from "@cascade-code/language-kotlin";
+import { createCSharpPlugin } from "@cascade-code/language-csharp";
+import { createGoPlugin } from "@cascade-code/language-go";
+import { createRustPlugin } from "@cascade-code/language-rust";
+import { createCPlugin } from "@cascade-code/language-c";
+import { createCppPlugin } from "@cascade-code/language-cpp";
 import {
   createDartPlugin,
   createGraphqlPlugin,
@@ -38,7 +38,7 @@ import {
   createSveltePlugin,
   createSwiftPlugin,
   createVuePlugin,
-} from "@cascade/language-expanded";
+} from "@cascade-code/language-expanded";
 import { PluginRegistry } from "./plugins/pluginRegistry.js";
 import { scanFiles } from "./parser/fileScanner.js";
 import { detectEntryPointEvidence } from "./analysis/entryPointDetector.js";

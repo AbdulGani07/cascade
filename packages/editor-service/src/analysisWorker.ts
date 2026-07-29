@@ -1,5 +1,5 @@
 import { parentPort } from "node:worker_threads";
-import { analyze } from "@cascade/core";
+import { analyze } from "@cascade-code/core";
 
 if (!parentPort) throw new Error("Cascade analysis worker requires a parent port.");
 

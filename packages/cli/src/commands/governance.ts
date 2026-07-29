@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { Command } from "commander";
-import { analyze } from "@cascade/core";
+import { analyze } from "@cascade-code/core";
 import { printError } from "../ui/printer.js";
 import { renderTable } from "../ui/tableRenderer.js";
 

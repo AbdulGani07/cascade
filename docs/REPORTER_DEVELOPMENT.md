@@ -4,10 +4,10 @@ Reporters transform an `AnalysisResult` into a serialized format. They must not 
 
 ## Contract
 
-Implement `Reporter` from `@cascade/plugin-api`:
+Implement `Reporter` from `@cascade-code/plugin-api`:
 
 ```ts
-import type { Reporter } from "@cascade/plugin-api";
+import type { Reporter } from "@cascade-code/plugin-api";
 
 export const textReporter: Reporter = {
   id: "example-text",

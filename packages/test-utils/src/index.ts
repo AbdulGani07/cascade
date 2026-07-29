@@ -7,7 +7,7 @@ import {
   ParseContext,
   ExtractionContext,
   ResolutionContext,
-} from "@cascade/plugin-api";
+} from "@cascade-code/plugin-api";
 
 export function createMockLanguagePlugin(overrides?: Partial<LanguagePlugin>): LanguagePlugin {
   const defaultPlugin: LanguagePlugin = {

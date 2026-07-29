@@ -17,7 +17,7 @@ import type {
   SourceLocation,
   SymbolDeclaration,
   SymbolExtractionResult,
-} from "@cascade/plugin-api";
+} from "@cascade-code/plugin-api";
 
 type SyntaxNode = Parser.SyntaxNode;
 type JavaAst = { tree: Parser.Tree; packageName?: string };

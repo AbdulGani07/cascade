@@ -1,5 +1,5 @@
 {
-  "name": "@cascade/monorepo",
+  "name": "@cascade-code/monorepo",
   "private": true,
   "version": "3.3.0",
   "description": "Cascade — Dependency intelligence and change-impact analysis platform",

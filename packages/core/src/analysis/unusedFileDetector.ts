@@ -1,4 +1,4 @@
-import { Graph, DependencyNode } from "@cascade/plugin-api";
+import { Graph, DependencyNode } from "@cascade-code/plugin-api";
 import { findDeadFiles } from "./deadCodeAnalyzer.js";
 
 /**

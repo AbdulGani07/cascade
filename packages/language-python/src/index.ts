@@ -10,7 +10,7 @@ import type {
   ResolvedModuleResult,
   SourceLocation,
   SymbolDeclaration,
-} from "@cascade/plugin-api";
+} from "@cascade-code/plugin-api";
 
 const STDLIB = new Set(
   "abc argparse asyncio ast base64 builtins collections concurrent contextlib csv dataclasses datetime decimal enum functools glob hashlib http importlib inspect io itertools json logging math multiprocessing os pathlib pickle platform queue random re shutil signal socket sqlite3 statistics string subprocess sys tempfile threading time traceback types typing unittest urllib uuid warnings weakref xml zipfile zoneinfo".split(

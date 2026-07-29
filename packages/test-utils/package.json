@@ -1,5 +1,5 @@
 {
-  "name": "@cascade/test-utils",
+  "name": "@cascade-code/test-utils",
   "version": "3.3.0",
   "description": "Test utilities and capability assertion helpers for Cascade plugins",
   "type": "module",
@@ -28,7 +28,7 @@
     "directory": "packages/test-utils"
   },
   "dependencies": {
-    "@cascade/plugin-api": "workspace:^"
+    "@cascade-code/plugin-api": "workspace:^"
   },
   "license": "MIT",
   "private": true

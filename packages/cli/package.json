@@ -1,5 +1,5 @@
 {
-  "name": "@cascade/cli",
+  "name": "@cascade-code/cli",
   "version": "3.3.0",
   "description": "Command-line interface for Cascade code-intelligence analysis",
   "type": "module",
@@ -39,10 +39,10 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "@cascade/config": "workspace:^",
-    "@cascade/core": "workspace:^",
-    "@cascade/plugin-api": "workspace:^",
-    "@cascade/reporters": "workspace:^",
+    "@cascade-code/config": "workspace:^",
+    "@cascade-code/core": "workspace:^",
+    "@cascade-code/plugin-api": "workspace:^",
+    "@cascade-code/reporters": "workspace:^",
     "cli-table3": "^0.6.5",
     "commander": "^15.0.0",
     "open": "^11.0.0",

@@ -1,5 +1,5 @@
 {
-  "name": "@cascade/editor-service",
+  "name": "@cascade-code/editor-service",
   "version": "3.3.0",
   "description": "Local editor integration service for Cascade code intelligence",
   "type": "module",
@@ -39,9 +39,9 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "@cascade/config": "workspace:^",
-    "@cascade/core": "workspace:^",
-    "@cascade/plugin-api": "workspace:^"
+    "@cascade-code/config": "workspace:^",
+    "@cascade-code/core": "workspace:^",
+    "@cascade-code/plugin-api": "workspace:^"
   },
   "private": false,
   "publishConfig": {

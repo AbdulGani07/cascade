@@ -16,7 +16,7 @@ import type {
   SourceLocation,
   SymbolDeclaration,
   SymbolExtractionResult,
-} from "@cascade/plugin-api";
+} from "@cascade-code/plugin-api";
 
 type SyntaxNode = Parser.SyntaxNode;
 type KotlinAst = { tree: Parser.Tree; packageName?: string };

@@ -1,5 +1,5 @@
 {
-  "name": "@cascade/language-cpp",
+  "name": "@cascade-code/language-cpp",
   "version": "3.3.0",
   "description": "First-party C++ language plugin for Cascade",
   "type": "module",
@@ -24,8 +24,8 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@cascade/language-c": "workspace:^",
-    "@cascade/plugin-api": "workspace:^",
+    "@cascade-code/language-c": "workspace:^",
+    "@cascade-code/plugin-api": "workspace:^",
     "tree-sitter": "^0.22.4",
     "tree-sitter-cpp": "^0.23.4"
   },

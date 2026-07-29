@@ -2,7 +2,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { Command } from "commander";
-import { loadCascadeConfig } from "@cascade/config";
+import { loadCascadeConfig } from "@cascade-code/config";
 
 const configTemplate =
   JSON.stringify(

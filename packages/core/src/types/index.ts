@@ -1,5 +1,5 @@
-export * from "@cascade/plugin-api";
-import { CascadeConfig } from "@cascade/config";
+export * from "@cascade-code/plugin-api";
+import { CascadeConfig } from "@cascade-code/config";
 
 export type ResolvedConfig = CascadeConfig;
 export type { CascadeConfig };

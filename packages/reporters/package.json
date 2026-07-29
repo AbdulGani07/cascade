@@ -1,5 +1,5 @@
 {
-  "name": "@cascade/reporters",
+  "name": "@cascade-code/reporters",
   "version": "3.3.0",
   "description": "Standard reporters (JSON, Text/Table, Markdown, SARIF) for Cascade analysis results",
   "type": "module",
@@ -28,7 +28,7 @@
     "directory": "packages/reporters"
   },
   "dependencies": {
-    "@cascade/plugin-api": "workspace:^"
+    "@cascade-code/plugin-api": "workspace:^"
   },
   "license": "MIT",
   "private": false,

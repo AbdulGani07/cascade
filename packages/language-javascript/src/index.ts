@@ -14,7 +14,7 @@ import {
   ResolutionContext,
   ResolvedModuleResult,
   EntryPointHint,
-} from "@cascade/plugin-api";
+} from "@cascade-code/plugin-api";
 import { extractScriptDependencies } from "./scriptDependencyExtractor.js";
 
 export { extractScriptDependencies } from "./scriptDependencyExtractor.js";

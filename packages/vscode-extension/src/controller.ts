@@ -6,7 +6,7 @@ import type {
   ImpactLookup,
   WorkspaceDescriptor,
   WorkspaceHealth,
-} from "@cascade/editor-service";
+} from "@cascade-code/editor-service";
 import type { ServiceClient } from "./client.js";
 
 export const CASCADE_COMMANDS = [

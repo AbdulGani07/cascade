@@ -2,7 +2,7 @@ import fs from "node:fs";
 import Parser from "tree-sitter";
 import TypeScript from "tree-sitter-typescript";
 import JavaScript from "tree-sitter-javascript";
-import { DependencyNode, Warning } from "@cascade/plugin-api";
+import { DependencyNode, Warning } from "@cascade-code/plugin-api";
 
 interface RawImport {
   specifier: string;

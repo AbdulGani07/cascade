@@ -9,8 +9,8 @@ import {
   ResolutionContext,
   ResolvedModuleResult,
   ParseDiagnostic,
-} from "@cascade/plugin-api";
-import { CascadeConfig, PluginConfigSetting } from "@cascade/config";
+} from "@cascade-code/plugin-api";
+import { CascadeConfig, PluginConfigSetting } from "@cascade-code/config";
 
 export interface RegisteredPluginEntry {
   plugin: LanguagePlugin;

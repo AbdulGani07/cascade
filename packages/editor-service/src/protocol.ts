@@ -3,7 +3,7 @@ import type {
   DependencyEdge,
   EntryPointEvidence,
   ParseDiagnostic,
-} from "@cascade/plugin-api";
+} from "@cascade-code/plugin-api";
 
 export const EDITOR_PROTOCOL_VERSION = "1.0";
 

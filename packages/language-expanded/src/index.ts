@@ -10,7 +10,7 @@ import type {
   ResolutionContext,
   ResolvedModuleResult,
   SourceLocation,
-} from "@cascade/plugin-api";
+} from "@cascade-code/plugin-api";
 
 type TokenKind = "word" | "string" | "symbol" | "comment";
 interface Token {

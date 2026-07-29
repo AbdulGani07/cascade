@@ -1,5 +1,5 @@
 {
-  "name": "@cascade/language-rust",
+  "name": "@cascade-code/language-rust",
   "version": "3.3.0",
   "description": "First-party Rust language plugin for Cascade",
   "type": "module",
@@ -24,7 +24,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@cascade/plugin-api": "workspace:^",
+    "@cascade-code/plugin-api": "workspace:^",
     "tree-sitter": "^0.22.4",
     "tree-sitter-rust": "^0.24.0"
   },

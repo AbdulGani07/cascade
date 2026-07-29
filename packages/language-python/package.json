@@ -1,5 +1,5 @@
 {
-  "name": "@cascade/language-python",
+  "name": "@cascade-code/language-python",
   "version": "3.3.0",
   "description": "First-party Python language plugin for Cascade",
   "type": "module",
@@ -23,7 +23,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@cascade/plugin-api": "workspace:^"
+    "@cascade-code/plugin-api": "workspace:^"
   },
   "license": "MIT",
   "private": false,

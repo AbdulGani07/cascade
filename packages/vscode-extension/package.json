@@ -119,8 +119,8 @@
     "clean": "rm -rf dist"
   },
   "devDependencies": {
-    "@cascade/cli": "workspace:^",
-    "@cascade/editor-service": "workspace:^",
+    "@cascade-code/cli": "workspace:^",
+    "@cascade-code/editor-service": "workspace:^",
     "@types/vscode": "^1.96.0",
     "@vscode/vsce": "^3.9.2"
   },

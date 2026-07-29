@@ -15,7 +15,7 @@ import type {
   SourceLocation,
   SymbolDeclaration,
   SymbolExtractionResult,
-} from "@cascade/plugin-api";
+} from "@cascade-code/plugin-api";
 
 type NativeTree = Parser.Tree;
 type NativeNode = Parser.SyntaxNode;

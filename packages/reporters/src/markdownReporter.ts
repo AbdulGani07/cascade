@@ -1,4 +1,4 @@
-import { AnalysisResult, Reporter, ReporterOptions } from "@cascade/plugin-api";
+import { AnalysisResult, Reporter, ReporterOptions } from "@cascade-code/plugin-api";
 import { markdownCode, safeReportResult } from "./security.js";
 
 export class MarkdownReporter implements Reporter {

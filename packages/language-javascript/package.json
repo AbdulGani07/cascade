@@ -1,5 +1,5 @@
 {
-  "name": "@cascade/language-javascript",
+  "name": "@cascade-code/language-javascript",
   "version": "3.3.0",
   "description": "First-party JavaScript language plugin for Cascade platform",
   "type": "module",
@@ -28,7 +28,7 @@
     "directory": "packages/language-javascript"
   },
   "dependencies": {
-    "@cascade/plugin-api": "workspace:^",
+    "@cascade-code/plugin-api": "workspace:^",
     "typescript": "^5.9.3",
     "tree-sitter": "^0.22.4",
     "tree-sitter-javascript": "^0.23.1"

@@ -1,4 +1,4 @@
-import { Graph } from "@cascade/plugin-api";
+import { Graph } from "@cascade-code/plugin-api";
 
 /**
  * Finds cyclic strongly connected components in O(V + E) using iterative

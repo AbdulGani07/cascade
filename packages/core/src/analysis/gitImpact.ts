@@ -2,7 +2,7 @@ import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { CascadeConfig, loadCascadeConfig } from "@cascade/config";
+import { CascadeConfig, loadCascadeConfig } from "@cascade-code/config";
 import {
   AffectedItem,
   AnalysisResult,
@@ -11,7 +11,7 @@ import {
   ImpactConfidence,
   ImpactEvidence,
   RiskFactorContribution,
-} from "@cascade/plugin-api";
+} from "@cascade-code/plugin-api";
 import { analyze } from "../index.js";
 
 export interface GitImpactOptions {

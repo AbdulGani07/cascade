@@ -16,7 +16,7 @@ import type {
   SourceLocation,
   SymbolDeclaration,
   SymbolExtractionResult,
-} from "@cascade/plugin-api";
+} from "@cascade-code/plugin-api";
 
 type RustTree = Parser.Tree;
 type RustNode = Parser.SyntaxNode;

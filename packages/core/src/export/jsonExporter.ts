@@ -9,7 +9,7 @@ import {
   ImpactReport,
   Warning,
   ParseDiagnostic,
-} from "@cascade/plugin-api";
+} from "@cascade-code/plugin-api";
 import { toPosixRelativePath } from "../utils/pathUtils.js";
 
 /**

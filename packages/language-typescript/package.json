@@ -1,5 +1,5 @@
 {
-  "name": "@cascade/language-typescript",
+  "name": "@cascade-code/language-typescript",
   "version": "3.3.0",
   "description": "First-party TypeScript language plugin for Cascade platform",
   "type": "module",
@@ -28,8 +28,8 @@
     "directory": "packages/language-typescript"
   },
   "dependencies": {
-    "@cascade/language-javascript": "workspace:^",
-    "@cascade/plugin-api": "workspace:^",
+    "@cascade-code/language-javascript": "workspace:^",
+    "@cascade-code/plugin-api": "workspace:^",
     "tree-sitter": "^0.22.4",
     "tree-sitter-typescript": "^0.23.2"
   },

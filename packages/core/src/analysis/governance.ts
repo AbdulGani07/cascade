@@ -1,9 +1,9 @@
-import type { CascadeConfig } from "@cascade/config";
+import type { CascadeConfig } from "@cascade-code/config";
 import type {
   AnalysisResult,
   ArchitectureGovernanceReport,
   ArchitectureViolation,
-} from "@cascade/plugin-api";
+} from "@cascade-code/plugin-api";
 
 export function evaluateGovernance(
   result: AnalysisResult,

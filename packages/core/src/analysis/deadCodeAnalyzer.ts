@@ -1,4 +1,9 @@
-import { DeadCodeFinding, EntryPointEvidence, Graph, ParseDiagnostic } from "@cascade/plugin-api";
+import {
+  DeadCodeFinding,
+  EntryPointEvidence,
+  Graph,
+  ParseDiagnostic,
+} from "@cascade-code/plugin-api";
 import { reachableFrom } from "../graph/graphAlgorithms.js";
 
 /**

@@ -14,8 +14,8 @@ import {
   ResolutionContext,
   ResolvedModuleResult,
   EntryPointHint,
-} from "@cascade/plugin-api";
-import { extractScriptDependencies } from "@cascade/language-javascript";
+} from "@cascade-code/plugin-api";
+import { extractScriptDependencies } from "@cascade-code/language-javascript";
 
 export class TypeScriptLanguagePlugin implements LanguagePlugin {
   id = "cascade-language-typescript";

@@ -4,10 +4,10 @@ Language plugins connect file detection, parsing, dependency extraction, resolut
 
 ## Contract
 
-Implement `LanguagePlugin` from `@cascade/plugin-api`:
+Implement `LanguagePlugin` from `@cascade-code/plugin-api`:
 
 ```ts
-import type { LanguagePlugin } from "@cascade/plugin-api";
+import type { LanguagePlugin } from "@cascade-code/plugin-api";
 
 export const plugin: LanguagePlugin = {
   id: "cascade-language-example",

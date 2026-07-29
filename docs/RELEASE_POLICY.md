@@ -14,7 +14,7 @@ reporters, configuration, editor service, and plugin API form one tested product
 - JSON outputs carry a `schemaVersion`. Additive changes retain the schema major; removals, meaning
   changes, or newly required fields increment it. Readers must reject unknown major versions and
   ignore unknown fields within a known major. The current governance and Git-impact schema is `1.0`.
-- `@cascade/plugin-api` follows the package major. Additive optional interfaces are minor; removing or
+- `@cascade-code/plugin-api` follows the package major. Additive optional interfaces are minor; removing or
   changing required contracts is major. Third-party plugins should use a compatible peer range and
   test against the oldest and newest supported API release.
 
@@ -24,13 +24,13 @@ do not replace, those migration notes.
 
 ## Package ownership and boundaries
 
-The public packages are `@cascade/cli`, `@cascade/config`, `@cascade/core`,
-`@cascade/editor-service`, every `@cascade/language-*` package, `@cascade/plugin-api`, and
-`@cascade/reporters`. Internal runtime dependencies use `workspace:^` and become compatible npm
+The public packages are `@cascade-code/cli`, `@cascade-code/config`, `@cascade-code/core`,
+`@cascade-code/editor-service`, every `@cascade-code/language-*` package, `@cascade-code/plugin-api`, and
+`@cascade-code/reporters`. Internal runtime dependencies use `workspace:^` and become compatible npm
 ranges when packed.
 
-`@cascade/dashboard` is private and its built static assets are copied into `@cascade/cli/dist`.
-It is never resolved through a repository-relative path after installation. `@cascade/test-utils`
+`@cascade-code/dashboard` is private and its built static assets are copied into `@cascade-code/cli/dist`.
+It is never resolved through a repository-relative path after installation. `@cascade-code/test-utils`
 is private development support. `cascade-code-intelligence` is private to npm and is distributed
 only as a VSIX through the VS Code Marketplace workflow.
 
@@ -39,7 +39,7 @@ only as a VSIX through the VS Code Marketplace workflow.
 1. Add and review changesets, including migrations and the correct SemVer level.
 2. Merge to `main`; review and merge the generated `chore: release packages` pull request.
 3. Confirm CI, security, `pnpm run release:validate`, and branch protection are green.
-4. Confirm package names and the `@cascade` scope are owned by the publishing organization.
+4. Confirm every package name under the owner-controlled `@cascade-code` scope is still available.
 5. Run `pnpm install --frozen-lockfile`, `pnpm run check`, and `pnpm run release:pack`.
 6. Inspect the release PR changelogs and verify all public versions are identical.
 7. Dispatch **Publish npm packages** from `main`, choosing `latest`, `next`, or `beta`.
@@ -56,12 +56,14 @@ settings changes. The `npm` GitHub environment must require owner approval and a
 
 Before the first public release, an owner must:
 
-1. Verify that the `@cascade` npm organization/scope and all 17 package names are available and
-   legally appropriate. If not, rename packages and internal imports before release.
-2. Create or confirm the npm organization, grant least-privilege maintainer access, require 2FA, and
-   set package access to public.
-3. For every public package, configure npm trusted publishing for repository
-   `AbdulGani07/cascade`, workflow `.github/workflows/publish.yml`, and environment `npm`.
+1. Verify all 17 individual package names under the owner-controlled `@cascade-code` npm
+   organization are available and legally appropriate. Organization ownership does not prove that
+   any individual package has been registry-verified or published.
+2. Grant least-privilege npm organization maintainer access, require 2FA, and set package access to
+   public.
+3. For every public package, configure npm trusted publishing with these exact npm UI values:
+   GitHub organization or user `AbdulGani07`, repository `cascade`, workflow filename `publish.yml`,
+   environment `npm`, and allowed action `npm publish`.
 4. In GitHub, protect `main`, require CI/security reviews, disallow force pushes, create the `npm`
    environment with required reviewers and deployment branch `main`, and restrict Actions to trusted
    actions. Protect `v*` tags from manual creation.
@@ -74,6 +76,10 @@ Before the first public release, an owner must:
 
 No secret is required for npm trusted publishing. `GITHUB_TOKEN` is supplied by GitHub. A
 `VSCE_PAT` is required only for a later, separately approved Marketplace publication workflow.
+
+The clean tarball installation currently reports Tree-sitter peer-range warnings caused by the
+existing grammar dependency ranges. They are known and do not prevent installation or CLI execution.
+Resolve them in a dedicated dependency-compatibility change rather than during package publication.
 
 ## Stable and prerelease procedures
 
@@ -91,8 +97,8 @@ npm versions are immutable and should not normally be unpublished. To roll back:
 
 1. Stop the workflow/environment and identify affected versions and packages.
 2. Publish a corrected patch (or prerelease) through the same reviewed process.
-3. Move the affected dist-tag: `npm dist-tag add @cascade/<package>@<good-version> latest`.
-4. Mark each bad version: `npm deprecate @cascade/<package>@<bad-version> "<reason>; use <version>"`.
+3. Move the affected dist-tag: `npm dist-tag add @cascade-code/<package>@<good-version> latest`.
+4. Mark each bad version: `npm deprecate @cascade-code/<package>@<bad-version> "<reason>; use <version>"`.
 5. Update the GitHub Release with a prominent warning and migration/mitigation guidance.
 6. For a security incident, follow `SECURITY.md`, rotate any affected credentials, and preserve logs.
 

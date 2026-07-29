@@ -1,4 +1,4 @@
-# `@cascade/language-go`
+# `@cascade-code/language-go`
 
 First-party Go analysis for Cascade.
 

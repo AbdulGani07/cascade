@@ -4,7 +4,7 @@ import {
   ExtractedDependency,
   ImportKind,
   SourceLocation,
-} from "@cascade/plugin-api";
+} from "@cascade-code/plugin-api";
 
 function locationOf(source: ts.SourceFile, node: ts.Node): SourceLocation {
   const start = source.getLineAndCharacterOfPosition(node.getStart(source));
