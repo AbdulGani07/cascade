@@ -23,7 +23,17 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@cascade/plugin-api": "workspace:*"
+    "@cascade/plugin-api": "workspace:^"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "private": false,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AbdulGani07/cascade.git",
+    "directory": "packages/language-python"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
 }

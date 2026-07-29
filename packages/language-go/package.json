@@ -24,9 +24,19 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@cascade/plugin-api": "workspace:*",
+    "@cascade/plugin-api": "workspace:^",
     "tree-sitter": "^0.22.4",
     "tree-sitter-go": "^0.23.4"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "private": false,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AbdulGani07/cascade.git",
+    "directory": "packages/language-go"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
 }

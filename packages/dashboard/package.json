@@ -17,20 +17,26 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/cascade-code/cascade.git",
+    "url": "https://github.com/AbdulGani07/cascade.git",
     "directory": "packages/dashboard"
   },
   "license": "MIT",
   "dependencies": {
+    "dagre": "^0.8.5",
+    "lucide-react": "^1.27.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "reactflow": "^11.11.4"
   },
   "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "@types/dagre": "^0.7.54",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.3",
+    "tailwindcss": "^4.3.3",
     "typescript": "^5.9.3",
     "vite": "^8.1.4"
-  }
+  },
+  "private": true
 }

@@ -14,6 +14,7 @@ function resolveDashboardDist(): string | null {
   const currentDir = path.dirname(currentFile);
 
   const candidates = [
+    path.resolve(currentDir, "../dashboard"),
     path.resolve(currentDir, "../../../dashboard/dist"),
     path.resolve(currentDir, "../../dashboard/dist"),
     path.resolve(currentDir, "../node_modules/@cascade/dashboard/dist"),

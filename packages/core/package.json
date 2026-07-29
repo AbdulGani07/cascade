@@ -24,24 +24,28 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/cascade-code/cascade.git",
+    "url": "https://github.com/AbdulGani07/cascade.git",
     "directory": "packages/core"
   },
   "dependencies": {
-    "@cascade/config": "workspace:*",
-    "@cascade/language-javascript": "workspace:*",
-    "@cascade/language-typescript": "workspace:*",
-    "@cascade/language-python": "workspace:*",
-    "@cascade/language-java": "workspace:*",
-    "@cascade/language-kotlin": "workspace:*",
-    "@cascade/language-csharp": "workspace:*",
-    "@cascade/language-go": "workspace:*",
-    "@cascade/language-rust": "workspace:*",
-    "@cascade/language-c": "workspace:*",
-    "@cascade/language-cpp": "workspace:*",
-    "@cascade/language-expanded": "workspace:*",
-    "@cascade/plugin-api": "workspace:*",
-    "@cascade/reporters": "workspace:*",
+    "@cascade/config": "workspace:^",
+    "@cascade/language-javascript": "workspace:^",
+    "@cascade/language-typescript": "workspace:^",
+    "@cascade/language-python": "workspace:^",
+    "@cascade/language-java": "workspace:^",
+    "@cascade/language-kotlin": "workspace:^",
+    "@cascade/language-csharp": "workspace:^",
+    "@cascade/language-go": "workspace:^",
+    "@cascade/language-rust": "workspace:^",
+    "@cascade/language-c": "workspace:^",
+    "@cascade/language-cpp": "workspace:^",
+    "@cascade/language-expanded": "workspace:^",
+    "@cascade/plugin-api": "workspace:^",
+    "@cascade/reporters": "workspace:^",
+    "minimatch": "^10.2.6",
+    "tree-sitter": "^0.22.4",
+    "tree-sitter-javascript": "^0.25.0",
+    "tree-sitter-typescript": "^0.23.2",
     "typescript": "^5.9.3"
   },
   "keywords": [
@@ -51,5 +55,10 @@
     "circular-dependency",
     "dead-code"
   ],
-  "license": "MIT"
+  "license": "MIT",
+  "private": false,
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
 }

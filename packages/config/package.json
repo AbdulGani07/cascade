@@ -24,11 +24,16 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/cascade-code/cascade.git",
+    "url": "https://github.com/AbdulGani07/cascade.git",
     "directory": "packages/config"
   },
   "dependencies": {
-    "@cascade/plugin-api": "workspace:*"
+    "@cascade/plugin-api": "workspace:^"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "private": false,
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
 }

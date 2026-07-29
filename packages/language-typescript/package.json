@@ -24,14 +24,19 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/cascade-code/cascade.git",
+    "url": "https://github.com/AbdulGani07/cascade.git",
     "directory": "packages/language-typescript"
   },
   "dependencies": {
-    "@cascade/language-javascript": "workspace:*",
-    "@cascade/plugin-api": "workspace:*",
+    "@cascade/language-javascript": "workspace:^",
+    "@cascade/plugin-api": "workspace:^",
     "tree-sitter": "^0.22.4",
     "tree-sitter-typescript": "^0.23.2"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "private": false,
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
 }

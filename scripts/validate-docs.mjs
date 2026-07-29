@@ -6,6 +6,7 @@ const root = process.cwd();
 const ignoredDirectories = new Set([
   ".git",
   ".github",
+  ".changeset",
   "node_modules",
   "dist",
   "coverage",

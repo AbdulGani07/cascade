@@ -30,7 +30,11 @@
     "demo:reports": "node examples/cascade-commerce/scripts/generate-reports.mjs",
     "demo:verify": "node examples/cascade-commerce/scripts/verify-demo.mjs",
     "clean": "npm run clean --workspaces",
-    "check": "npm run lint && npm run build && npm run typecheck && npm run test && npm run test:docs"
+    "check": "npm run lint && npm run build && npm run typecheck && npm run test && npm run test:docs",
+    "changeset": "changeset",
+    "release:version": "changeset version",
+    "release:validate": "node scripts/validate-release.mjs",
+    "release:pack": "node scripts/validate-release.mjs --pack"
   },
   "repository": {
     "type": "git",
@@ -53,7 +57,8 @@
     "eslint": "^10.8.0",
     "prettier": "^3.9.6",
     "typescript": "^5.0.0",
-    "vitest": "^4.1.10"
+    "vitest": "^4.1.10",
+    "@changesets/cli": "^2.29.7"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.3",

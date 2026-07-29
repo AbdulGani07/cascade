@@ -39,8 +39,13 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "@cascade/config": "workspace:*",
-    "@cascade/core": "workspace:*",
-    "@cascade/plugin-api": "workspace:*"
+    "@cascade/config": "workspace:^",
+    "@cascade/core": "workspace:^",
+    "@cascade/plugin-api": "workspace:^"
+  },
+  "private": false,
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   }
 }

@@ -18,16 +18,17 @@
     }
   },
   "files": [
-    "dist"
+    "dist",
+    "dist/dashboard"
   ],
   "scripts": {
-    "build": "tsc -b tsconfig.json --force",
+    "build": "pnpm --dir ../dashboard run build && tsc -b tsconfig.json --force && node ../../scripts/prepare-cli-assets.mjs",
     "typecheck": "tsc --noEmit",
     "clean": "rm -rf dist"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/cascade-code/cascade.git",
+    "url": "https://github.com/AbdulGani07/cascade.git",
     "directory": "packages/cli"
   },
   "keywords": [
@@ -38,14 +39,19 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "@cascade/config": "workspace:*",
-    "@cascade/core": "workspace:*",
-    "@cascade/plugin-api": "workspace:*",
-    "@cascade/reporters": "workspace:*",
+    "@cascade/config": "workspace:^",
+    "@cascade/core": "workspace:^",
+    "@cascade/plugin-api": "workspace:^",
+    "@cascade/reporters": "workspace:^",
     "cli-table3": "^0.6.5",
     "commander": "^15.0.0",
     "open": "^11.0.0",
     "picocolors": "^1.1.1",
     "sirv": "^3.0.2"
+  },
+  "private": false,
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   }
 }

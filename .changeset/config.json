@@ -1,0 +1,34 @@
+{
+  "$schema": "https://unpkg.com/@changesets/config@3.1.1/schema.json",
+  "changelog": "@changesets/cli/changelog",
+  "commit": false,
+  "fixed": [
+    [
+      "@cascade/cli",
+      "@cascade/config",
+      "@cascade/core",
+      "@cascade/editor-service",
+      "@cascade/language-c",
+      "@cascade/language-cpp",
+      "@cascade/language-csharp",
+      "@cascade/language-expanded",
+      "@cascade/language-go",
+      "@cascade/language-java",
+      "@cascade/language-javascript",
+      "@cascade/language-kotlin",
+      "@cascade/language-python",
+      "@cascade/language-rust",
+      "@cascade/language-typescript",
+      "@cascade/plugin-api",
+      "@cascade/reporters"
+    ]
+  ],
+  "access": "restricted",
+  "baseBranch": "main",
+  "updateInternalDependencies": "patch",
+  "ignore": ["@cascade/dashboard", "@cascade/test-utils", "cascade-code-intelligence"],
+  "privatePackages": {
+    "version": false,
+    "tag": false
+  }
+}

@@ -4,7 +4,7 @@
   "description": "Local dependency, impact, cycle, and architecture intelligence powered by Cascade",
   "version": "3.3.0",
   "publisher": "cascade-code",
-  "private": false,
+  "private": true,
   "license": "MIT",
   "type": "module",
   "engines": {
@@ -119,8 +119,8 @@
     "clean": "rm -rf dist"
   },
   "devDependencies": {
-    "@cascade/cli": "workspace:*",
-    "@cascade/editor-service": "workspace:*",
+    "@cascade/cli": "workspace:^",
+    "@cascade/editor-service": "workspace:^",
     "@types/vscode": "^1.96.0",
     "@vscode/vsce": "^3.9.2"
   },
