@@ -1,6 +1,6 @@
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { createRustPlugin, extractRustDependencies } from "@cascade/language-rust";
+import { createRustPlugin, extractRustDependencies } from "@cascade-code/language-rust";
 
 describe("Rust language plugin", () => {
   it("extracts use, extern crate, modules, re-exports, and literal include macros", () => {

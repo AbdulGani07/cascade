@@ -29,6 +29,14 @@ Community leaders are responsible for clarifying and enforcing our standards of 
 
 This Code of Conduct applies within all community spaces, and also applies when an individual is officially representing the community in public spaces.
 
+## Reporting and enforcement
+
+Report conduct concerns privately to `abdulgani10525@gmail.com`. Do not use public issues for reports
+that identify affected people. Include relevant links or dates and only information needed to assess
+the concern. Maintainers will protect privacy as far as practical, disclose conflicts, and may issue
+warnings, remove content, limit participation, or ban participants according to severity and pattern.
+Retaliation against a reporter or participant in an investigation is prohibited.
+
 ## Attribution
 
 This Code of Conduct is adapted from the Contributor Covenant, version 2.1.

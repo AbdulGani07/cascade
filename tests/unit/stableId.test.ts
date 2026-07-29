@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { toPosixRelativePath } from "@cascade/core";
+import { toPosixRelativePath } from "@cascade-code/core";
 
 describe("Stable Path IDs", () => {
   it("normalizes Windows backslash paths to stable POSIX relative paths", () => {

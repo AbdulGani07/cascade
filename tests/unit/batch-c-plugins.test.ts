@@ -4,7 +4,7 @@ import {
   createPowerShellPlugin,
   createRPlugin,
   createShellPlugin,
-} from "@cascade/language-expanded";
+} from "@cascade-code/language-expanded";
 
 describe("Batch C language plugins", () => {
   it.each([

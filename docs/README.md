@@ -2,6 +2,10 @@
 
 Use this page as the canonical documentation map.
 
+Community process: [Contributing](../CONTRIBUTING.md), [Governance](GOVERNANCE.md),
+[Community operations](COMMUNITY.md), [Support](../SUPPORT.md), and
+[good-first-issue candidates](contributing/good-first-issue-candidates/README.md).
+
 ## Start here
 
 - [Installation](INSTALLATION.md)

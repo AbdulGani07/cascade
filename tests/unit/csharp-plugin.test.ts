@@ -1,6 +1,6 @@
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { createCSharpPlugin, extractCSharpDependencies } from "@cascade/language-csharp";
+import { createCSharpPlugin, extractCSharpDependencies } from "@cascade-code/language-csharp";
 
 describe("C# language plugin", () => {
   it("extracts normal, global, static, and aliased using directives from the syntax tree", () => {

@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { toJson, migrateResultToLatest } from "@cascade/core";
-import { AnalysisResult } from "@cascade/plugin-api";
+import { toJson, migrateResultToLatest } from "@cascade-code/core";
+import { AnalysisResult } from "@cascade-code/plugin-api";
 
 describe("Serialization & Schema Versioning", () => {
   it("serializes AnalysisResult to valid JSON with version 2.0 schema", () => {

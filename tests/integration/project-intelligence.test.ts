@@ -1,8 +1,8 @@
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { analyze, toJson } from "@cascade/core";
-import { createMockLanguagePlugin } from "@cascade/test-utils";
-import { defaultConfig } from "@cascade/config";
+import { analyze, toJson } from "@cascade-code/core";
+import { createMockLanguagePlugin } from "@cascade-code/test-utils";
+import { defaultConfig } from "@cascade-code/config";
 
 describe("project intelligence", () => {
   const root = path.resolve("tests/fixtures/polyglot-monorepo");

@@ -1,6 +1,6 @@
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { analyze } from "@cascade/core";
+import { analyze } from "@cascade-code/core";
 
 describe("native-language analysis", () => {
   it("analyzes a CMake C project without inventing system-header targets", () => {

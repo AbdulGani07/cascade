@@ -2,7 +2,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { analyze } from "@cascade/core";
+import { analyze } from "@cascade-code/core";
 
 describe("framework and application detection", () => {
   const cases = [

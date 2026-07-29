@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import path from "node:path";
 import fs from "node:fs";
 import os from "node:os";
-import { analyze } from "@cascade/core";
+import { analyze } from "@cascade-code/core";
 
 describe("Mixed Language Integration Analysis", () => {
   it("analyzes a mixed JS/TS repository with cross-language edges deterministically", () => {

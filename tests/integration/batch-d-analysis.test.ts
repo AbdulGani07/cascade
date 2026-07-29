@@ -1,7 +1,7 @@
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { defaultConfig } from "@cascade/config";
-import { analyze } from "@cascade/core";
+import { defaultConfig } from "@cascade-code/config";
+import { analyze } from "@cascade-code/core";
 
 describe("Batch D integration", () => {
   it("resolves evidence-based component and document edges", () => {

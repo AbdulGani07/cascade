@@ -4,7 +4,7 @@ import {
   createPhpPlugin,
   createRubyPlugin,
   createSwiftPlugin,
-} from "@cascade/language-expanded";
+} from "@cascade-code/language-expanded";
 
 const context = (content: string, extension: string) => ({
   filePath: `sample${extension}`,

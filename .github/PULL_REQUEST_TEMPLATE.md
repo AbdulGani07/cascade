@@ -1,31 +1,30 @@
-## Description
+## Summary
 
-Please include a summary of the change and which issue is fixed. Please also include relevant motivation and context.
+Problem, approach, and linked issue (`Fixes #...` when applicable):
 
-Fixes # (issue)
+## Architecture and compatibility
 
-## Type of change
+- Affected packages/components:
+- CLI, schema, plugin API, configuration, Node.js, or migration impact:
+- Security, path, determinism, resource-bound, or performance impact:
+- Explicit non-goals and remaining limitations:
 
-- [ ] Bug fix (non-breaking change which fixes an issue)
-- [ ] New feature (non-breaking change which adds functionality)
-- [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
-- [ ] Refactoring / Infrastructure (no functional changes)
-- [ ] Documentation update
+## Validation
 
-## How Has This Been Tested?
+List exact commands and results.
 
-Please describe the tests that you ran to verify your changes.
+- [ ] Formatting and lint
+- [ ] Build and typecheck
+- [ ] Relevant unit, integration, and end-to-end tests
+- [ ] Documentation validation
+- [ ] Benchmark evidence when making a performance claim
+- [ ] Changeset added, or not required because:
 
-- [ ] Unit tests (`pnpm run test:unit`)
-- [ ] Integration tests (`pnpm run test:integration`)
-- [ ] Local build (`pnpm run build`)
-- [ ] Type check and lint (`pnpm run check`)
+## Review checklist
 
-## Checklist:
-
-- [ ] My code follows the style guidelines of this project
-- [ ] I have performed a self-review of my code
-- [ ] I have commented my code, particularly in hard-to-understand areas
-- [ ] I have made corresponding changes to the documentation
-- [ ] My changes generate no new warnings or errors
-- [ ] I have added tests that prove my fix is effective or that my feature works
+- [ ] The change is focused and contains no credentials, local caches, or generated release artifacts.
+- [ ] Fixes include regression coverage; capability claims have fixtures and tests.
+- [ ] Analyzed repository source or build configuration is not executed.
+- [ ] Output remains deterministic, bounded, and project-relative where applicable.
+- [ ] Public behavior and compatibility documentation are accurate.
+- [ ] I performed a self-review and disclosed unsupported behavior.

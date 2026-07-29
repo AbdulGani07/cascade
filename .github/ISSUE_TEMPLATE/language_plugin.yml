@@ -1,0 +1,42 @@
+name: Language-plugin proposal
+description: Propose bounded parsing or resolution support for a language or ecosystem
+title: "plugin: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: Do not attach proprietary source. Cascade must not execute analyzed project code or build systems.
+  - type: input
+    id: language
+    attributes:
+      label: Language or ecosystem
+    validations:
+      required: true
+  - type: textarea
+    id: capability
+    attributes:
+      label: Requested capability
+      description: Specify syntax, resolution cases, evidence, and known ambiguity.
+    validations:
+      required: true
+  - type: textarea
+    id: fixtures
+    attributes:
+      label: Minimal fixtures and references
+      description: Provide non-sensitive examples and authoritative language/tooling references.
+    validations:
+      required: true
+  - type: textarea
+    id: boundaries
+    attributes:
+      label: Boundaries and non-goals
+      description: Include generated files, dynamic behavior, performance limits, and unsupported cases.
+    validations:
+      required: true
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Safety confirmation
+      options:
+        - label: This proposal does not require executing analyzed source or build configuration.
+          required: true

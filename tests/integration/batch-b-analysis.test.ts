@@ -1,6 +1,6 @@
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { analyze } from "@cascade/core";
+import { analyze } from "@cascade-code/core";
 
 const root = path.resolve("tests/fixtures/batch-b");
 

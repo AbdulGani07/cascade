@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { PluginRegistry } from "@cascade/core";
-import { createMockLanguagePlugin, assertPluginCapabilities } from "@cascade/test-utils";
+import { PluginRegistry } from "@cascade-code/core";
+import { createMockLanguagePlugin, assertPluginCapabilities } from "@cascade-code/test-utils";
 
 describe("PluginRegistry & Plugin Architecture", () => {
   it("registers plugins deterministically and sorts by priority", () => {

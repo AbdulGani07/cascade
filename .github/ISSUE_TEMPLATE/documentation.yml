@@ -1,0 +1,35 @@
+name: Documentation issue
+description: Report inaccurate, missing, or unclear documentation
+title: "docs: "
+labels: ["documentation"]
+body:
+  - type: input
+    id: page
+    attributes:
+      label: Page or section
+      placeholder: docs/CLI.md#dashboard
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: Quote only the minimum needed and explain what is inaccurate or unclear.
+    validations:
+      required: true
+  - type: textarea
+    id: correction
+    attributes:
+      label: Suggested correction and evidence
+    validations:
+      required: true
+  - type: dropdown
+    id: impact
+    attributes:
+      label: Impact
+      options:
+        - Blocks setup or correct use
+        - Causes misunderstanding
+        - Minor clarity or navigation issue
+    validations:
+      required: true

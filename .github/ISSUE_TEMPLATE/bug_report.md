@@ -1,29 +1,33 @@
 ---
 name: Bug report
-about: Create a report to help us improve Cascade
-title: "[BUG] "
+about: Report a reproducible Cascade defect
+title: "bug: "
 labels: bug
 assignees: ""
 ---
 
-**Describe the bug**
-A clear and concise description of what the bug is.
+<!-- Do not report vulnerabilities here; use SECURITY.md. Remove secrets and proprietary source. -->
 
-**To Reproduce**
-Steps to reproduce the behavior:
+## Summary
 
-1. Run command '...'
-2. Analyzed project type: '...'
-3. See error output: '...'
+## Reproduction
 
-**Expected behavior**
-A clear description of what you expected to happen.
+Minimal fixture or public repository, exact command, and deterministic steps:
 
-**Environment:**
+## Expected and actual behavior
 
-- OS: [e.g. macOS, Windows, Linux]
-- Node Version: [e.g. 20.11.0]
-- Cascade Version: [e.g. 1.0.0]
+## Environment
 
-**Additional context**
-Add any other context or log output about the problem here.
+- Cascade version or commit:
+- Package and command:
+- OS:
+- Node.js:
+- pnpm, if building from source:
+
+## Diagnostics
+
+Redacted output, configuration, stack trace, or analysis artifact:
+
+## Regression
+
+Did this work in an earlier version?

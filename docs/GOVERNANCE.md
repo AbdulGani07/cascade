@@ -10,6 +10,9 @@ Cascade is maintained in public through the repository’s issues, pull requests
 
 Roles are based on sustained, constructive participation. This document does not imply a legal entity or formal membership program.
 
+Operational maintainer responsibilities and selection are described in
+[Maintainers](../MAINTAINERS.md). Support channels are described in [Support](../SUPPORT.md).
+
 ## Decisions
 
 Routine decisions are made in pull-request review. Changes to public contracts, security boundaries, language capability claims, or governance policy should include a written rationale and adequate review. Maintainers seek consensus; when consensus is unavailable, the responsible maintainer records the decision and tradeoffs.
@@ -25,3 +28,11 @@ Participation is governed by the [Code of Conduct](../CODE_OF_CONDUCT.md). Do no
 ## Changes to governance
 
 Governance changes use the same pull-request process as code and require maintainer approval.
+
+## Issue stewardship
+
+Maintainers use `good first issue` only for bounded work with clear files, acceptance criteria, and
+tests that does not require security-sensitive or undocumented architectural decisions.
+`help wanted` indicates useful, scoped work where maintainer guidance is available but prior project
+context may be needed. Labels are invitations, not assignments; contributors should comment before
+starting substantial work.

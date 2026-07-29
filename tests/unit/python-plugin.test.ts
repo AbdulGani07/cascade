@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createPythonPlugin, extractPythonDependencies } from "@cascade/language-python";
+import { createPythonPlugin, extractPythonDependencies } from "@cascade-code/language-python";
 
 describe("Python language plugin", () => {
   it("extracts runtime, type-only, conditional, relative, and literal dynamic imports", () => {

@@ -1,6 +1,6 @@
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { analyze } from "@cascade/core";
+import { analyze } from "@cascade-code/core";
 
 describe("C# solution analysis", () => {
   it("analyzes an SDK solution with project, framework, package, and unresolved edges", () => {

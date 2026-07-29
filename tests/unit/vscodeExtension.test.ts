@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, it, vi } from "vitest";
-import type { EditorRequestMethod, WorkspaceHealth } from "@cascade/editor-service";
+import type { EditorRequestMethod, WorkspaceHealth } from "@cascade-code/editor-service";
 import {
   CASCADE_COMMANDS,
   CascadeEditorController,

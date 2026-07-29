@@ -6,7 +6,7 @@ import {
   createStylesPlugin,
   createSveltePlugin,
   createVuePlugin,
-} from "@cascade/language-expanded";
+} from "@cascade-code/language-expanded";
 
 function dependencies(factory: () => ReturnType<typeof createVuePlugin>, source: string) {
   const plugin = factory();

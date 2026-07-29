@@ -1,11 +1,11 @@
 import path from "node:path";
 import { describe, expect, it, vi } from "vitest";
-import type { AnalysisResult, DependencyEdge, DependencyNode } from "@cascade/plugin-api";
+import type { AnalysisResult, DependencyEdge, DependencyNode } from "@cascade-code/plugin-api";
 import {
   CancellationTokenSource,
   ServiceError,
   WorkspaceAnalysisService,
-} from "@cascade/editor-service";
+} from "@cascade-code/editor-service";
 
 const root = path.resolve("tests/fixtures/editor-service");
 

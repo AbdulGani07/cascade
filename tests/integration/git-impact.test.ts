@@ -3,8 +3,8 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { analyzeGitImpact } from "@cascade/core";
-import { defaultConfig } from "@cascade/config";
+import { analyzeGitImpact } from "@cascade-code/core";
+import { defaultConfig } from "@cascade-code/config";
 
 const repositories: string[] = [];
 afterEach(() => {

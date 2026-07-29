@@ -1,6 +1,6 @@
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { analyze } from "@cascade/core";
+import { analyze } from "@cascade-code/core";
 
 describe("Batch C integration", () => {
   it("resolves literal script and module paths including PowerShell special characters", () => {

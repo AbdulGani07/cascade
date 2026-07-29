@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { extractScriptDependencies } from "@cascade/language-javascript";
+import { extractScriptDependencies } from "@cascade-code/language-javascript";
 
 describe("compiler-AST dependency extraction", () => {
   it("extracts ESM, CommonJS, type-only, references, workers, and assets", () => {

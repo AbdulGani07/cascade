@@ -1,6 +1,6 @@
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { createGoPlugin, extractGoDependencies } from "@cascade/language-go";
+import { createGoPlugin, extractGoDependencies } from "@cascade-code/language-go";
 
 describe("Go language plugin", () => {
   it("extracts grouped, aliased, blank, and cgo imports from the syntax tree", () => {
