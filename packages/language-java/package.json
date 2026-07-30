@@ -24,7 +24,7 @@
   },
   "dependencies": {
     "@cascade-code/plugin-api": "workspace:^",
-    "tree-sitter": "^0.21.1",
+    "tree-sitter": "^0.25.1",
     "tree-sitter-java": "^0.23.5"
   },
   "license": "MIT",

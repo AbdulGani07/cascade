@@ -26,7 +26,7 @@
   "dependencies": {
     "@cascade-code/language-c": "workspace:^",
     "@cascade-code/plugin-api": "workspace:^",
-    "tree-sitter": "^0.21.1",
+    "tree-sitter": "^0.25.1",
     "tree-sitter-cpp": "0.23.2"
   },
   "license": "MIT",
