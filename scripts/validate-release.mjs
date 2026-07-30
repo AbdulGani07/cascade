@@ -225,6 +225,10 @@ if (process.argv.includes("--pack")) {
     );
     assert(statSync(dashboardOutput).isFile(), "installed CLI dashboard report was not generated");
     assert(
+      !readFileSync(dashboardOutput, "utf8").includes(consumer),
+      "installed CLI dashboard report leaked the absolute project path",
+    );
+    assert(
       statSync(
         path.join(smoke, "node_modules", "@cascade-code", "cli", "dist", "dashboard", "index.html"),
       ).isFile(),

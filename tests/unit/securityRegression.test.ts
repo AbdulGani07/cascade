@@ -64,7 +64,7 @@ describe("hostile repository boundaries", () => {
     const fakeToken = ["github", "pat", "abcdefghijklmnopqrstuvwxyz123456"].join("_");
     result.warnings.push({
       file,
-      message: `token=${fakeToken}`,
+      message: `Project file ${file} contains token=${fakeToken}`,
     });
     result.diagnostics?.push({
       file,
@@ -80,6 +80,7 @@ describe("hostile repository boundaries", () => {
     expect(portable.projectRoot).toBe(".");
     expect(portable.nodes[0].absolutePath).toBe("token.ts");
     expect(portable.warnings[0].file).toBe("token.ts");
+    expect(portable.warnings[0].message).toContain("Project file token.ts");
     expect(portable.diagnostics.at(-1).file).toBe("token.ts");
     expect(portable.deadCodeFindings[0].file).toBe("token.ts");
     expect(portable.entryPointEvidence[0].file).toBe("token.ts");

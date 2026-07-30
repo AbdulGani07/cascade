@@ -140,7 +140,42 @@ export function toJson(result: AnalysisResult): string {
       : undefined,
   };
 
-  return JSON.stringify(redactSecrets(relativeResult), null, 2);
+  return JSON.stringify(redactSecrets(sanitizeProjectPaths(relativeResult, root)), null, 2);
+}
+
+function sanitizeProjectPaths<T>(value: T, projectRoot: string): T {
+  const nativePrefix = projectRoot.endsWith(pathSeparator(projectRoot))
+    ? projectRoot
+    : `${projectRoot}${pathSeparator(projectRoot)}`;
+  const posixRoot = projectRoot.replace(/\\/g, "/").replace(/\/+$/, "");
+  const posixPrefix = `${posixRoot}/`;
+
+  if (typeof value === "string") {
+    return value
+      .split(nativePrefix)
+      .join("")
+      .split(posixPrefix)
+      .join("")
+      .split(projectRoot)
+      .join(".")
+      .split(posixRoot)
+      .join(".") as T;
+  }
+  if (Array.isArray(value))
+    return value.map((child) => sanitizeProjectPaths(child, projectRoot)) as T;
+  if (value && typeof value === "object") {
+    const safe = Object.create(null) as Record<string, unknown>;
+    for (const [key, child] of Object.entries(value as Record<string, unknown>)) {
+      if (key === "__proto__" || key === "prototype" || key === "constructor") continue;
+      safe[key] = sanitizeProjectPaths(child, projectRoot);
+    }
+    return safe as T;
+  }
+  return value;
+}
+
+function pathSeparator(value: string): "/" | "\\" {
+  return value.includes("\\") ? "\\" : "/";
 }
 
 function redactSecrets<T>(value: T): T {
