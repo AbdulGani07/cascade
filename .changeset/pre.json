@@ -1,5 +1,5 @@
 {
-  "mode": "pre",
+  "mode": "exit",
   "tag": "next",
   "initialVersions": {
     "@cascade-code/cli": "3.3.0",
@@ -23,5 +23,7 @@
     "@cascade-code/test-utils": "3.3.0",
     "cascade-code-intelligence": "3.3.0"
   },
-  "changesets": ["aligned-parsers-next"]
+  "changesets": [
+    "aligned-parsers-next"
+  ]
 }
