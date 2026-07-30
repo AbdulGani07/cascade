@@ -20,7 +20,7 @@ import { extractScriptDependencies } from "@cascade-code/language-javascript";
 export class TypeScriptLanguagePlugin implements LanguagePlugin {
   id = "cascade-language-typescript";
   name = "Cascade TypeScript Language Plugin";
-  version = "3.3.0";
+  version = "3.3.1-next.0";
   supportedExtensions = [".ts", ".tsx", ".mts", ".cts"];
 
   fileDetectionRules = [
@@ -60,7 +60,7 @@ export class TypeScriptLanguagePlugin implements LanguagePlugin {
       try {
         const parser = new Parser();
         const lang = context.filePath.endsWith(".tsx") ? TypeScript.tsx : TypeScript.typescript;
-        parser.setLanguage(lang as unknown as Parser.Language);
+        parser.setLanguage(lang);
         const tree = parser.parse(context.content);
         return {
           ast: tree,

@@ -20,7 +20,7 @@ import type {
 type SyntaxNode = Parser.SyntaxNode;
 
 const parser = new Parser();
-parser.setLanguage(CSharp as unknown as Parser.Language);
+parser.setLanguage(CSharp);
 const sourceFactCache = new Map<
   string,
   { modified: number; facts: { namespaces: string[]; types: string[] } }
@@ -398,7 +398,7 @@ function symbols(relativePath: string, content: string): SymbolExtractionResult 
 export class CSharpLanguagePlugin implements LanguagePlugin {
   id = "cascade-language-csharp";
   name = "Cascade C# Language Plugin";
-  version = "3.3.0";
+  version = "3.3.1-next.0";
   supportedExtensions = [".cs"];
   fileDetectionRules = [{ type: "extension" as const, pattern: ".cs" }];
   capabilities = {

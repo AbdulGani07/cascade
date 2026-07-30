@@ -58,6 +58,10 @@ const manifests = readdirSync(packageRoot)
     ...entry,
     manifest: JSON.parse(readFileSync(entry.file, "utf8")),
   }));
+const publicVersions = new Set(
+  manifests.filter(({ manifest }) => !manifest.private).map(({ manifest }) => manifest.version),
+);
+const releaseVersion = [...publicVersions][0];
 
 const failures = [];
 const assert = (condition, message) => {
@@ -65,13 +69,13 @@ const assert = (condition, message) => {
 };
 
 assert(manifests.length === 20, `expected 20 workspaces, found ${manifests.length}`);
+assert(publicVersions.size === 1, "public packages must use one lockstep version");
 assert(
   manifests.filter(({ manifest }) => !manifest.private).length === publicNames.size,
   `expected ${publicNames.size} public packages`,
 );
 for (const { directory, manifest } of manifests) {
   const isPrivate = privateNames.has(manifest.name);
-  assert(manifest.version === "3.3.0", `${manifest.name}: expected lockstep version 3.3.0`);
   assert(manifest.private === isPrivate, `${manifest.name}: private must be ${isPrivate}`);
   assert(manifest.license === "MIT", `${manifest.name}: missing MIT license`);
   assert(manifest.repository?.url === repositoryUrl, `${manifest.name}: incorrect repository URL`);
@@ -83,6 +87,10 @@ for (const { directory, manifest } of manifests) {
   if (isPrivate) {
     assert(!manifest.publishConfig, `${manifest.name}: private package has publishConfig`);
   } else {
+    assert(
+      manifest.version === releaseVersion,
+      `${manifest.name}: expected lockstep version ${releaseVersion}`,
+    );
     assert(publicNames.has(manifest.name), `${manifest.name}: unexpected public package name`);
     assert(manifest.publishConfig?.access === "public", `${manifest.name}: public access missing`);
     assert(
@@ -159,6 +167,10 @@ if (process.argv.includes("--pack")) {
         stdio: "inherit",
       },
     );
+    runPackageManager("npm", ["ls", "--all"], {
+      cwd: smoke,
+      stdio: "inherit",
+    });
     execFileSync(
       process.execPath,
       [path.join(smoke, "node_modules", "@cascade-code", "cli", "dist", "index.js"), "--help"],

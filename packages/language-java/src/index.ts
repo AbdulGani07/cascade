@@ -47,7 +47,7 @@ function hasAncestor(node: SyntaxNode, types: Set<string>): boolean {
 function parseJava(context: ParseContext): ParseResult {
   try {
     const parser = new Parser();
-    parser.setLanguage(Java as unknown as Parser.Language);
+    parser.setLanguage(Java);
     const tree = parser.parse(context.content);
     const diagnostics: ParseDiagnostic[] = [];
     walk(tree.rootNode, (node) => {
@@ -330,7 +330,7 @@ function javaFrameworks(root: string, files: string[]): FrameworkMetadata[] {
 export class JavaLanguagePlugin implements LanguagePlugin {
   id = "cascade-language-java";
   name = "Cascade Java Language Plugin";
-  version = "3.3.0";
+  version = "3.3.1-next.0";
   supportedExtensions = [".java"];
   fileDetectionRules = [{ type: "extension" as const, pattern: ".java" }];
   capabilities = {

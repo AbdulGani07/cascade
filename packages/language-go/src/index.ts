@@ -71,7 +71,7 @@ function walk(node: GoNode, visit: (node: GoNode) => void): void {
 
 function parserForGo(): Parser {
   const parser = new Parser();
-  parser.setLanguage(Go as unknown as Parser.Language);
+  parser.setLanguage(Go);
   return parser;
 }
 
@@ -404,7 +404,7 @@ function detectEntryPoints(projectRoot: string, files: string[]): EntryPointHint
 export class GoLanguagePlugin implements LanguagePlugin {
   id = "cascade-language-go";
   name = "Cascade Go Language Plugin";
-  version = "3.3.0";
+  version = "3.3.1-next.0";
   supportedExtensions = [".go"];
   fileDetectionRules = [
     { type: "extension" as const, pattern: ".go" },

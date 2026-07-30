@@ -6,7 +6,7 @@ on:
       tag:
         description: npm distribution tag
         required: true
-        default: latest
+        default: next
         type: choice
         options: [latest, next, beta]
 
@@ -27,7 +27,7 @@ jobs:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.0.0
         with:
           fetch-depth: 0
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
         with:
           version: 9.15.0
       - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
@@ -36,6 +36,8 @@ jobs:
           registry-url: https://registry.npmjs.org
           cache: pnpm
           package-manager-cache: false
+      - name: Use an npm version with trusted-publishing support
+        run: npm install --global npm@11.5.1 && npm --version
       - run: pnpm install --frozen-lockfile
       - run: pnpm run check
       - run: node scripts/validate-release.mjs --pack --output release-artifacts
@@ -44,7 +46,7 @@ jobs:
           name: npm-tarballs-${{ github.sha }}
           path: release-artifacts/*.tgz
           if-no-files-found: error
-      - uses: actions/attest-build-provenance@v3
+      - uses: actions/attest-build-provenance@977bb373ede98d70efdf65b84cb5f73e068dcc2a # v3.0.0
         with:
           subject-path: release-artifacts/*.tgz
       - name: Publish with npm trusted publishing and provenance

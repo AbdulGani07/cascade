@@ -21,7 +21,7 @@ type CppNode = Parser.SyntaxNode;
 
 function parserForCpp(): Parser {
   const parser = new Parser();
-  parser.setLanguage(Cpp as unknown as Parser.Language);
+  parser.setLanguage(Cpp);
   return parser;
 }
 
@@ -156,7 +156,7 @@ function metadata(_root: string, files: string[]) {
 export class CppLanguagePlugin implements LanguagePlugin {
   id = "cascade-language-cpp";
   name = "Cascade C++ Language Plugin";
-  version = "3.3.0";
+  version = "3.3.1-next.0";
   supportedExtensions = [
     ".cc",
     ".cpp",

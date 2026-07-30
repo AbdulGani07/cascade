@@ -19,16 +19,11 @@ refactoring.
 
 ## Try it in 30 seconds
 
-Cascade 3.3.0 currently runs from the repository; an npm package name is not yet
-published.
+Install the public prerelease from the `next` channel:
 
 ```bash
-git clone https://github.com/AbdulGani07/cascade.git
-cd cascade
-corepack enable
-pnpm install --frozen-lockfile
-pnpm build
-node packages/cli/dist/index.js analyze test-project
+npm install --global @cascade-code/cli@next
+cascade analyze test-project
 ```
 
 The first command prints a summary such as:

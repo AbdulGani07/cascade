@@ -1,6 +1,6 @@
 # Language capability matrix
 
-This matrix describes implemented behavior in the 3.3.0 first-party plugins.
+This matrix describes implemented behavior in the 3.3.1-next.0 first-party plugins.
 “Yes” means the plugin exposes that capability; depth and accuracy still depend
 on syntax and repository layout.
 

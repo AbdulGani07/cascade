@@ -3,13 +3,26 @@
 ## Requirements
 
 - Node.js 22.13 or newer
-- pnpm 9.15.0 through Corepack
 - Git for change-impact commands
+
+## Public prerelease
+
+Install the public prerelease from the `next` channel:
+
+```bash
+npm install --global @cascade-code/cli@next
+cascade --version
+```
+
+The expected prerelease version is:
+
+```text
+3.3.1-next.0
+```
 
 ## Repository installation
 
-Cascade is not currently published under a verified npm package name. Install
-from source:
+Development from source additionally requires pnpm 9.15.0 through Corepack:
 
 ```bash
 git clone https://github.com/AbdulGani07/cascade.git
@@ -18,24 +31,6 @@ corepack enable
 pnpm install --frozen-lockfile
 pnpm build
 node packages/cli/dist/index.js --version
-```
-
-Expected version:
-
-```text
-3.3.0
-```
-
-For convenience, define a shell alias:
-
-```bash
-alias cascade='node /absolute/path/to/cascade/packages/cli/dist/index.js'
-```
-
-PowerShell:
-
-```powershell
-function cascade { node D:\path\to\cascade\packages\cli\dist\index.js @args }
 ```
 
 ## Development installation
