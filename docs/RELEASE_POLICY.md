@@ -91,6 +91,13 @@ the release PR, and dispatch with the matching dist-tag. Repeat with `pnpm chang
 subsequent prereleases. Run `pnpm changeset pre exit`, add a final changeset if needed, merge the
 stable release PR, and dispatch with `latest`. Never publish a prerelease version under `latest`.
 
+Release tags must be created only by the protected `Publish npm packages` workflow after every npm
+publication succeeds. Configure a repository tag ruleset for `v*` that restricts tag creation and
+deletion to repository administrators and the publishing workflow's GitHub Actions identity. The
+repository cannot prove that owner-managed ruleset from workflow code, so owners must verify it
+before each stable release. Do not add an always-failing tag workflow: it also rejects legitimate
+tags created through the protected release path.
+
 ## Rollback and deprecation
 
 npm versions are immutable and should not normally be unpublished. To roll back:

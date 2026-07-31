@@ -1,5 +1,6 @@
 import { execFileSync } from "node:child_process";
 import {
+  appendFileSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
@@ -62,6 +63,10 @@ const publicVersions = new Set(
   manifests.filter(({ manifest }) => !manifest.private).map(({ manifest }) => manifest.version),
 );
 const releaseVersion = [...publicVersions][0];
+const tagIndex = process.argv.indexOf("--tag");
+const distributionTag = tagIndex === -1 ? null : process.argv[tagIndex + 1];
+const outputIndex = process.argv.indexOf("--github-output");
+const githubOutput = outputIndex === -1 ? null : process.argv[outputIndex + 1];
 
 const failures = [];
 const assert = (condition, message) => {
@@ -70,6 +75,19 @@ const assert = (condition, message) => {
 
 assert(manifests.length === 20, `expected 20 workspaces, found ${manifests.length}`);
 assert(publicVersions.size === 1, "public packages must use one lockstep version");
+assert(
+  distributionTag === null || ["latest", "next", "beta"].includes(distributionTag),
+  `unsupported npm distribution tag ${distributionTag ?? "(missing)"}`,
+);
+if (distributionTag === "latest") {
+  assert(!releaseVersion?.includes("-"), `latest cannot publish prerelease version ${releaseVersion}`);
+}
+if (distributionTag === "next" || distributionTag === "beta") {
+  assert(
+    releaseVersion?.includes("-"),
+    `${distributionTag} must publish a prerelease version, received ${releaseVersion}`,
+  );
+}
 assert(
   manifests.filter(({ manifest }) => !manifest.private).length === publicNames.size,
   `expected ${publicNames.size} public packages`,
@@ -122,6 +140,10 @@ assert(
 if (failures.length) {
   console.error(failures.map((failure) => `- ${failure}`).join("\n"));
   process.exit(1);
+}
+
+if (githubOutput) {
+  appendFileSync(githubOutput, `version=${releaseVersion}\n`);
 }
 
 if (process.argv.includes("--pack")) {
@@ -183,6 +205,14 @@ if (process.argv.includes("--pack")) {
       "cli",
       "dist",
       "index.js",
+    );
+    const installedVersion = execFileSync(process.execPath, [installedCli, "--version"], {
+      cwd: smoke,
+      encoding: "utf8",
+    }).trim();
+    assert(
+      installedVersion === releaseVersion,
+      `installed CLI reported ${installedVersion} instead of ${releaseVersion}`,
     );
     const consumer = path.join(smoke, "consumer project (\u03b2)");
     mkdirSync(path.join(consumer, "src"), { recursive: true });
