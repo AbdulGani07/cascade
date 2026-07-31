@@ -31,7 +31,7 @@ runs:
   steps:
     - name: Restore Cascade dependency cache
       if: ${{ inputs.cache == 'true' }}
-      uses: actions/cache@0c45773b623bea8c8e75f6e9e5c444312a4a2c3a
+      uses: actions/cache@0400d5f644dc74513175e3cd8d07132dd4860809 # v4.2.4
       with:
         path: ${{ github.action_path }}/node_modules
         key: cascade-action-${{ runner.os }}-${{ hashFiles(format('{0}/pnpm-lock.yaml', github.action_path)) }}
