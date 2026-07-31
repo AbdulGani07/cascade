@@ -68,14 +68,16 @@ Before the first public release, an owner must:
    environment with required reviewers and deployment branch `main`, and restrict Actions to trusted
    actions. Protect `v*` tags from manual creation.
 5. Enable GitHub artifact attestations and immutable releases where available.
-6. Confirm the `cascade-code` VS Code Marketplace publisher, its verified domain, owner access, 2FA,
-   and a protected `vscode-marketplace` environment. Store a Marketplace PAT only there if VSCE
+6. Confirm the `cascade-code` VS Code Marketplace publisher, its verified domain, owner access, MFA,
+   and a protected `vscode-marketplace` environment. Prefer Microsoft-supported Entra ID
+   authentication for future automation. Store a minimally scoped Marketplace PAT only there if
    trusted identity is unavailable; never expose it to pull-request workflows.
 7. Resolve the documentation statements that packages are unpublished only after registry
    installation has been independently verified.
 
-No secret is required for npm trusted publishing. `GITHUB_TOKEN` is supplied by GitHub. A
-`VSCE_PAT` is required only for a later, separately approved Marketplace publication workflow.
+No secret is required for npm trusted publishing. `GITHUB_TOKEN` is supplied by GitHub. No
+Marketplace credential is required for local VSIX packaging. Any credential for a later, separately
+approved Marketplace publication workflow must use the protected environment above.
 
 The clean tarball installation currently reports Tree-sitter peer-range warnings caused by the
 existing grammar dependency ranges. They are known and do not prevent installation or CLI execution.

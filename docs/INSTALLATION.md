@@ -48,6 +48,7 @@ repository's dependencies are never installed by Cascade.
 ```bash
 pnpm --dir packages/vscode-extension run package:validate
 pnpm --dir packages/vscode-extension run package
+pnpm --dir packages/vscode-extension run package:prerelease
 ```
 
 Install the generated `.vsix` with **Extensions: Install from VSIX…**. See

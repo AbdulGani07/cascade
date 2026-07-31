@@ -345,13 +345,14 @@ importers:
         version: link:../plugin-api
 
   packages/vscode-extension:
-    devDependencies:
+    dependencies:
       '@cascade-code/cli':
         specifier: workspace:^
         version: link:../cli
       '@cascade-code/editor-service':
         specifier: workspace:^
         version: link:../editor-service
+    devDependencies:
       '@types/vscode':
         specifier: ^1.96.0
         version: 1.125.0

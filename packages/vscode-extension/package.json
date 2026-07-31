@@ -6,6 +6,10 @@
   "publisher": "cascade-code",
   "private": true,
   "license": "MIT",
+  "homepage": "https://github.com/AbdulGani07/cascade#readme",
+  "bugs": {
+    "url": "https://github.com/AbdulGani07/cascade/issues"
+  },
   "type": "module",
   "engines": {
     "vscode": "^1.96.0",
@@ -115,12 +119,16 @@
     "build": "tsc -b tsconfig.json --force",
     "typecheck": "tsc --noEmit",
     "package:validate": "node scripts/package.mjs --validate",
-    "package": "pnpm run build && vsce package --no-yarn --no-dependencies --out cascade-code-intelligence.vsix",
-    "clean": "rm -rf dist"
+    "package": "pnpm run build && node scripts/package.mjs --package",
+    "package:prerelease": "pnpm run build && node scripts/package.mjs --package --pre-release",
+    "package:contents": "node scripts/package.mjs --list",
+    "clean": "node scripts/package.mjs --clean"
+  },
+  "dependencies": {
+    "@cascade-code/cli": "workspace:^",
+    "@cascade-code/editor-service": "workspace:^"
   },
   "devDependencies": {
-    "@cascade-code/cli": "workspace:^",
-    "@cascade-code/editor-service": "workspace:^",
     "@types/vscode": "^1.96.0",
     "@vscode/vsce": "^3.9.2"
   },

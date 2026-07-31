@@ -12,6 +12,7 @@ import type { ServiceClient } from "../../packages/vscode-extension/src/client.j
 
 class FakeClient implements ServiceClient {
   readonly requests: Array<{ method: EditorRequestMethod; params?: Record<string, unknown> }> = [];
+  disposed = false;
   request<T>(method: EditorRequestMethod, params?: Record<string, unknown>): Promise<T> {
     this.requests.push({ method, params });
     const results: Partial<Record<EditorRequestMethod, unknown>> = {
@@ -57,7 +58,9 @@ class FakeClient implements ServiceClient {
     };
     return Promise.resolve(results[method] as T);
   }
-  dispose(): void {}
+  dispose(): void {
+    this.disposed = true;
+  }
 }
 
 function createHost(workspaces: EditorWorkspace[]) {
@@ -119,11 +122,40 @@ describe("VS Code extension controller", () => {
     expect(client.requests.some((request) => request.method === "workspace/remove")).toBe(true);
   });
 
+  it("keeps saved-file analysis opt-in and handles portable workspace paths", async () => {
+    const workspace = {
+      id: "portable",
+      root: path.resolve("workspace (β)", "project space"),
+      name: "portable",
+    };
+    const client = new FakeClient();
+    const { host } = createHost([workspace]);
+    const controller = new CascadeEditorController(client, host);
+    await controller.activate();
+    await controller.savedFile(path.join(workspace.root, "src", "main.ts"), 2);
+    expect(client.requests.some((request) => request.method === "workspace/updateFile")).toBe(
+      false
+    );
+
+    host.backgroundAnalysisEnabled = () => true;
+    await controller.savedFile(path.join(workspace.root, "src", "main.ts"), 3);
+    expect(client.requests.some((request) => request.method === "workspace/updateFile")).toBe(true);
+    controller.dispose();
+    expect(client.disposed).toBe(true);
+  });
+
   it("keeps manifest activation, commands, privacy defaults, and entry point aligned", () => {
     const manifest = JSON.parse(
       fs.readFileSync(path.resolve("packages/vscode-extension/package.json"), "utf8")
     );
     expect(manifest.main).toBe("./dist/extension.js");
+    expect(manifest.publisher).toBe("cascade-code");
+    expect(manifest.name).toBe("cascade-code-intelligence");
+    expect(manifest.private).toBe(true);
+    expect(manifest.version).toMatch(/^\d+\.\d+\.\d+$/);
+    expect(manifest.dependencies["@cascade-code/editor-service"]).toBe("workspace:^");
+    expect(manifest.dependencies["@cascade-code/cli"]).toBe("workspace:^");
+    expect(manifest.scripts["package:prerelease"]).toContain("--pre-release");
     expect(
       manifest.contributes.configuration.properties["cascade.backgroundAnalysis"].default
     ).toBe(false);

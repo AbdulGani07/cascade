@@ -5,3 +5,12 @@ tsconfig.json
 *.vsix
 .vsix-stage*/**
 packages/**
+**/*.map
+**/.env*
+**/tests/**
+**/fixtures/**
+**/.git/**
+**/.cache/**
+**/*.tgz
+docs/**
+package-lock.json
