@@ -61,7 +61,7 @@
     "@typescript-eslint/parser": "^8.65.0",
     "eslint": "^10.8.0",
     "prettier": "^3.9.6",
-    "typescript": "^5.0.0",
+    "typescript": "^6.0.3",
     "vitest": "^4.1.10",
     "@changesets/cli": "^2.29.7"
   },

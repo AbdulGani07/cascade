@@ -43,7 +43,7 @@
     "@cascade-code/plugin-api": "workspace:^",
     "@cascade-code/reporters": "workspace:^",
     "minimatch": "^10.2.6",
-    "typescript": "^5.9.3"
+    "typescript": "^6.0.3"
   },
   "keywords": [
     "dependency-graph",
