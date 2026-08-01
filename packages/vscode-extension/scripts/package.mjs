@@ -86,6 +86,15 @@ function assert(condition, message) {
   if (!condition) throw new Error(message);
 }
 
+function reportGitHubValidationError(error) {
+  if (process.env.GITHUB_ACTIONS !== "true") return;
+  const message = (error instanceof Error ? error.message : String(error))
+    .replaceAll("%", "%25")
+    .replaceAll("\r", "%0D")
+    .replaceAll("\n", "%0A");
+  console.error(`::error title=VSIX package validation failed::${message}`);
+}
+
 function runPackageManager(command, args, cwd) {
   if (process.platform === "win32") {
     const bundledNpmCli = path.join(
@@ -571,6 +580,9 @@ if (process.argv.includes("--clean")) {
         2
       )
     );
+  } catch (error) {
+    reportGitHubValidationError(error);
+    throw error;
   } finally {
     cleanStage();
   }

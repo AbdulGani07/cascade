@@ -38,7 +38,11 @@ runs:
     - name: Build Cascade action
       shell: bash
       working-directory: ${{ github.action_path }}
-      run: corepack pnpm install --frozen-lockfile --ignore-scripts && corepack pnpm run build
+      run: |
+        corepack enable
+        corepack prepare pnpm@9.15.0 --activate
+        pnpm install --frozen-lockfile --ignore-scripts
+        pnpm run build
     - name: Run Cascade analysis
       shell: bash
       env:
