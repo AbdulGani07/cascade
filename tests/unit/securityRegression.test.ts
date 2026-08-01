@@ -7,6 +7,7 @@ import { analyze } from "../../packages/core/src/index.js";
 import { toJson } from "../../packages/core/src/export/jsonExporter.js";
 import { MarkdownReporter } from "../../packages/reporters/src/markdownReporter.js";
 import { SarifReporter } from "../../packages/reporters/src/sarifReporter.js";
+import { toSarif as gitImpactToSarif } from "../../packages/cli/src/commands/changeImpact.js";
 import type { LanguagePlugin } from "@cascade-code/plugin-api";
 
 const roots: string[] = [];
@@ -94,6 +95,18 @@ describe("hostile repository boundaries", () => {
     fs.writeFileSync(config, "{}");
     process.env.CASCADE_CONFIG_PATH = config;
     expect(() => loadCascadeConfig(project)).toThrow(/inside the analyzed project root/);
+  });
+
+  it("accepts an absent default config through a symlinked project root", () => {
+    const project = root();
+    const parent = root();
+    const alias = path.join(parent, "project-alias");
+    try {
+      fs.symlinkSync(project, alias, "junction");
+    } catch {
+      return;
+    }
+    expect(loadCascadeConfig(alias)).toEqual(defaultConfig);
   });
 
   it("rejects configuration symlinks that escape the project", () => {
@@ -190,6 +203,28 @@ describe("hostile repository boundaries", () => {
     const uri = sarif.runs[0].results[0].locations[0].physicalLocation.artifactLocation.uri;
     expect(uri).not.toContain("\n");
     expect(uri).not.toMatch(/^file:/);
+  });
+
+  it("gives every Git-impact SARIF result a repository-relative location", () => {
+    const sarif = gitImpactToSarif({
+      introducedArchitectureViolations: [
+        { rule: "layers", edge: "src/a.ts -> src/b.ts", from: "src/a.ts" },
+      ],
+      introducedUnresolvedDependencies: [
+        { from: "scripts/worker.mjs", to: "../packages/core/dist/index.js" },
+      ],
+    }) as {
+      runs: Array<{
+        results: Array<{
+          locations: Array<{ physicalLocation: { artifactLocation: { uri: string } } }>;
+        }>;
+      }>;
+    };
+    expect(
+      sarif.runs[0].results.map(
+        (result) => result.locations[0].physicalLocation.artifactLocation.uri
+      )
+    ).toEqual(["src/a.ts", "scripts/worker.mjs"]);
   });
 
   it("keeps the dashboard loopback-only and token protected", () => {

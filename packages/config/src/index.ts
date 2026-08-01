@@ -224,15 +224,19 @@ export const defaultConfig: CascadeConfig = {
 
 export function loadCascadeConfig(projectRoot: string): CascadeConfig {
   const canonicalRoot = fs.realpathSync(projectRoot);
-  const configPath = process.env.CASCADE_CONFIG_PATH
+  const requestedConfigPath = process.env.CASCADE_CONFIG_PATH
     ? path.resolve(process.env.CASCADE_CONFIG_PATH)
-    : path.join(projectRoot, "cascade.config.json");
-  if (!isInside(canonicalRoot, configPath))
+    : path.join(canonicalRoot, "cascade.config.json");
+  const boundaryConfigPath = path.join(
+    fs.realpathSync(path.dirname(requestedConfigPath)),
+    path.basename(requestedConfigPath)
+  );
+  if (!isInside(canonicalRoot, boundaryConfigPath))
     throw new Error("Cascade configuration must be inside the analyzed project root.");
   const selectedProjectsOverride = process.env.CASCADE_SELECTED_PROJECTS?.split(",")
     .map((item) => item.trim())
     .filter(Boolean);
-  if (!fs.existsSync(configPath)) {
+  if (!fs.existsSync(requestedConfigPath)) {
     return {
       ...defaultConfig,
       selectedProjects: selectedProjectsOverride || defaultConfig.selectedProjects,
@@ -240,7 +244,7 @@ export function loadCascadeConfig(projectRoot: string): CascadeConfig {
   }
 
   try {
-    const canonicalConfig = fs.realpathSync(configPath);
+    const canonicalConfig = fs.realpathSync(requestedConfigPath);
     if (!isInside(canonicalRoot, canonicalConfig))
       throw new Error("Cascade configuration symlink resolves outside the analyzed project root.");
     if (!fs.statSync(canonicalConfig).isFile())
@@ -317,7 +321,7 @@ export function loadCascadeConfig(projectRoot: string): CascadeConfig {
     };
   } catch (err) {
     throw new Error(
-      `Failed to load cascade.config.json at ${configPath}: ${(err as Error).message}`
+      `Failed to load cascade.config.json at ${requestedConfigPath}: ${(err as Error).message}`
     );
   }
 }

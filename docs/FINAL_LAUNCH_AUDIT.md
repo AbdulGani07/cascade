@@ -33,7 +33,7 @@ Passed:
 - repository-pinned pnpm 9.15.0 frozen install with `--ignore-scripts`;
 - `pnpm audit --prod --audit-level high` (no known vulnerabilities);
 - `pnpm run format`;
-- `pnpm run check`: lint, 20 workspace builds/typechecks, 43 test files / 155 tests, docs validation;
+- `pnpm run check`: lint, 20 workspace builds/typechecks, 43 test files / 159 tests, docs validation;
 - explicit `pnpm run test:docs`, demo setup/verification, graph regression benchmark, and normal
   eight-repository real-world benchmark;
 - version-state validation, release manifest validation, 17-package pack/clean-install validation;
@@ -56,6 +56,17 @@ Observed failures, retained rather than hidden:
   mode now packs the validated local packages with pnpm, installs all 17 tarballs with lifecycle
   scripts disabled, restores a portable manifest, and rejects local-path leakage. Registry-backed
   publication validation remains unchanged and strict.
+- PR #10 hosted checks exposed incomplete scoped-package URL encoding, an invalid composite-action
+  cache hash, an unauthenticated Gitleaks API call, and CI attempts to resolve unpublished stable
+  packages. The release branch now encodes complete package names, keys the action cache without an
+  out-of-workspace `hashFiles` call, supplies the least-privilege workflow token to the pinned
+  secret scanner, and packages CI candidates from local tarballs.
+- The next hosted run exposed two cross-platform defects that local Windows validation could not
+  reproduce: macOS resolves `/var` temporary paths through `/private/var`, and GitHub rejects SARIF
+  results without a location. Configuration boundary checks now canonicalize the containing
+  directory without weakening symlink-escape rejection, and every Git-impact SARIF result carries a
+  repository-relative location. Regression tests cover both cases; publication remains blocked
+  until the corrected head passes the hosted rerun.
 - A final `release:state` refresh reached npm and Git tag checks but GitHub's unauthenticated Releases
   endpoint returned HTTP 403 twice (including with an explicit User-Agent), consistent with a shared
   API rate limit. Earlier official API evidence in this audit succeeded; `release:validate` and

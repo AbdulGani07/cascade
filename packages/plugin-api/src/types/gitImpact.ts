@@ -58,6 +58,8 @@ export interface GitImpactReport {
   introducedArchitectureViolations: Array<{
     rule: string;
     edge: string;
+    from: string;
+    to: string;
     evidence: ImpactEvidence[];
   }>;
   introducedUnresolvedDependencies: Array<{ from: string; to: string; evidence: ImpactEvidence[] }>;

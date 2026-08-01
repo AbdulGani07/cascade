@@ -469,6 +469,8 @@ function architectureViolations(
         .map((rule) => ({
           rule: rule.id,
           edge: `${edge.from} -> ${edge.to}`,
+          from: edge.from,
+          to: edge.to,
           evidence: [
             {
               kind: "configuration" as const,
