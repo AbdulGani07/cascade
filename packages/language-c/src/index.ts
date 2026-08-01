@@ -19,6 +19,7 @@ import type {
 
 type NativeTree = Parser.Tree;
 type NativeNode = Parser.SyntaxNode;
+const MAX_PARSE_DIAGNOSTICS = 50;
 
 function parserForC(): Parser {
   const parser = new Parser();
@@ -44,8 +45,13 @@ function parse(context: ParseContext): ParseResult {
   try {
     const tree = parserForC().parse(context.content);
     const diagnostics: ParseDiagnostic[] = [];
+    let truncated = false;
     walk(tree.rootNode, (node) => {
       if (node.type !== "ERROR" && !node.isMissing) return;
+      if (diagnostics.length >= MAX_PARSE_DIAGNOSTICS) {
+        truncated = true;
+        return;
+      }
       diagnostics.push({
         file: context.relativePath,
         message: node.isMissing
@@ -56,6 +62,14 @@ function parse(context: ParseContext): ParseResult {
         location: location(node),
       });
     });
+    if (truncated) {
+      diagnostics.push({
+        file: context.relativePath,
+        message: `C parse diagnostics truncated after ${MAX_PARSE_DIAGNOSTICS} findings.`,
+        severity: "warning",
+        code: "C_PARSE_DIAGNOSTICS_TRUNCATED",
+      });
+    }
     return { ast: tree, status: diagnostics.length ? "partial" : "success", diagnostics };
   } catch (error) {
     return {
@@ -268,7 +282,7 @@ function buildMetadata(root: string, files: string[]) {
 export class CLanguagePlugin implements LanguagePlugin {
   id = "cascade-language-c";
   name = "Cascade C Language Plugin";
-  version = "3.3.1-next.0";
+  version = "3.3.1";
   supportedExtensions = [".c", ".h"];
   fileDetectionRules = [
     { type: "extension" as const, pattern: ".c" },

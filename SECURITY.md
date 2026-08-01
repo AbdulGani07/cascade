@@ -38,5 +38,18 @@ the user's filesystem and process permissions. Only install plugins from
 publishers you trust. Plugin isolation is a residual risk, not a security
 boundary.
 
+The editor service uses private stdin/stdout pipes and is not a network service.
+The dashboard binds only to `127.0.0.1`; it is not designed to be proxied or
+exposed to a LAN. Cascade analysis contains no source-upload or telemetry path.
+Generated reports can still contain sensitive repository metadata, so review
+them before sharing.
+
+Git impact analysis invokes the installed Git executable with argument arrays,
+repository hooks disabled, and external diff/text-conversion disabled. VS Code
+executable overrides are ignored in untrusted workspaces. Enabling third-party
+plugins or explicitly configuring an executable remains a user trust decision.
+
 See [docs/SECURITY.md](docs/SECURITY.md) for the full
 threat model, operational guidance, and remaining risks.
+The stable-release hardening review is recorded in
+[docs/SECURITY_AUDIT_3_3_1.md](docs/SECURITY_AUDIT_3_3_1.md).

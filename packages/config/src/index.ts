@@ -240,7 +240,12 @@ export function loadCascadeConfig(projectRoot: string): CascadeConfig {
   }
 
   try {
-    const raw = fs.readFileSync(configPath, "utf-8");
+    const canonicalConfig = fs.realpathSync(configPath);
+    if (!isInside(canonicalRoot, canonicalConfig))
+      throw new Error("Cascade configuration symlink resolves outside the analyzed project root.");
+    if (!fs.statSync(canonicalConfig).isFile())
+      throw new Error("Cascade configuration must be a regular file.");
+    const raw = fs.readFileSync(canonicalConfig, "utf-8");
     if (Buffer.byteLength(raw, "utf8") > 1024 * 1024)
       throw new Error("Cascade configuration exceeds the 1 MiB security limit.");
     const parsed = JSON.parse(raw) as Partial<CascadeConfig>;

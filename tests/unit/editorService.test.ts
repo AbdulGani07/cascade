@@ -1,4 +1,6 @@
 import path from "node:path";
+import fs from "node:fs";
+import os from "node:os";
 import { describe, expect, it, vi } from "vitest";
 import type { AnalysisResult, DependencyEdge, DependencyNode } from "@cascade-code/plugin-api";
 import {
@@ -108,6 +110,34 @@ function fixture(): AnalysisResult {
 }
 
 describe("WorkspaceAnalysisService", () => {
+  it("rejects existing query paths whose symlink target escapes the workspace", () => {
+    const workspace = fs.mkdtempSync(path.join(os.tmpdir(), "cascade-editor-root-"));
+    const outside = fs.mkdtempSync(path.join(os.tmpdir(), "cascade-editor-outside-"));
+    try {
+      const secret = path.join(outside, "secret.ts");
+      fs.writeFileSync(secret, "secret");
+      try {
+        fs.symlinkSync(secret, path.join(workspace, "linked.ts"), "file");
+      } catch {
+        return;
+      }
+      const service = new WorkspaceAnalysisService({}, () => fixture());
+      service.addWorkspace({ id: "secure", root: workspace });
+      expect(() =>
+        service.updateFile({
+          workspaceId: "secure",
+          file: "linked.ts",
+          saved: true,
+          kind: "changed",
+        })
+      ).toThrow(/outside the workspace/);
+      service.dispose();
+    } finally {
+      fs.rmSync(workspace, { recursive: true, force: true });
+      fs.rmSync(outside, { recursive: true, force: true });
+    }
+  });
+
   it("serves deterministic dependency, impact, diagnostic, test, and explanation queries", async () => {
     const service = new WorkspaceAnalysisService({}, () => fixture());
     service.addWorkspace({ id: "root", root });
