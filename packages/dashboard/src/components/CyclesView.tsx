@@ -20,7 +20,7 @@ export default function CyclesView({ analysisData, onSelectNode }: CyclesViewPro
         </div>
         <h2 className="text-xl font-bold text-slate-100 mb-2">No Circular Dependencies Found</h2>
         <p className="text-sm text-slate-400 max-w-md text-center leading-relaxed">
-          Your codebase is clean! There are no circular import loops detected across modules.
+          No circular import loops were detected in this analysis snapshot.
         </p>
       </div>
     );
@@ -47,7 +47,7 @@ export default function CyclesView({ analysisData, onSelectNode }: CyclesViewPro
         </div>
 
         <div className="space-y-4">
-          {cycles.map((cyclePath, index) => (
+          {cycles.slice(0, 500).map((cyclePath, index) => (
             <div
               key={index}
               className="p-5 rounded-2xl border border-rose-500/30 bg-rose-950/20 backdrop-blur-xl shadow-xl space-y-3"
@@ -63,7 +63,7 @@ export default function CyclesView({ analysisData, onSelectNode }: CyclesViewPro
 
               {/* Loop path flow */}
               <div className="p-3 rounded-xl bg-slate-900/90 border border-slate-800 flex flex-wrap items-center gap-2 font-mono text-xs">
-                {cyclePath.map((file, fIdx) => (
+                {cyclePath.slice(0, 200).map((file, fIdx) => (
                   <div key={file} className="flex items-center gap-2">
                     <button
                       type="button"
@@ -72,7 +72,7 @@ export default function CyclesView({ analysisData, onSelectNode }: CyclesViewPro
                     >
                       {file}
                     </button>
-                    {fIdx < cyclePath.length - 1 && (
+                    {fIdx < Math.min(cyclePath.length, 200) - 1 && (
                       <ArrowRight className="w-3.5 h-3.5 text-slate-600" />
                     )}
                   </div>
@@ -91,6 +91,12 @@ export default function CyclesView({ analysisData, onSelectNode }: CyclesViewPro
               </div>
             </div>
           ))}
+          {cycles.length > 500 && (
+            <p className="rounded-xl border border-amber-500/40 bg-amber-950/30 p-3 text-xs text-amber-200">
+              Showing 500 of {cycles.length.toLocaleString()} cycles to protect browser
+              responsiveness. Export the report for the complete result.
+            </p>
+          )}
         </div>
       </div>
     </div>

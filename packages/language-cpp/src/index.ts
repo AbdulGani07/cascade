@@ -18,6 +18,7 @@ import type {
 
 type CppTree = Parser.Tree;
 type CppNode = Parser.SyntaxNode;
+const MAX_PARSE_DIAGNOSTICS = 50;
 
 function parserForCpp(): Parser {
   const parser = new Parser();
@@ -43,8 +44,13 @@ function parse(context: ParseContext): ParseResult {
   try {
     const tree = parserForCpp().parse(context.content);
     const diagnostics: ParseDiagnostic[] = [];
+    let truncated = false;
     walk(tree.rootNode, (node) => {
       if (node.type !== "ERROR" && !node.isMissing) return;
+      if (diagnostics.length >= MAX_PARSE_DIAGNOSTICS) {
+        truncated = true;
+        return;
+      }
       diagnostics.push({
         file: context.relativePath,
         message: node.isMissing
@@ -55,6 +61,14 @@ function parse(context: ParseContext): ParseResult {
         location: location(node),
       });
     });
+    if (truncated) {
+      diagnostics.push({
+        file: context.relativePath,
+        message: `C++ parse diagnostics truncated after ${MAX_PARSE_DIAGNOSTICS} findings.`,
+        severity: "warning",
+        code: "CPP_PARSE_DIAGNOSTICS_TRUNCATED",
+      });
+    }
     return { ast: tree, status: diagnostics.length ? "partial" : "success", diagnostics };
   } catch (error) {
     return {
@@ -156,7 +170,7 @@ function metadata(_root: string, files: string[]) {
 export class CppLanguagePlugin implements LanguagePlugin {
   id = "cascade-language-cpp";
   name = "Cascade C++ Language Plugin";
-  version = "3.3.1-next.0";
+  version = "3.3.1";
   supportedExtensions = [
     ".cc",
     ".cpp",

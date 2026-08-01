@@ -480,11 +480,16 @@ export class WorkspaceAnalysisService {
   }
 
   private normalizeFile(state: WorkspaceState, file: string): string {
-    const absolute = path.isAbsolute(file)
+    let absolute = path.isAbsolute(file)
       ? path.resolve(file)
       : path.resolve(state.descriptor.root, file);
+    try {
+      absolute = fs.realpathSync(absolute);
+    } catch {
+      // Queries may refer to unresolved or deleted files; retain the lexical check below.
+    }
     const relative = path.relative(state.descriptor.root, absolute).replace(/\\/g, "/");
-    if (relative === ".." || relative.startsWith("../"))
+    if (relative === ".." || relative.startsWith("../") || path.isAbsolute(relative))
       throw new ServiceError("FILE_OUTSIDE_WORKSPACE", `'${file}' is outside the workspace.`);
     return relative;
   }

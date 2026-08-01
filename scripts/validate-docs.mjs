@@ -7,6 +7,7 @@ const ignoredDirectories = new Set([
   ".git",
   ".github",
   ".changeset",
+  ".cache",
   "node_modules",
   "dist",
   "coverage",

@@ -20,7 +20,10 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     maxTraversalDepth: configuration.get("maxTraversalDepth", 30),
     debounceMs: configuration.get("debounceMs", 750),
   };
-  const client = new ProcessServiceClient(limits, configuration.get("servicePath", ""));
+  const configuredService = vscode.workspace.isTrusted
+    ? configuration.get<string>("servicePath", "")
+    : "";
+  const client = new ProcessServiceClient(limits, configuredService);
   const diagnostics = vscode.languages.createDiagnosticCollection("cascade");
   const status = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left, 80);
   status.command = "cascade.refreshWorkspace";
@@ -105,7 +108,9 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     },
     async openDashboard(workspace) {
       const require = createRequire(import.meta.url);
-      const configuredCli = vscode.workspace.getConfiguration("cascade").get("cliPath", "");
+      const configuredCli = vscode.workspace.isTrusted
+        ? vscode.workspace.getConfiguration("cascade").get<string>("cliPath", "")
+        : "";
       let command = configuredCli || "cascade";
       let args = ["dashboard", workspace.root];
       if (!configuredCli) {

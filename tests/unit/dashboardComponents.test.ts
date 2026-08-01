@@ -30,4 +30,38 @@ describe("dashboard component contracts", () => {
     expect(sources).not.toContain("dangerouslySetInnerHTML");
     expect(sources).not.toContain("innerHTML =");
   });
+
+  it("renders explicit loading, error, empty, and partial-analysis states", () => {
+    const source = fs.readFileSync(
+      path.join(process.cwd(), "packages", "dashboard", "src", "App.tsx"),
+      "utf8"
+    );
+    expect(source).toContain("Loading the local analysis report");
+    expect(source).toContain("Dashboard could not load this report");
+    expect(source).toContain("No analyzable files found");
+    expect(source).toContain("Partial analysis:");
+  });
+
+  it("supports multidimensional search and bounded oversized lists", () => {
+    const sources = [component("Sidebar.tsx"), component("CommandPalette.tsx")].join("\n");
+    expect(sources).toContain("node.symbols?.map");
+    expect(sources).toContain("node.packageOrWorkspace");
+    expect(sources).toContain("node.language");
+    expect(sources).toContain("slice(0, 500)");
+  });
+
+  it("shows complete edge provenance without inventing missing values", () => {
+    const source = component("ImpactPanel.tsx");
+    for (const label of [
+      "Source",
+      "Target",
+      "Relationship",
+      "Resolver / plugin",
+      "Confidence",
+      "Analysis level",
+      "Unresolved reason",
+    ])
+      expect(source).toContain(label);
+    expect(source).toContain("not supplied");
+  });
 });

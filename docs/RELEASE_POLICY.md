@@ -4,6 +4,37 @@ Cascade uses semantic versioning and Changesets for its 17 public npm packages. 
 currently move as one fixed version group because the CLI, analysis engine, language plugins,
 reporters, configuration, editor service, and plugin API form one tested product surface.
 
+## Authoritative version mapping
+
+One product release has the following representation. This mapping is required by Marketplace,
+which accepts numeric extension versions and records prerelease status separately from SemVer.
+
+| Release state        | Public npm packages | npm tag  | Marketplace manifest | Marketplace flag |
+| -------------------- | ------------------- | -------- | -------------------- | ---------------- |
+| Prerelease example   | `X.Y.Z-next.N`      | `next`   | `X.Y.Z`              | prerelease       |
+| Stable, version free | `X.Y.Z`             | `latest` | `X.Y.Z`              | stable           |
+| Stable, version used | next free patch     | `latest` | same next free patch | stable           |
+
+The 17 public packages always have one Changesets-controlled version. During prerelease mode its
+base version is the prepared Marketplace numeric version and its prerelease identifier matches
+`.changeset/pre.json`. Marketplace numeric versions are immutable across channels: if that numeric
+version was actually uploaded as a prerelease, stable promotion advances npm and Marketplace to the
+lowest unused patch. Stable npm and Marketplace versions must be identical. Registry and Marketplace
+queries, rather than an assumed mapping, select the candidate.
+
+The private root, dashboard, and test-utils versions record the last stable baseline. They are not
+published and Changesets does not version them. During a prerelease they equal every public
+package's `initialVersions` value; after stable promotion they equal the public stable version.
+The private `cascade-code-intelligence` workspace is the exception: its numeric version is derived
+from the public npm version by removing the prerelease suffix.
+
+Run `pnpm run release:state` to display this mapping and compare npm dist-tags with remote Git tags
+and GitHub Releases. It intentionally fails on a missing published counterpart. Run
+`pnpm run vscode:version:prepare` after Changesets changes the public target; never edit the
+extension version manually. `pnpm run release:validate-version-state` checks lockstep versions,
+Changesets metadata, private policy, changelogs, and Marketplace mapping. Stable and prerelease VSIX
+commands enforce their respective source state, including when `package.mjs` is called directly.
+
 ## Version and compatibility policy
 
 - **Patch**: compatible fixes, documentation corrections, performance work, and dependency updates.
@@ -100,7 +131,75 @@ repository cannot prove that owner-managed ruleset from workflow code, so owners
 before each stable release. Do not add an always-failing tag workflow: it also rejects legitimate
 tags created through the protected release path.
 
+### Maintainer commands
+
+- Start `next`: `pnpm changeset pre enter next`, add a changeset, run
+  `pnpm run release:version`, `pnpm run vscode:version:prepare`, and `pnpm run release:validate`.
+- Publish a prerelease: dispatch **Publish npm packages** with `next`; package the extension with
+  `pnpm --filter cascade-code-intelligence run package:prerelease` and publish it with Marketplace
+  prerelease status through the separately protected process.
+- Promote to stable: `pnpm changeset pre exit`, run `pnpm run release:version`,
+  `pnpm run vscode:version:prepare`, and `pnpm run release:validate`; dispatch npm with `latest`,
+  then package with `pnpm --filter cascade-code-intelligence run package`.
+- Emergency patch: from the stable branch run `pnpm changeset`, select patch, then
+  `pnpm run release:version`, `pnpm run vscode:version:prepare`, and
+  `pnpm run release:validate`; use the same protected stable publication sequence.
+
+Do not run prerelease enter/exit as part of validation. Git tags and GitHub Releases are created
+only after stable npm publication succeeds. Before approval, compare `npm view
+@cascade-code/cli dist-tags`, `git tag --list`, and the repository Releases page; missing historical
+tags or releases require an owner repair and must not be papered over by a new package publication.
+
+## Published-state audit (2026-08-01)
+
+All 17 npm packages agree: `latest` is `3.3.0` and `next` is `3.3.1-next.0`. The Marketplace API
+reports only numeric `3.3.0`, flagged prerelease; it does not report `3.3.1`. Remote Git tags stop at
+`v3.1.1`, and GitHub has no published `v3.3.0` Release. Consequently `3.3.1` is the lowest unused
+coordinated stable candidate. The missing historical tag and Release are warnings, not permanent
+blocks on a later release. Do not invent `v3.3.0`: only an owner who can establish its exact source
+commit from trustworthy evidence may repair it. Publication validation remains strict for the new
+target and requires exact npm, tag, Release, and Marketplace agreement at the appropriate stage.
+
 ## Rollback and deprecation
+
+### VS Code Marketplace workflow
+
+The **Publish VS Code extension** workflow is manual-only on `main`. It accepts `prerelease` or
+`stable` and defaults to a dry run. Its build job has read-only repository permission and no
+Marketplace secret. It runs the repository checks, validates npm/GitHub/Marketplace state, creates
+all six target-specific VSIX files, enforces the 70 MiB installed-size budget, and uploads the
+files as a 14-day Actions artifact. Only a non-dry run starts the separately protected
+`vscode-marketplace` environment job.
+
+Use a secret named `VSCE_PAT` in that environment. It must be a minimally scoped Azure DevOps PAT
+authorized only to manage publisher `cascade-code`; do not define it as a repository or organization
+secret. `@vscode/vsce@3.9.2` consumes `VSCE_PAT` only in the `vsce publish --packagePath` step. The
+workflow deliberately does not pass `--skip-duplicate`: an existing version is an error. Configure
+the environment with required owner review, deployment branch `main` only, no administrator bypass,
+and an appropriate wait timer. Protect `main`, require CI/security checks, and restrict Actions to
+approved pinned actions.
+
+Local or Actions dry run:
+
+```bash
+pnpm run vscode:release:dry-run -- --channel prerelease
+```
+
+Alternatively, choose `channel=prerelease` and `dry-run=true` in the workflow UI.
+
+For a real prerelease, publish npm `next` first, confirm `pnpm run release:state`, then dispatch from
+`main` with `channel=prerelease` and `dry-run=false`. Approve the environment only after inspecting
+the build job and VSIX artifact. For stable, publish npm `latest` and create its protected
+`v<version>` GitHub Release first; dispatch with `channel=stable` and `dry-run=false`. The workflow
+requires npm `latest`, source, Marketplace numeric version, and GitHub Release to agree, then attaches
+all stable target VSIX files to that Release without overwriting existing assets.
+
+Marketplace versions cannot be deleted or replaced safely. To roll back an extension, stop pending
+environment deployments, mark the affected Marketplace version as deprecated/unavailable through
+the owner-controlled Marketplace UI when supported, document the issue in the GitHub Release, and
+publish a corrected incremented patch through the same workflow. Never reuse a version, overwrite a
+Release asset, expose the PAT, or use `--skip-duplicate`. Rotate `VSCE_PAT` immediately after any
+suspected disclosure and preserve workflow logs for incident response.
 
 npm versions are immutable and should not normally be unpublished. To roll back:
 

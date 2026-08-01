@@ -157,13 +157,18 @@ function toTerminal(payload: unknown): string {
 function toMarkdown(payload: unknown): string {
   return `# Cascade Git Change Impact\n\n\`\`\`json\n${JSON.stringify(payload, null, 2)}\n\`\`\`\n`;
 }
-function toSarif(payload: unknown): unknown {
+export function toSarif(payload: unknown): unknown {
   const value = payload as Record<string, unknown>;
   const entries = [
     ...(
       (value.introducedArchitectureViolations as
-        Array<{ rule: string; edge: string }> | undefined) ?? []
-    ).map((item) => ({ ruleId: item.rule, level: "warning", message: { text: item.edge } })),
+        Array<{ rule: string; edge: string; from?: string }> | undefined) ?? []
+    ).map((item) => ({
+      ruleId: item.rule,
+      level: "warning",
+      message: { text: item.edge },
+      locations: [{ physicalLocation: { artifactLocation: { uri: item.from ?? "." } } }],
+    })),
     ...(
       (value.introducedUnresolvedDependencies as Array<{ from: string; to: string }> | undefined) ??
       []
@@ -171,6 +176,7 @@ function toSarif(payload: unknown): unknown {
       ruleId: "CASCADE_GIT_UNRESOLVED",
       level: "warning",
       message: { text: `${item.from} -> ${item.to}` },
+      locations: [{ physicalLocation: { artifactLocation: { uri: item.from } } }],
     })),
   ];
   return {

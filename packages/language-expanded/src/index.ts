@@ -499,7 +499,7 @@ function create(spec: Spec): LanguagePlugin {
   return {
     id: `cascade-language-${spec.key}`,
     name: `Cascade ${spec.name} Language Plugin`,
-    version: "3.3.1-next.0",
+    version: "3.3.1",
     supportedExtensions: spec.extensions,
     fileDetectionRules: spec.extensions.map((pattern) => ({ type: "extension" as const, pattern })),
     analysisLevels: spec.analysisLevels,

@@ -1,0 +1,189 @@
+{
+  "schemaVersion": 1,
+  "repositories": {
+    "typescript-monorepo": {
+      "commit": "719ce8c64758874de3128a60aa020bfe871c976c",
+      "fileCount": 426,
+      "nodeCount": 217,
+      "edgeCount": 735,
+      "dependencies": {
+        "resolved": 413,
+        "unresolved": 0,
+        "external": 322,
+        "ambiguous": 0
+      },
+      "cycleCount": 1,
+      "warningCount": 8,
+      "thresholds": {
+        "maxDurationMs": 30000,
+        "maxPeakMemoryMiB": 512,
+        "minNodes": 151,
+        "maxNodes": 336,
+        "minEdges": 441,
+        "maxEdges": 1307,
+        "maxWarnings": 100
+      }
+    },
+    "python-project": {
+      "commit": "00e592cea702e0b2caa0dee42489fdb1c22cd845",
+      "fileCount": 165,
+      "nodeCount": 85,
+      "edgeCount": 674,
+      "dependencies": {
+        "resolved": 316,
+        "unresolved": 113,
+        "external": 239,
+        "ambiguous": 6
+      },
+      "cycleCount": 2,
+      "warningCount": 154,
+      "thresholds": {
+        "maxDurationMs": 30000,
+        "maxPeakMemoryMiB": 512,
+        "minNodes": 59,
+        "maxNodes": 138,
+        "minEdges": 404,
+        "maxEdges": 1200,
+        "maxWarnings": 328
+      }
+    },
+    "java-multimodule": {
+      "commit": "d88a2b721bda3798a6a934987157498e66da06c5",
+      "fileCount": 22,
+      "nodeCount": 5,
+      "edgeCount": 18,
+      "dependencies": {
+        "resolved": 2,
+        "unresolved": 4,
+        "external": 12,
+        "ambiguous": 0
+      },
+      "cycleCount": 0,
+      "warningCount": 4,
+      "thresholds": {
+        "maxDurationMs": 30000,
+        "maxPeakMemoryMiB": 512,
+        "minNodes": 3,
+        "maxNodes": 18,
+        "minEdges": 10,
+        "maxEdges": 52,
+        "maxWarnings": 100
+      }
+    },
+    "dotnet-solution": {
+      "commit": "abb4c08bd4fbc14fc2ea6c56b31c3381d83ea9ab",
+      "fileCount": 134,
+      "nodeCount": 83,
+      "edgeCount": 559,
+      "dependencies": {
+        "resolved": 2,
+        "unresolved": 7,
+        "external": 404,
+        "ambiguous": 146
+      },
+      "cycleCount": 1,
+      "warningCount": 153,
+      "thresholds": {
+        "maxDurationMs": 30000,
+        "maxPeakMemoryMiB": 512,
+        "minNodes": 58,
+        "maxNodes": 135,
+        "minEdges": 335,
+        "maxEdges": 999,
+        "maxWarnings": 326
+      }
+    },
+    "go-modules": {
+      "commit": "7f05d217867b2af52b0a28c6d1c91df97e1b5b39",
+      "fileCount": 71,
+      "nodeCount": 51,
+      "edgeCount": 233,
+      "dependencies": {
+        "resolved": 4,
+        "unresolved": 5,
+        "external": 224,
+        "ambiguous": 0
+      },
+      "cycleCount": 0,
+      "warningCount": 450,
+      "thresholds": {
+        "maxDurationMs": 30000,
+        "maxPeakMemoryMiB": 512,
+        "minNodes": 35,
+        "maxNodes": 87,
+        "minEdges": 139,
+        "maxEdges": 428,
+        "maxWarnings": 920
+      }
+    },
+    "rust-workspace": {
+      "commit": "435f59fc4b43af3ab32f34d53fa34978f393fe52",
+      "fileCount": 236,
+      "nodeCount": 129,
+      "edgeCount": 481,
+      "dependencies": {
+        "resolved": 158,
+        "unresolved": 139,
+        "external": 184,
+        "ambiguous": 0
+      },
+      "cycleCount": 1,
+      "warningCount": 854,
+      "thresholds": {
+        "maxDurationMs": 43632,
+        "maxPeakMemoryMiB": 870,
+        "minNodes": 90,
+        "maxNodes": 204,
+        "minEdges": 288,
+        "maxEdges": 862,
+        "maxWarnings": 1728
+      }
+    },
+    "cpp-cmake": {
+      "commit": "e2243a6a7f4a8c09e9233a253f3d1f71e45d8cef",
+      "fileCount": 142,
+      "nodeCount": 80,
+      "edgeCount": 704,
+      "dependencies": {
+        "resolved": 154,
+        "unresolved": 17,
+        "external": 533,
+        "ambiguous": 0
+      },
+      "cycleCount": 1,
+      "warningCount": 2175,
+      "thresholds": {
+        "maxDurationMs": 33312,
+        "maxPeakMemoryMiB": 836,
+        "minNodes": 56,
+        "maxNodes": 130,
+        "minEdges": 422,
+        "maxEdges": 1252,
+        "maxWarnings": 4370
+      }
+    },
+    "polyglot-bazel": {
+      "commit": "dbf3399037ae65f901d46147804749fae1409ef2",
+      "fileCount": 687,
+      "nodeCount": 239,
+      "edgeCount": 342,
+      "dependencies": {
+        "resolved": 81,
+        "unresolved": 114,
+        "external": 145,
+        "ambiguous": 2
+      },
+      "cycleCount": 0,
+      "warningCount": 246,
+      "thresholds": {
+        "maxDurationMs": 30000,
+        "maxPeakMemoryMiB": 512,
+        "minNodes": 167,
+        "maxNodes": 369,
+        "minEdges": 205,
+        "maxEdges": 619,
+        "maxWarnings": 512
+      }
+    }
+  }
+}

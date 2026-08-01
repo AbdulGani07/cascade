@@ -30,12 +30,24 @@ export default function CommandPalette({
       .slice(0, 8)
       .map(([id, label, detail]) => ({ id, label, detail, kind: "view" as const }));
     const nodes = data.nodes
-      .filter((node) => node.id.toLocaleLowerCase().includes(needle))
+      .filter((node) =>
+        [
+          node.id,
+          node.language,
+          node.packageOrWorkspace,
+          node.project,
+          ...(node.symbols?.map((symbol) => symbol.name) ?? []),
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLocaleLowerCase()
+          .includes(needle)
+      )
       .slice(0, 20)
       .map((node) => ({
         id: node.id,
         label: node.id,
-        detail: node.language,
+        detail: [node.language, node.packageOrWorkspace].filter(Boolean).join(" · "),
         kind: "node" as const,
       }));
     return [...views, ...nodes];
@@ -63,7 +75,7 @@ export default function CommandPalette({
           onKeyDown={(event) => {
             if (event.key === "Escape") onClose();
           }}
-          placeholder="Search views or files…"
+          placeholder="Search files, symbols, packages, languages, or views…"
           className="w-full border-b border-slate-700 bg-slate-950 p-4 text-sm text-white outline-none focus:ring-2 focus:ring-inset focus:ring-cyan-400"
         />
         <ul className="max-h-[55vh] overflow-auto p-2" role="listbox">
@@ -82,6 +94,11 @@ export default function CommandPalette({
               </button>
             </li>
           ))}
+          {results.length === 0 && (
+            <li className="p-6 text-center text-sm text-slate-400" role="status">
+              No matching files, symbols, packages, languages, or views.
+            </li>
+          )}
         </ul>
       </div>
     </div>

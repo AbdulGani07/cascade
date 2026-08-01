@@ -60,7 +60,7 @@ const manifests = readdirSync(packageRoot)
     manifest: JSON.parse(readFileSync(entry.file, "utf8")),
   }));
 const publicVersions = new Set(
-  manifests.filter(({ manifest }) => !manifest.private).map(({ manifest }) => manifest.version),
+  manifests.filter(({ manifest }) => !manifest.private).map(({ manifest }) => manifest.version)
 );
 const releaseVersion = [...publicVersions][0];
 const tagIndex = process.argv.indexOf("--tag");
@@ -77,20 +77,23 @@ assert(manifests.length === 20, `expected 20 workspaces, found ${manifests.lengt
 assert(publicVersions.size === 1, "public packages must use one lockstep version");
 assert(
   distributionTag === null || ["latest", "next", "beta"].includes(distributionTag),
-  `unsupported npm distribution tag ${distributionTag ?? "(missing)"}`,
+  `unsupported npm distribution tag ${distributionTag ?? "(missing)"}`
 );
 if (distributionTag === "latest") {
-  assert(!releaseVersion?.includes("-"), `latest cannot publish prerelease version ${releaseVersion}`);
+  assert(
+    !releaseVersion?.includes("-"),
+    `latest cannot publish prerelease version ${releaseVersion}`
+  );
 }
 if (distributionTag === "next" || distributionTag === "beta") {
   assert(
     releaseVersion?.includes("-"),
-    `${distributionTag} must publish a prerelease version, received ${releaseVersion}`,
+    `${distributionTag} must publish a prerelease version, received ${releaseVersion}`
   );
 }
 assert(
   manifests.filter(({ manifest }) => !manifest.private).length === publicNames.size,
-  `expected ${publicNames.size} public packages`,
+  `expected ${publicNames.size} public packages`
 );
 for (const { directory, manifest } of manifests) {
   const isPrivate = privateNames.has(manifest.name);
@@ -99,7 +102,7 @@ for (const { directory, manifest } of manifests) {
   assert(manifest.repository?.url === repositoryUrl, `${manifest.name}: incorrect repository URL`);
   assert(
     manifest.repository?.directory === `packages/${directory}`,
-    `${manifest.name}: incorrect repository directory`,
+    `${manifest.name}: incorrect repository directory`
   );
   assert(manifest.engines?.node === ">=22.13.0", `${manifest.name}: incorrect Node policy`);
   if (isPrivate) {
@@ -107,15 +110,18 @@ for (const { directory, manifest } of manifests) {
   } else {
     assert(
       manifest.version === releaseVersion,
-      `${manifest.name}: expected lockstep version ${releaseVersion}`,
+      `${manifest.name}: expected lockstep version ${releaseVersion}`
     );
     assert(publicNames.has(manifest.name), `${manifest.name}: unexpected public package name`);
     assert(manifest.publishConfig?.access === "public", `${manifest.name}: public access missing`);
     assert(
       manifest.publishConfig?.provenance === true,
-      `${manifest.name}: npm provenance must be enabled`,
+      `${manifest.name}: npm provenance must be enabled`
     );
-    assert(Array.isArray(manifest.files) && manifest.files.includes("dist"), `${manifest.name}: files`);
+    assert(
+      Array.isArray(manifest.files) && manifest.files.includes("dist"),
+      `${manifest.name}: files`
+    );
     assert(manifest.main, `${manifest.name}: main missing`);
     assert(manifest.types, `${manifest.name}: types missing`);
     assert(manifest.exports?.["."], `${manifest.name}: exports missing`);
@@ -124,17 +130,23 @@ for (const { directory, manifest } of manifests) {
     for (const [name, version] of Object.entries(manifest[field] ?? {})) {
       assert(!name.startsWith("@cascade/"), `${manifest.name}: stale dependency ${name}`);
       if (name.startsWith("@cascade-code/")) {
-        assert(version === "workspace:^", `${manifest.name}: ${field}.${name} must use workspace:^`);
+        assert(
+          version === "workspace:^",
+          `${manifest.name}: ${field}.${name} must use workspace:^`
+        );
       }
     }
   }
 }
 
 const cli = manifests.find(({ manifest }) => manifest.name === "@cascade-code/cli")?.manifest;
-assert(cli?.files?.includes("dist/dashboard"), "@cascade-code/cli: dashboard assets not allowlisted");
+assert(
+  cli?.files?.includes("dist/dashboard"),
+  "@cascade-code/cli: dashboard assets not allowlisted"
+);
 assert(
   statSync(path.join(packageRoot, "cli", "dist", "dashboard", "index.html")).isFile(),
-  "@cascade-code/cli: built dashboard index is missing",
+  "@cascade-code/cli: built dashboard index is missing"
 );
 
 if (failures.length) {
@@ -152,9 +164,7 @@ if (process.argv.includes("--pack")) {
     outputIndex === -1 ? null : path.resolve(root, process.argv[outputIndex + 1]);
   const temp = retainedOutput ?? mkdtempSync(path.join(tmpdir(), "cascade-release-"));
   if (retainedOutput) mkdirSync(retainedOutput);
-  const smoke = retainedOutput
-    ? mkdtempSync(path.join(tmpdir(), "cascade-release-smoke-"))
-    : temp;
+  const smoke = retainedOutput ? mkdtempSync(path.join(tmpdir(), "cascade-release-smoke-")) : temp;
   try {
     const tarballs = [];
     for (const { directory, manifest } of manifests.filter(({ manifest }) => !manifest.private)) {
@@ -164,18 +174,37 @@ if (process.argv.includes("--pack")) {
         {
           cwd: path.join(packageRoot, directory),
           encoding: "utf8",
-        },
+        }
       );
       const parsed = JSON.parse(output);
       const result = Array.isArray(parsed) ? parsed[0] : parsed;
       const names = result.files.map(({ path: file }) => file);
       assert(names.includes("package.json"), `${manifest.name}: package.json missing from tarball`);
-      assert(names.some((file) => file.startsWith("dist/")), `${manifest.name}: dist missing`);
+      assert(names.includes("README.md"), `${manifest.name}: README.md missing from tarball`);
       assert(
-        !names.some((file) => /(^|\/)(src|tests?|fixtures|node_modules|\.env|\.git)(\/|$)/.test(file)),
-        `${manifest.name}: forbidden content in tarball`,
+        names.includes("LICENSE") ||
+          names.includes("LICENSE.md") ||
+          names.includes("LICENSE.txt") ||
+          names.includes("LICENCE") ||
+          names.includes("COPYING"),
+        `${manifest.name}: license file missing from tarball (${
+          names.filter((file) => /licen[cs]e|copying/i.test(file)).join(", ") ||
+          "no license-like entries"
+        })`
       );
-      tarballs.push(path.isAbsolute(result.filename) ? result.filename : path.join(temp, result.filename));
+      assert(
+        names.some((file) => file.startsWith("dist/")),
+        `${manifest.name}: dist missing`
+      );
+      assert(
+        !names.some((file) =>
+          /(^|\/)(src|tests?|fixtures|node_modules|\.env|\.git)(\/|$)/.test(file)
+        ),
+        `${manifest.name}: forbidden content in tarball`
+      );
+      tarballs.push(
+        path.isAbsolute(result.filename) ? result.filename : path.join(temp, result.filename)
+      );
     }
     runPackageManager("npm", ["init", "-y"], {
       cwd: smoke,
@@ -187,7 +216,7 @@ if (process.argv.includes("--pack")) {
       {
         cwd: smoke,
         stdio: "inherit",
-      },
+      }
     );
     runPackageManager("npm", ["ls", "--all"], {
       cwd: smoke,
@@ -196,7 +225,7 @@ if (process.argv.includes("--pack")) {
     execFileSync(
       process.execPath,
       [path.join(smoke, "node_modules", "@cascade-code", "cli", "dist", "index.js"), "--help"],
-      { cwd: smoke, stdio: "inherit" },
+      { cwd: smoke, stdio: "inherit" }
     );
     const installedCli = path.join(
       smoke,
@@ -204,7 +233,7 @@ if (process.argv.includes("--pack")) {
       "@cascade-code",
       "cli",
       "dist",
-      "index.js",
+      "index.js"
     );
     const installedVersion = execFileSync(process.execPath, [installedCli, "--version"], {
       cwd: smoke,
@@ -212,23 +241,23 @@ if (process.argv.includes("--pack")) {
     }).trim();
     assert(
       installedVersion === releaseVersion,
-      `installed CLI reported ${installedVersion} instead of ${releaseVersion}`,
+      `installed CLI reported ${installedVersion} instead of ${releaseVersion}`
     );
     const consumer = path.join(smoke, "consumer project (\u03b2)");
     mkdirSync(path.join(consumer, "src"), { recursive: true });
     writeFileSync(
       path.join(consumer, "package.json"),
-      JSON.stringify({ name: "cascade-release-smoke", private: true, main: "src/index.ts" }),
+      JSON.stringify({ name: "cascade-release-smoke", private: true, main: "src/index.ts" })
     );
     writeFileSync(
       path.join(consumer, "src", "index.ts"),
-      'import { value } from "./value.js";\nconsole.log(value);\n',
+      'import { value } from "./value.js";\nconsole.log(value);\n'
     );
     writeFileSync(path.join(consumer, "src", "value.ts"), "export const value = 42;\n");
     const analysisOutput = execFileSync(
       process.execPath,
       [installedCli, "analyze", consumer, "--json"],
-      { cwd: smoke, encoding: "utf8" },
+      { cwd: smoke, encoding: "utf8" }
     );
     const analysis = JSON.parse(analysisOutput);
     const analyzedPaths = new Set(analysis.nodes.map((node) => node.relativePath));
@@ -236,9 +265,12 @@ if (process.argv.includes("--pack")) {
     assert(analyzedPaths.has("src/value.ts"), "installed CLI analysis missed src/value.ts");
     assert(
       analysis.edges.length === 1,
-      `installed CLI analysis resolved ${analysis.edges.length} smoke imports instead of 1`,
+      `installed CLI analysis resolved ${analysis.edges.length} smoke imports instead of 1`
     );
-    assert(!analysisOutput.includes(consumer), "installed CLI output leaked the absolute project path");
+    assert(
+      !analysisOutput.includes(consumer),
+      "installed CLI output leaked the absolute project path"
+    );
     const dashboardOutput = path.join(smoke, "reports", "dashboard.json");
     execFileSync(
       process.execPath,
@@ -251,18 +283,18 @@ if (process.argv.includes("--pack")) {
         "--output-only",
         "--no-open",
       ],
-      { cwd: smoke, stdio: "inherit" },
+      { cwd: smoke, stdio: "inherit" }
     );
     assert(statSync(dashboardOutput).isFile(), "installed CLI dashboard report was not generated");
     assert(
       !readFileSync(dashboardOutput, "utf8").includes(consumer),
-      "installed CLI dashboard report leaked the absolute project path",
+      "installed CLI dashboard report leaked the absolute project path"
     );
     assert(
       statSync(
-        path.join(smoke, "node_modules", "@cascade-code", "cli", "dist", "dashboard", "index.html"),
+        path.join(smoke, "node_modules", "@cascade-code", "cli", "dist", "dashboard", "index.html")
       ).isFile(),
-      "installed CLI dashboard asset missing",
+      "installed CLI dashboard asset missing"
     );
   } finally {
     rmSync(smoke, { recursive: true, force: true });

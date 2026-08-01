@@ -7,6 +7,8 @@ import { analyze } from "../../packages/core/src/index.js";
 import { toJson } from "../../packages/core/src/export/jsonExporter.js";
 import { MarkdownReporter } from "../../packages/reporters/src/markdownReporter.js";
 import { SarifReporter } from "../../packages/reporters/src/sarifReporter.js";
+import { toSarif as gitImpactToSarif } from "../../packages/cli/src/commands/changeImpact.js";
+import type { LanguagePlugin } from "@cascade-code/plugin-api";
 
 const roots: string[] = [];
 function root(): string {
@@ -95,6 +97,100 @@ describe("hostile repository boundaries", () => {
     expect(() => loadCascadeConfig(project)).toThrow(/inside the analyzed project root/);
   });
 
+  it("accepts an absent default config through a symlinked project root", () => {
+    const project = root();
+    const parent = root();
+    const alias = path.join(parent, "project-alias");
+    try {
+      fs.symlinkSync(project, alias, "junction");
+    } catch {
+      return;
+    }
+    expect(loadCascadeConfig(alias)).toEqual(defaultConfig);
+  });
+
+  it("rejects configuration symlinks that escape the project", () => {
+    const project = root();
+    const outside = root();
+    const externalConfig = path.join(outside, "cascade.config.json");
+    fs.writeFileSync(externalConfig, "{}");
+    try {
+      fs.symlinkSync(externalConfig, path.join(project, "cascade.config.json"), "file");
+    } catch {
+      return;
+    }
+    expect(() => loadCascadeConfig(project)).toThrow(/symlink resolves outside/);
+  });
+
+  it("rejects plugin resolver paths that escape the analysis root", () => {
+    const project = root();
+    const outside = root();
+    const external = path.join(outside, "secret.probe");
+    fs.writeFileSync(path.join(project, "main.probe"), "outside");
+    fs.writeFileSync(external, "secret");
+    const plugin: LanguagePlugin = {
+      id: "security-probe",
+      name: "Security probe",
+      version: "1.0.0",
+      supportedExtensions: [".probe"],
+      fileDetectionRules: [{ type: "extension", pattern: ".probe" }],
+      capabilities: {
+        dependencyExtraction: true,
+        symbolExtraction: false,
+        moduleResolution: true,
+        projectDetection: false,
+        entryPointDetection: false,
+        testFileDetection: false,
+        generatedFileDetection: false,
+        configFileDetection: false,
+      },
+      analysisLevels: ["file-dependency"],
+      limitations: { knownIssues: [], unsupportedFeatures: [] },
+      parser: { parse: () => ({ status: "success" }) },
+      dependencyExtractor: {
+        extractDependencies: () => ({
+          dependencies: [
+            {
+              specifier: "outside",
+              importKind: "static",
+              isStatic: true,
+              isDynamic: false,
+              isTypeOnly: false,
+              isReExport: false,
+              isConditional: false,
+            },
+          ],
+          diagnostics: [],
+        }),
+      },
+      moduleResolver: {
+        resolveModule: () => ({
+          resolvedFilePath: external,
+          resolutionStatus: "resolved",
+          confidence: 1,
+          resolverId: "hostile-resolver",
+        }),
+      },
+    };
+    const result = analyze(project, {
+      customPlugins: [plugin],
+      config: { ...defaultConfig, extensions: [...defaultConfig.extensions, ".probe"] },
+    });
+    expect(result.edges[0]).toMatchObject({
+      resolutionStatus: "unresolved",
+      resolverProvenance: { resolverId: "cascade-root-boundary" },
+    });
+    expect(result.diagnostics?.some((item) => item.code === "SECURITY_PATH_ESCAPE")).toBe(true);
+    expect(JSON.stringify(result.edges)).not.toContain(outside);
+  });
+
+  it("disables repository hooks and external diff execution for Git impact", () => {
+    const source = fs.readFileSync(path.resolve("packages/core/src/analysis/gitImpact.ts"), "utf8");
+    expect(source).toContain('"core.hooksPath="');
+    expect(source).toContain('"--no-ext-diff"');
+    expect(source).toContain('"--no-textconv"');
+  });
+
   it("neutralizes Markdown and SARIF filename injection", () => {
     const project = root();
     fs.writeFileSync(path.join(project, "safe.ts"), "export const safe = 1;");
@@ -107,6 +203,28 @@ describe("hostile repository boundaries", () => {
     const uri = sarif.runs[0].results[0].locations[0].physicalLocation.artifactLocation.uri;
     expect(uri).not.toContain("\n");
     expect(uri).not.toMatch(/^file:/);
+  });
+
+  it("gives every Git-impact SARIF result a repository-relative location", () => {
+    const sarif = gitImpactToSarif({
+      introducedArchitectureViolations: [
+        { rule: "layers", edge: "src/a.ts -> src/b.ts", from: "src/a.ts" },
+      ],
+      introducedUnresolvedDependencies: [
+        { from: "scripts/worker.mjs", to: "../packages/core/dist/index.js" },
+      ],
+    }) as {
+      runs: Array<{
+        results: Array<{
+          locations: Array<{ physicalLocation: { artifactLocation: { uri: string } } }>;
+        }>;
+      }>;
+    };
+    expect(
+      sarif.runs[0].results.map(
+        (result) => result.locations[0].physicalLocation.artifactLocation.uri
+      )
+    ).toEqual(["src/a.ts", "scripts/worker.mjs"]);
   });
 
   it("keeps the dashboard loopback-only and token protected", () => {

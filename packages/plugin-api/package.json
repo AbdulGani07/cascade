@@ -1,6 +1,6 @@
 {
   "name": "@cascade-code/plugin-api",
-  "version": "3.3.1-next.0",
+  "version": "3.3.1",
   "description": "Stable plugin contracts and type definitions for Cascade language plugins",
   "type": "module",
   "engines": {

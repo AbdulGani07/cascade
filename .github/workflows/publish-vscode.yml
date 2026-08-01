@@ -1,0 +1,109 @@
+name: Publish VS Code extension
+
+on:
+  workflow_dispatch:
+    inputs:
+      channel:
+        description: Marketplace release channel
+        required: true
+        default: prerelease
+        type: choice
+        options: [prerelease, stable]
+      dry-run:
+        description: Build and validate without publishing
+        required: true
+        default: true
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: vscode-marketplace-${{ inputs.channel }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    if: github.repository == 'AbdulGani07/cascade' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.preconditions.outputs.version }}
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          fetch-depth: 0
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+        with:
+          version: 9.15.0
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version: 22.13.0
+          cache: pnpm
+          package-manager-cache: false
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run lint
+      - run: pnpm run build
+      - run: pnpm run typecheck
+      - run: pnpm run test --maxWorkers=2 --testTimeout=30000
+      - run: pnpm run test:docs
+      - run: pnpm run release:validate
+      - name: Validate channel, npm, GitHub, and Marketplace state
+        id: preconditions
+        run: node scripts/validate-vscode-publish.mjs --channel "${{ inputs.channel }}"
+      - run: pnpm --filter "cascade-code-intelligence" run package:validate
+      - name: Package prerelease VSIX files
+        if: inputs.channel == 'prerelease'
+        run: pnpm --filter "cascade-code-intelligence" run package:all-targets
+      - name: Package stable VSIX files
+        if: inputs.channel == 'stable'
+        run: pnpm --filter "cascade-code-intelligence" run package:all-targets:stable
+      - run: pnpm --filter "cascade-code-intelligence" run package:size
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: cascade-code-intelligence-${{ steps.preconditions.outputs.version }}-${{ inputs.channel }}
+          path: packages/vscode-extension/*.vsix
+          if-no-files-found: error
+          retention-days: 14
+
+  publish:
+    if: inputs.dry-run == false && github.repository == 'AbdulGani07/cascade' && github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-latest
+    environment: vscode-marketplace
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          fetch-depth: 0
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+        with:
+          version: 9.15.0
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version: 22.13.0
+          cache: pnpm
+          package-manager-cache: false
+      - run: pnpm install --frozen-lockfile
+      - uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
+        with:
+          name: cascade-code-intelligence-${{ needs.build.outputs.version }}-${{ inputs.channel }}
+          path: release-vsix
+      - name: Revalidate immediately before publication
+        run: node scripts/validate-vscode-publish.mjs --channel "${{ inputs.channel }}"
+      - name: Publish VSIX files to Marketplace
+        env:
+          VSCE_PAT: ${{ secrets.VSCE_PAT }}
+        run: |
+          mapfile -t VSIX_FILES < <(find release-vsix -maxdepth 1 -type f -name '*.vsix' -print | sort)
+          test "${#VSIX_FILES[@]}" -eq 6
+          EXTRA_ARGS=()
+          if [ "${{ inputs.channel }}" = prerelease ]; then EXTRA_ARGS+=(--pre-release); fi
+          pnpm --filter "cascade-code-intelligence" exec vsce publish --packagePath "${VSIX_FILES[@]}" "${EXTRA_ARGS[@]}"
+      - name: Attach stable VSIX files to GitHub Release
+        if: inputs.channel == 'stable'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view "v${{ needs.build.outputs.version }}"
+          gh release upload "v${{ needs.build.outputs.version }}" release-vsix/*.vsix

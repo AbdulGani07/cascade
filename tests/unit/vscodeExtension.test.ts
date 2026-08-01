@@ -152,18 +152,47 @@ describe("VS Code extension controller", () => {
     expect(manifest.publisher).toBe("cascade-code");
     expect(manifest.name).toBe("cascade-code-intelligence");
     expect(manifest.private).toBe(true);
+    expect(manifest.version).toBe("3.3.1");
     expect(manifest.version).toMatch(/^\d+\.\d+\.\d+$/);
+    expect(manifest.icon).toBe("media/icon.png");
+    expect(fs.existsSync(path.resolve("packages/vscode-extension/media/icon.png"))).toBe(true);
+    expect(fs.existsSync(path.resolve("packages/vscode-extension/media/icon.svg"))).toBe(true);
+    expect(
+      fs
+        .readFileSync(path.resolve("packages/vscode-extension/.vscodeignore"), "utf8")
+        .split(/\r?\n/)
+    ).toContain("media/*.svg");
+    expect(fs.existsSync(path.resolve("docs/VSCODE_MARKETPLACE_SCREENSHOTS.md"))).toBe(true);
+    expect(fs.existsSync(path.resolve("scripts/prepare-vscode-marketplace-screenshots.ps1"))).toBe(
+      true
+    );
+    expect(fs.existsSync(path.resolve("examples/vscode-extension-demo/cascade.config.json"))).toBe(
+      true
+    );
     expect(manifest.dependencies["@cascade-code/editor-service"]).toBe("workspace:^");
     expect(manifest.dependencies["@cascade-code/cli"]).toBe("workspace:^");
     expect(manifest.scripts["package:prerelease"]).toContain("--pre-release");
     expect(
       manifest.contributes.configuration.properties["cascade.backgroundAnalysis"].default
     ).toBe(false);
+    expect(manifest.capabilities.untrustedWorkspaces).toEqual({
+      supported: true,
+      restrictedConfigurations: ["cascade.servicePath", "cascade.cliPath"],
+    });
     expect(
       manifest.contributes.commands.map((item: { command: string }) => item.command).sort()
     ).toEqual([...CASCADE_COMMANDS].sort());
-    expect(
-      fs.readFileSync(path.resolve("packages/vscode-extension/src/extension.ts"), "utf8")
-    ).not.toContain("telemetry");
+    const extensionSource = fs.readFileSync(
+      path.resolve("packages/vscode-extension/src/extension.ts"),
+      "utf8"
+    );
+    expect(extensionSource).not.toContain("telemetry");
+    expect(extensionSource.match(/vscode\.workspace\.isTrusted/g)).toHaveLength(2);
+    const packagingSource = fs.readFileSync(
+      path.resolve("packages/vscode-extension/scripts/package.mjs"),
+      "utf8"
+    );
+    expect(packagingSource).toContain('packageManifest.name === "npm-check-updates"');
+    expect(packagingSource).toContain("VSIX must exclude the transitive npm-check-updates");
   });
 });

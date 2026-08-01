@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "repositories": [
+    {
+      "id": "typescript-monorepo",
+      "category": "TypeScript monorepo",
+      "repository": "https://github.com/changesets/changesets",
+      "commit": "719ce8c64758874de3128a60aa020bfe871c976c",
+      "license": "MIT"
+    },
+    {
+      "id": "python-project",
+      "category": "Python project",
+      "repository": "https://github.com/pallets/click",
+      "commit": "00e592cea702e0b2caa0dee42489fdb1c22cd845",
+      "license": "BSD-3-Clause"
+    },
+    {
+      "id": "java-multimodule",
+      "category": "Java multi-module project",
+      "repository": "https://github.com/spring-guides/gs-multi-module",
+      "commit": "d88a2b721bda3798a6a934987157498e66da06c5",
+      "subdirectory": "complete",
+      "license": "Apache-2.0"
+    },
+    {
+      "id": "dotnet-solution",
+      "category": ".NET solution",
+      "repository": "https://github.com/jbogard/ContosoUniversityDotNetCore-Pages",
+      "commit": "abb4c08bd4fbc14fc2ea6c56b31c3381d83ea9ab",
+      "license": "MIT"
+    },
+    {
+      "id": "go-modules",
+      "category": "Go modules",
+      "repository": "https://github.com/golang/example",
+      "commit": "7f05d217867b2af52b0a28c6d1c91df97e1b5b39",
+      "license": "BSD-3-Clause"
+    },
+    {
+      "id": "rust-workspace",
+      "category": "Rust workspace",
+      "repository": "https://github.com/BurntSushi/ripgrep",
+      "commit": "435f59fc4b43af3ab32f34d53fa34978f393fe52",
+      "license": "MIT OR Unlicense"
+    },
+    {
+      "id": "cpp-cmake",
+      "category": "C++ CMake project",
+      "repository": "https://github.com/fmtlib/fmt",
+      "commit": "e2243a6a7f4a8c09e9233a253f3d1f71e45d8cef",
+      "license": "MIT"
+    },
+    {
+      "id": "polyglot-bazel",
+      "category": "Polyglot repository",
+      "repository": "https://github.com/bazelbuild/examples",
+      "commit": "dbf3399037ae65f901d46147804749fae1409ef2",
+      "license": "Apache-2.0"
+    }
+  ]
+}

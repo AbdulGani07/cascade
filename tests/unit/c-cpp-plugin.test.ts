@@ -90,6 +90,21 @@ describe("C plugin", () => {
     ]);
     expect(entries?.[0]?.confidence).toBe(1);
   });
+
+  it("bounds diagnostics for C++-like headers classified as C", () => {
+    const content = Array.from(
+      { length: 200 },
+      (_, index) => `namespace n${index} { class C${index} { public: std::string value; }; }`
+    ).join("\n");
+    const parsed = plugin.parser.parse({
+      filePath: "ambiguous.h",
+      relativePath: "ambiguous.h",
+      content,
+      options: {},
+    });
+    expect(parsed.diagnostics.length).toBeLessThanOrEqual(51);
+    expect(parsed.diagnostics.at(-1)?.code).toBe("C_PARSE_DIAGNOSTICS_TRUNCATED");
+  });
 });
 
 describe("C++ plugin", () => {
@@ -139,5 +154,17 @@ describe("C++ plugin", () => {
       confidence: 0.86,
     });
     expect(result.evidence).toContain("unique repository include-suffix match");
+  });
+
+  it("bounds malformed C++ diagnostics", () => {
+    const content = Array.from({ length: 200 }, () => "class { public: void ???(;").join("\n");
+    const parsed = plugin.parser.parse({
+      filePath: "broken.cpp",
+      relativePath: "broken.cpp",
+      content,
+      options: {},
+    });
+    expect(parsed.diagnostics.length).toBeLessThanOrEqual(51);
+    expect(parsed.diagnostics.at(-1)?.code).toBe("CPP_PARSE_DIAGNOSTICS_TRUNCATED");
   });
 });

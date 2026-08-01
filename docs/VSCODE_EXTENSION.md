@@ -8,11 +8,10 @@
 Marketplace prereleases use ordinary numeric `major.minor.patch` versions plus the Marketplace
 prerelease flag. They do not use npm prerelease suffixes.
 
-- First Marketplace prerelease: extension `3.3.0`, packaged with `vsce --pre-release`.
-- Current npm public beta: `@cascade-code/*@3.3.1-next.0`; it is a separate distribution channel.
-- Recommended later Marketplace stable: `3.3.1` after the prerelease is accepted and stable
-  readiness is approved. Do not reuse `3.3.0` for stable because the Marketplace requires a higher
-  version to supersede the prerelease.
+- Published Marketplace state before this candidate: extension `3.3.0`, flagged prerelease.
+- Stable candidate: extension and public npm packages `3.3.1`; publication has not occurred.
+- Numeric Marketplace versions are never reused. Candidate selection queries live Marketplace,
+  npm, Git tag, and GitHub Release state instead of assuming a prerelease was uploaded.
 
 ## Build, inspect, and install
 
@@ -26,11 +25,17 @@ pnpm --filter "cascade-code-intelligence" run package:prerelease
 pnpm --filter "cascade-code-intelligence" run package:contents
 ```
 
-`package` creates `cascade-code-intelligence-3.3.0.vsix`.
-`package:prerelease` creates `cascade-code-intelligence-3.3.0-prerelease.vsix` with official VSCE
-prerelease metadata. Both commands deploy a production-only dependency tree into a temporary,
-path-checked `.vsix-stage` directory, validate the package contents, and remove the stage afterward.
-Each VSIX has a JSON content manifest beside it for owner inspection.
+`package` creates a target-specific artifact such as
+`cascade-code-intelligence-3.3.1-win32-x64.vsix`. `package:prerelease` creates one such as
+`cascade-code-intelligence-3.3.1-win32-x64-prerelease.vsix` with official VSCE prerelease and target
+metadata. Both commands deploy a production-only dependency tree into a temporary, path-checked
+`.vsix-stage` directory, remove non-runtime parser/build content and other unnecessary metadata,
+validate the packaged local runtime, and remove the stage afterward. `package:all-targets` creates
+Windows, Linux, and macOS variants for x64 and arm64. Each VSIX has a JSON content manifest beside it
+for owner inspection.
+
+Run `pnpm --filter "cascade-code-intelligence" run package:size` after packaging. The enforced budget
+is 70 MiB unpacked per target-specific VSIX; see the [VSIX size audit](VSIX_SIZE_AUDIT.md).
 
 Install the inspected prerelease in an isolated profile:
 
@@ -39,7 +44,7 @@ $profile = Join-Path $env:TEMP "cascade-vscode-prerelease"
 code `
   --user-data-dir "$profile\user-data" `
   --extensions-dir "$profile\extensions" `
-  --install-extension "packages/vscode-extension/cascade-code-intelligence-3.3.0-prerelease.vsix" `
+  --install-extension "packages/vscode-extension/cascade-code-intelligence-3.3.1-win32-x64-prerelease.vsix" `
   --force
 ```
 
@@ -57,6 +62,10 @@ code `
 5. Observe network activity and confirm analysis remains local.
 6. Upload the inspected VSIX to publisher `cascade-code`, mark it as a prerelease, install
    **Pre-Release Version** from the Marketplace, and verify the publisher and listing.
+
+Use the [Marketplace screenshot capture guide](VSCODE_MARKETPLACE_SCREENSHOTS.md) and committed demo
+workspace for real, sanitized presentation captures. Do not add image references until the
+corresponding reviewed PNG files exist.
 
 These are owner actions. Packaging does not publish or change Marketplace settings.
 

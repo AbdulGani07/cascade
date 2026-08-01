@@ -124,7 +124,7 @@ export function buildGraph(
     for (const dep of extractResult.dependencies) {
       if (shouldCancel?.()) throw new Error("Analysis cancelled");
       const resolutionStarted = performance.now();
-      const resolution =
+      let resolution =
         plugin.id === "cascade-language-javascript" || plugin.id === "cascade-language-typescript"
           ? projectResolver.resolve(dep.specifier, node.absolutePath, node.relativePath, dep)
           : pluginRegistry.safeResolveModule(plugin, {
@@ -135,6 +135,27 @@ export function buildGraph(
               extractedDependency: dep,
               allKnownFiles: allKnownRelativeFiles,
             });
+      const resolvedCandidate = resolution.resolvedFilePath
+        ? path.resolve(resolution.resolvedFilePath)
+        : resolution.resolvedRelativePath
+          ? path.resolve(projectRoot, resolution.resolvedRelativePath)
+          : undefined;
+      if (resolvedCandidate && !isInside(canonicalRoot, canonicalPath(resolvedCandidate))) {
+        resolution = {
+          resolutionStatus: "unresolved",
+          confidence: 0,
+          resolverId: "cascade-root-boundary",
+          diagnostics: [
+            {
+              file: node.relativePath,
+              message: "Resolver result was rejected because it escapes the analysis root.",
+              severity: "warning",
+              code: "SECURITY_PATH_ESCAPE",
+              location: dep.sourceLocation,
+            },
+          ],
+        };
+      }
       resolutionMs += performance.now() - resolutionStarted;
 
       if (resolution.diagnostics) {
@@ -229,6 +250,22 @@ export function buildGraph(
   onTiming?.("graphConstruction", performance.now() - graphStarted - parsingMs - resolutionMs);
 
   return { graph, warnings, diagnostics };
+}
+
+function canonicalPath(candidate: string): string {
+  try {
+    return fs.realpathSync(candidate);
+  } catch {
+    return path.resolve(candidate);
+  }
+}
+
+function isInside(root: string, candidate: string): boolean {
+  const relative = path.relative(root, candidate);
+  return (
+    relative === "" ||
+    (relative !== ".." && !relative.startsWith(`..${path.sep}`) && !path.isAbsolute(relative))
+  );
 }
 
 function countLines(content: string): number {

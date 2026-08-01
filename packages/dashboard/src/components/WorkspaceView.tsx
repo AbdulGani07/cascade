@@ -82,6 +82,14 @@ export default function WorkspaceView({
   const rows = useMemo<
     Array<{ id: string; meta: string; detail?: string; severity?: string }>
   >(() => {
+    const incomingByNode = new Map<string, number>();
+    const outgoingByNode = new Map<string, number>();
+    if (view === "hotspots") {
+      for (const edge of data.edges) {
+        outgoingByNode.set(edge.from, (outgoingByNode.get(edge.from) ?? 0) + 1);
+        incomingByNode.set(edge.to, (incomingByNode.get(edge.to) ?? 0) + 1);
+      }
+    }
     if (view === "packages")
       return (data.projectGraph?.nodes ?? [])
         .filter(
@@ -144,8 +152,8 @@ export default function WorkspaceView({
     if (view === "hotspots")
       return data.nodes
         .map((node) => {
-          const incoming = data.edges.filter((edge) => edge.to === node.id).length;
-          const outgoing = data.edges.filter((edge) => edge.from === node.id).length;
+          const incoming = incomingByNode.get(node.id) ?? 0;
+          const outgoing = outgoingByNode.get(node.id) ?? 0;
           return {
             id: node.id,
             meta: `${incoming + outgoing} coupling`,

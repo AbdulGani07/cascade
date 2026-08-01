@@ -35,6 +35,7 @@ absolute machine paths.
 | `pnpm run benchmark`            | Run the benchmark suite                                         |
 | `pnpm run benchmark:regression` | Check stable graph performance thresholds                       |
 | `pnpm changeset`                | Record a user-visible package change                            |
+| `pnpm run release:state`        | Validate and display the coordinated release versions           |
 
 Run `pnpm run format` before submitting. Use `pnpm run format:fix` to apply formatting.
 
@@ -70,6 +71,11 @@ Add a Changeset for user-visible behavior, public API, package, migration, or co
 Documentation-only community-process changes normally do not need one. Use concise conventional
 commit subjects such as `fix(core): reject symlink root escape`; maintainers may squash a pull
 request during merge.
+
+Do not manually edit public package or VS Code extension versions. Changesets owns the 17 public
+package versions; maintainers derive the numeric Marketplace version with
+`pnpm run vscode:version:prepare`. The complete npm/Marketplace mapping is in the
+[release policy](docs/RELEASE_POLICY.md).
 
 ## Pull requests and review
 

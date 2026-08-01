@@ -36,7 +36,18 @@ export default function Sidebar({
   };
 
   const filteredFiles = analysisData.nodes.filter((node) => {
-    const matchesSearch = node.id.toLowerCase().includes(search.toLowerCase());
+    const needle = search.toLocaleLowerCase().trim();
+    const searchable = [
+      node.id,
+      node.language,
+      node.packageOrWorkspace,
+      node.project,
+      ...(node.symbols?.map((symbol) => symbol.name) ?? []),
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLocaleLowerCase();
+    const matchesSearch = !needle || searchable.includes(needle);
     const status = getFileStatus(node.id);
     const matchesFilter = filter === "all" || status === filter;
     const matchesLanguage = language === "all" || node.language === language;
@@ -83,6 +94,7 @@ export default function Sidebar({
               type="button"
               onClick={onCloseMobile}
               className="xl:hidden p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800"
+              aria-label="Close file explorer"
             >
               <X className="w-4 h-4" />
             </button>
@@ -199,6 +211,7 @@ export default function Sidebar({
           value={search}
           onChange={(event) => setSearch(event.target.value)}
           placeholder="Search modules..."
+          aria-label="Search by file, symbol, package, project, or language"
           className="w-full rounded-xl border border-slate-800 bg-slate-900/90 py-2 pl-9 pr-8 text-xs text-slate-200 placeholder-slate-500 focus:border-cyan-500 focus:outline-none focus:ring-1 focus:ring-cyan-500 transition-all"
         />
         {search && (
@@ -206,6 +219,7 @@ export default function Sidebar({
             type="button"
             onClick={() => setSearch("")}
             className="absolute right-2.5 top-2.5 text-slate-500 hover:text-slate-300"
+            aria-label="Clear search"
           >
             <X className="h-4 w-4" />
           </button>
@@ -251,7 +265,7 @@ export default function Sidebar({
             type="button"
             onClick={() => handleSelectFile(null)}
             className="p-1 rounded-lg hover:bg-cyan-900/50 text-cyan-400 hover:text-cyan-200 transition-colors"
-            title="Deselect"
+            aria-label="Deselect module"
           >
             <X className="w-3.5 h-3.5" />
           </button>
@@ -265,7 +279,7 @@ export default function Sidebar({
             No files match your search or filter.
           </div>
         ) : (
-          filteredFiles.map((node) => {
+          filteredFiles.slice(0, 500).map((node) => {
             const status = getFileStatus(node.id);
             const isSelected = selectedId === node.id;
             const filename = node.id.split("/").pop() ?? node.id;
@@ -328,6 +342,12 @@ export default function Sidebar({
               </button>
             );
           })
+        )}
+        {filteredFiles.length > 500 && (
+          <p className="p-3 text-xs text-amber-300" role="status">
+            Showing 500 of {filteredFiles.length.toLocaleString()} matching files. Refine search or
+            filters to narrow the list.
+          </p>
         )}
       </div>
     </aside>

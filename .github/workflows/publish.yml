@@ -45,7 +45,11 @@ jobs:
         id: release
         env:
           DIST_TAG: ${{ inputs.tag }}
-        run: node scripts/validate-release.mjs --tag "$DIST_TAG" --github-output "$GITHUB_OUTPUT"
+        run: |
+          CHANNEL=prerelease
+          if [ "$DIST_TAG" = latest ]; then CHANNEL=stable; fi
+          node scripts/validate-version-state.mjs --channel "$CHANNEL"
+          node scripts/validate-release.mjs --tag "$DIST_TAG" --github-output "$GITHUB_OUTPUT"
       - name: Reject an existing release tag
         env:
           VERSION: ${{ steps.release.outputs.version }}
