@@ -31,6 +31,10 @@ const numericSemver = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/;
 const readJson = (file) => JSON.parse(readFileSync(file, "utf8"));
 const baseVersion = (version) => version?.split("-")[0];
 
+export function npmRegistryMetadataUrl(name) {
+  return `https://registry.npmjs.org/${encodeURIComponent(name)}`;
+}
+
 function workspaceManifests(root) {
   const packageRoot = path.join(root, "packages");
   return readdirSync(packageRoot)
@@ -179,7 +183,7 @@ async function auditPublishedState(root, state) {
   const failures = [];
   const registryStates = await Promise.all(
     PUBLIC_PACKAGE_NAMES.map(async (name) => {
-      const response = await fetch(`https://registry.npmjs.org/${name.replace("/", "%2f")}`);
+      const response = await fetch(npmRegistryMetadataUrl(name));
       if (!response.ok) throw new Error(`${name}: npm registry returned ${response.status}`);
       const metadata = await response.json();
       return { name, tags: metadata["dist-tags"] ?? {} };

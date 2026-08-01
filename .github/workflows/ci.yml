@@ -64,6 +64,8 @@ jobs:
   vscode-package:
     name: VSIX (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
+    env:
+      CASCADE_RELEASE_CANDIDATE: "true"
     strategy:
       fail-fast: false
       matrix:

@@ -2,7 +2,11 @@ import { execFileSync } from "node:child_process";
 import { appendFileSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { PUBLIC_PACKAGE_NAMES, validateVersionState } from "./validate-version-state.mjs";
+import {
+  npmRegistryMetadataUrl,
+  PUBLIC_PACKAGE_NAMES,
+  validateVersionState,
+} from "./validate-version-state.mjs";
 
 const extensionId = "cascade-code.cascade-code-intelligence";
 const repository = "AbdulGani07/cascade";
@@ -47,7 +51,7 @@ async function npmDistributionTags() {
   return Object.fromEntries(
     await Promise.all(
       PUBLIC_PACKAGE_NAMES.map(async (name) => {
-        const response = await fetch(`https://registry.npmjs.org/${name.replace("/", "%2f")}`);
+        const response = await fetch(npmRegistryMetadataUrl(name));
         if (!response.ok) throw new Error(`${name}: npm registry returned ${response.status}`);
         const metadata = await response.json();
         return [name, metadata["dist-tags"] ?? {}];

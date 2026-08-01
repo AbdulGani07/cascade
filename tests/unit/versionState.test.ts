@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import {
   PRIVATE_VERSION_POLICY_NAMES,
   PUBLIC_PACKAGE_NAMES,
+  npmRegistryMetadataUrl,
   validateVersionState,
 } from "../../scripts/validate-version-state.mjs";
 
@@ -81,6 +82,12 @@ afterEach(() => {
 });
 
 describe("release version state", () => {
+  it("encodes every path separator in scoped npm registry metadata URLs", () => {
+    expect(npmRegistryMetadataUrl("@cascade-code/example/nested")).toBe(
+      "https://registry.npmjs.org/%40cascade-code%2Fexample%2Fnested"
+    );
+  });
+
   it("accepts a stable release state", () => {
     expect(validateVersionState(fixture("stable"), { channel: "stable" }).failures).toEqual([]);
   });
