@@ -99,8 +99,19 @@ export default function ExportModal({ analysisData, onClose }: ExportModalProps)
   const cycleCount = new Set(analysisData.cycles.flat()).size;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md p-4 select-none">
-      <div className="w-full max-w-2xl rounded-3xl border border-slate-800 bg-slate-900 shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md p-4 select-none"
+      role="presentation"
+      onKeyDown={(event) => {
+        if (event.key === "Escape") onClose();
+      }}
+    >
+      <div
+        className="w-full max-w-2xl rounded-3xl border border-slate-800 bg-slate-900 shadow-2xl overflow-hidden flex flex-col max-h-[85vh]"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="export-title"
+      >
         {/* Modal Header */}
         <div className="p-5 border-b border-slate-800 flex items-center justify-between bg-slate-950/50">
           <div className="flex items-center gap-2.5">
@@ -108,7 +119,9 @@ export default function ExportModal({ analysisData, onClose }: ExportModalProps)
               <FileJson className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="font-bold text-slate-100 text-sm">Export Analysis Data</h3>
+              <h3 id="export-title" className="font-bold text-slate-100 text-sm">
+                Export Analysis Data
+              </h3>
               <p className="text-xs text-slate-400">
                 Download or copy full dependency analysis report
               </p>
@@ -119,6 +132,7 @@ export default function ExportModal({ analysisData, onClose }: ExportModalProps)
             type="button"
             onClick={onClose}
             className="p-1.5 rounded-xl text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors"
+            aria-label="Close export dialog"
           >
             <X className="w-4 h-4" />
           </button>
@@ -196,11 +210,11 @@ export default function ExportModal({ analysisData, onClose }: ExportModalProps)
               </div>
 
               <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 space-y-2">
-                <h4 className="font-bold text-slate-100 text-sm">Health Rating</h4>
+                <h4 className="font-bold text-slate-100 text-sm">Observed findings</h4>
                 <p className="text-slate-400 leading-relaxed">
-                  {cycleCount === 0 && analysisData.deadFiles.length === 0
-                    ? "✨ Pristine Architecture: 0 cycles and 0 unused files. Perfect modular isolation."
-                    : `⚠️ Recommended Refactoring: ${cycleCount} cycle(s) and ${analysisData.deadFiles.length} unused file(s) require attention.`}
+                  The analyzer reported {cycleCount} file(s) participating in cycles and{" "}
+                  {analysisData.deadFiles.length} dead-code candidate(s). These are static-analysis
+                  findings, not a generated quality score or proof of correctness.
                 </p>
               </div>
             </div>

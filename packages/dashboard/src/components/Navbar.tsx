@@ -101,6 +101,7 @@ export default function Navbar({
         <button
           type="button"
           onClick={onOpenExport}
+          aria-label="Export analysis report"
           className="flex items-center gap-1 rounded-lg bg-cyan-700 px-2.5 py-2 text-xs font-medium text-white hover:bg-cyan-600"
         >
           <Download className="h-4 w-4" />

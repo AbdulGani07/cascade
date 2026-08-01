@@ -63,6 +63,13 @@ function getLayoutedElements(
         ? node.role === "service" || node.role === "application" || node.projectType === "service"
         : true
   );
+  const cycleNodeIds = new Set(analysisData.cycles.flat());
+  const deadNodeIds = new Set(analysisData.deadFiles);
+  const unresolvedSources = new Set(
+    analysisData.edges
+      .filter((edge) => edge.resolutionStatus === "unresolved")
+      .map((edge) => edge.from)
+  );
   const allNodes =
     graphKind !== "file" && analysisData.projectGraph
       ? projectNodes.map((node) => ({
@@ -75,16 +82,13 @@ function getLayoutedElements(
           .filter((node) => {
             if (!filters) return true;
             const extension = node.id.split(".").pop() ?? "";
-            const inCycle = analysisData.cycles.some((cycle) => cycle.includes(node.id));
+            const inCycle = cycleNodeIds.has(node.id);
             const statusMatches =
               filters.status === "all" ||
               (filters.status === "entry" && node.isEntryPoint) ||
               (filters.status === "cycle" && inCycle) ||
-              (filters.status === "dead" && analysisData.deadFiles.includes(node.id)) ||
-              (filters.status === "unresolved" &&
-                analysisData.edges.some(
-                  (edge) => edge.from === node.id && edge.resolutionStatus === "unresolved"
-                ));
+              (filters.status === "dead" && deadNodeIds.has(node.id)) ||
+              (filters.status === "unresolved" && unresolvedSources.has(node.id));
             return (
               (filters.language === "all" || node.language === filters.language) &&
               (filters.project === "all" || node.project === filters.project) &&
@@ -126,12 +130,17 @@ function getLayoutedElements(
     degree.set(edge.from, (degree.get(edge.from) ?? 0) + 1);
     degree.set(edge.to, (degree.get(edge.to) ?? 0) + 1);
   }
-  const sourceNodes = allNodes
+  let sourceNodes = allNodes
     .sort(
       (left, right) =>
         (degree.get(right.id) ?? 0) - (degree.get(left.id) ?? 0) || left.id.localeCompare(right.id)
     )
     .slice(0, maximumNodes);
+  if (selectedId && !sourceNodes.some((node) => node.id === selectedId)) {
+    const selectedNode = allNodes.find((node) => node.id === selectedId);
+    if (selectedNode)
+      sourceNodes = [selectedNode, ...sourceNodes.slice(0, Math.max(0, maximumNodes - 1))];
+  }
   const visibleIds = new Set(sourceNodes.map((node) => node.id));
   const sourceEdges = allEdges.filter(
     (edge) => visibleIds.has(edge.from) && visibleIds.has(edge.to)
@@ -177,7 +186,7 @@ function getLayoutedElements(
       status = "entry";
     } else if (cycleFiles.has(node.id)) {
       status = "cycle";
-    } else if (analysisData.deadFiles.includes(node.id)) {
+    } else if (deadNodeIds.has(node.id)) {
       status = "dead";
     }
 
@@ -284,7 +293,6 @@ export default function GraphView({
   filters,
 }: GraphViewProps) {
   const [showLegend, setShowLegend] = useState(true);
-  const [showAll, setShowAll] = useState(false);
   const projectNodeMatchesKind = (
     node: NonNullable<AnalysisResult["projectGraph"]>["nodes"][number]
   ) =>
@@ -298,7 +306,7 @@ export default function GraphView({
       ? (analysisData.projectGraph?.nodes.filter(projectNodeMatchesKind).length ?? 0)
       : analysisData.nodes.length;
   const graphLimit = graphKind === "file" ? 400 : 800;
-  const isAggregated = sourceCount > graphLimit && !showAll;
+  const isAggregated = sourceCount > graphLimit;
 
   const { nodes, edges } = useMemo(() => {
     return getLayoutedElements(
@@ -366,16 +374,10 @@ export default function GraphView({
             Large graph: showing {graphLimit} highest-connected nodes
           </strong>
           <p className="mt-1 text-slate-400">
-            Filter or select a project before expanding all {sourceCount.toLocaleString()} nodes.
-            This avoids expensive browser layouts.
+            Search or filter to narrow all {sourceCount.toLocaleString()} nodes. The layout remains
+            bounded to prevent an oversized report from freezing the browser; a selected node is
+            always retained.
           </p>
-          <button
-            type="button"
-            onClick={() => setShowAll(true)}
-            className="mt-2 rounded-md border border-amber-400/50 px-2 py-1 font-medium text-amber-200 hover:bg-amber-500/15"
-          >
-            Render all nodes
-          </button>
         </section>
       )}
 
@@ -386,6 +388,7 @@ export default function GraphView({
           onClick={onToggleLayout}
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition-colors border border-slate-700/50"
           title="Toggle Layout Direction"
+          aria-label={`Change graph layout to ${layoutDirection === "TB" ? "left-to-right" : "top-down"}`}
         >
           <LayoutGrid className="w-3.5 h-3.5 text-cyan-400" />
           <span>Layout: {layoutDirection === "TB" ? "Top-Down" : "Left-Right"}</span>
@@ -399,6 +402,7 @@ export default function GraphView({
               ? "bg-cyan-500/20 text-cyan-300 border-cyan-500/40"
               : "text-slate-400 border-slate-800 hover:text-slate-200 hover:bg-slate-800"
           }`}
+          aria-pressed={showLegend}
         >
           <Info className="w-3.5 h-3.5" />
           <span>Legend</span>
@@ -416,6 +420,7 @@ export default function GraphView({
               type="button"
               onClick={() => setShowLegend(false)}
               className="text-slate-500 hover:text-slate-300 text-[10px]"
+              aria-label="Close graph legend"
             >
               ✕
             </button>

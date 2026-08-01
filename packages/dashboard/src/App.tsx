@@ -14,7 +14,7 @@ import Overview from "./components/Overview";
 import WorkspaceView from "./components/WorkspaceView";
 import CommandPalette from "./components/CommandPalette";
 import { isViewId, type ViewId } from "./lib/views";
-import type { AnalysisResult } from "./lib/api";
+import { getAnalysisState, type AnalysisResult } from "./lib/api";
 import FilterBar from "./components/FilterBar";
 import { emptyFilters, type WorkspaceFilters } from "./lib/filters";
 
@@ -90,7 +90,11 @@ export default function App() {
 
   if (isLoading) {
     return (
-      <div className="flex h-screen w-full items-center justify-center bg-slate-950 text-slate-200">
+      <div
+        className="flex h-screen w-full items-center justify-center bg-slate-950 text-slate-200"
+        role="status"
+        aria-live="polite"
+      >
         <div className="flex flex-col items-center gap-4">
           <div className="relative flex items-center justify-center">
             <div className="w-14 h-14 rounded-2xl bg-cyan-500/20 border border-cyan-500/40 animate-pulse flex items-center justify-center">
@@ -99,9 +103,7 @@ export default function App() {
           </div>
           <div className="text-center space-y-1">
             <h3 className="font-bold text-slate-100 text-sm">Parsing Codebase Architecture</h3>
-            <p className="text-xs text-slate-500">
-              Building AST dependency graph & blast radius...
-            </p>
+            <p className="text-xs text-slate-500">Loading the local analysis report…</p>
           </div>
         </div>
       </div>
@@ -110,12 +112,17 @@ export default function App() {
 
   if (error) {
     return (
-      <div className="flex h-screen w-full items-center justify-center bg-slate-950 p-6 text-slate-200">
+      <div
+        className="flex h-screen w-full items-center justify-center bg-slate-950 p-6 text-slate-200"
+        role="alert"
+      >
         <div className="max-w-md w-full p-6 rounded-3xl border border-rose-500/30 bg-rose-950/20 backdrop-blur-xl text-center space-y-4">
           <div className="w-12 h-12 rounded-2xl bg-rose-500/20 border border-rose-500/40 flex items-center justify-center mx-auto text-rose-400">
             <AlertCircle className="w-6 h-6" />
           </div>
-          <h3 className="font-bold text-slate-100 text-base">Analysis Error</h3>
+          <h1 className="font-bold text-slate-100 text-base">
+            Dashboard could not load this report
+          </h1>
           <p className="text-xs text-rose-300 font-mono bg-slate-900/80 p-3 rounded-xl border border-slate-800 text-left overflow-x-auto">
             {error}
           </p>
@@ -124,7 +131,7 @@ export default function App() {
             onClick={handleRefresh}
             className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 border border-slate-700 transition-colors"
           >
-            Retry Analysis
+            Retry loading
           </button>
         </div>
       </div>
@@ -136,6 +143,39 @@ export default function App() {
       <div className="flex h-screen w-full items-center justify-center bg-slate-950 text-slate-400 text-sm">
         No analysis data available for this project.
       </div>
+    );
+  }
+
+  const analysisState = getAnalysisState(data);
+  if (analysisState === "empty") {
+    return (
+      <main className="flex h-screen w-full items-center justify-center bg-slate-950 p-6 text-slate-200">
+        <section
+          className="max-w-lg rounded-3xl border border-slate-700 bg-slate-900/70 p-8 text-center"
+          aria-labelledby="empty-title"
+        >
+          <Network className="mx-auto h-10 w-10 text-cyan-400" aria-hidden="true" />
+          <h1 id="empty-title" className="mt-4 text-lg font-bold">
+            No analyzable files found
+          </h1>
+          <p className="mt-2 text-sm text-slate-400">
+            The report is valid, but it contains no graph nodes. Check the target directory, ignore
+            rules, and installed language support, then run the dashboard again.
+          </p>
+          {data.warnings.length > 0 && (
+            <p className="mt-3 text-xs text-amber-300">
+              The analyzer reported {data.warnings.length} warning(s).
+            </p>
+          )}
+          <button
+            type="button"
+            onClick={handleRefresh}
+            className="mt-5 rounded-xl border border-slate-700 bg-slate-800 px-4 py-2 text-sm hover:bg-slate-700"
+          >
+            Retry loading
+          </button>
+        </section>
+      </main>
     );
   }
 
@@ -172,6 +212,17 @@ export default function App() {
         onChange={(key, value) => setFilters((current) => ({ ...current, [key]: value }))}
         onReset={() => setFilters(emptyFilters)}
       />
+      {analysisState === "partial" && (
+        <div
+          className="border-b border-amber-500/30 bg-amber-950/40 px-4 py-2 text-xs text-amber-200"
+          role="status"
+          aria-live="polite"
+        >
+          Partial analysis: some files or dependencies could not be analyzed. Results remain
+          available, but may be incomplete ({data.diagnostics?.length ?? 0} diagnostics,{" "}
+          {data.warnings.length} warnings).
+        </div>
+      )}
 
       <div className="flex flex-1 overflow-hidden relative">
         {/* Desktop Left Sidebar */}

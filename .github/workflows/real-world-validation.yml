@@ -1,0 +1,43 @@
+name: Real-world validation
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "37 3 * * 1"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: real-world-validation
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    if: github.repository == 'AbdulGani07/cascade'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+        with:
+          version: 9.15.0
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version: 22.13.0
+          cache: pnpm
+          package-manager-cache: false
+      - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: .cache/cascade-real-repositories/archives
+          key: cascade-real-repositories-${{ hashFiles('benchmarks/real-repositories.json') }}
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run build
+      - run: pnpm run benchmark:real -- --output real-world-results.json
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: always()
+        with:
+          name: real-world-validation-${{ github.run_id }}
+          path: real-world-results.json
+          if-no-files-found: warn
+          retention-days: 30

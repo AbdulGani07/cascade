@@ -1,9 +1,6 @@
-/**
- * Local copy of the analysis result shape produced by the core package.
- * This avoids a runtime dependency on the core package in the browser bundle.
- */
+/** Browser-safe subset of the analysis schema produced by @cascade-code/core. */
 export type AnalysisResult = {
-  version: string;
+  version: "1.0" | "2.0";
   generatedAt: string;
   projectRoot: string;
   nodes: {
@@ -12,14 +9,22 @@ export type AnalysisResult = {
     language: string;
     project?: string;
     packageOrWorkspace?: string;
+    parseStatus?: "success" | "partial" | "failed";
+    symbols?: { name: string; kind?: string; exported?: boolean }[];
+    pluginProvenance?: { pluginId: string; pluginVersion: string };
   }[];
   edges: {
+    id?: string;
     from: string;
     to: string;
-    kind: string;
+    kind?: string;
+    edgeType?: string;
+    importKind?: string;
     resolutionStatus?: string;
     dependencyCategory?: string;
     confidence?: number;
+    extractedText?: string;
+    resolverProvenance?: { resolverId: string; pluginId: string };
     evidence?: string[];
   }[];
   cycles: string[][];
@@ -27,16 +32,10 @@ export type AnalysisResult = {
   entryPoints: string[];
   impact: Record<
     string,
-    {
-      directlyAffected: string[];
-      allAffected: string[];
-      isSafeToDelete: boolean;
-    }
+    { directlyAffected: string[]; allAffected: string[]; isSafeToDelete: boolean }
   >;
-  warnings: {
-    file: string;
-    message: string;
-  }[];
+  warnings: { file: string; message: string }[];
+  diagnostics?: { file: string; message: string; severity: string; code?: string }[];
   projects?: {
     id: string;
     name: string;
@@ -103,7 +102,7 @@ export type AnalysisResult = {
     version: string;
     supportedExtensions: string[];
     capabilities: Record<string, boolean>;
-    analysisLevels: string[];
+    analysisLevels: readonly string[];
     limitations: { knownIssues: string[]; unsupportedFeatures: string[] };
   }[];
   gitImpact?: {
@@ -144,15 +143,83 @@ export type AnalysisResult = {
   };
 };
 
-/**
- * Fetches the locally generated analysis.json file.
- */
-export async function fetchAnalysis(): Promise<AnalysisResult> {
-  const response = await fetch("/api/analysis");
+export type AnalysisState = "complete" | "partial" | "empty";
 
-  if (!response.ok) {
-    throw new Error(`Failed to load analysis.json (${response.status} ${response.statusText})`);
+export function validateAnalysis(value: unknown): AnalysisResult {
+  if (!value || typeof value !== "object" || Array.isArray(value))
+    throw new Error("Malformed analysis report: expected a JSON object.");
+  const record = value as Record<string, unknown>;
+  if (record.version !== "1.0" && record.version !== "2.0")
+    throw new Error(
+      `Unsupported analysis schema version: ${String(record.version ?? "missing")}. Supported versions are 1.0 and 2.0.`
+    );
+  for (const field of ["nodes", "edges", "cycles", "deadFiles", "entryPoints", "warnings"])
+    if (!Array.isArray(record[field]))
+      throw new Error(`Malformed analysis report: ${field} must be an array.`);
+  if (!record.impact || typeof record.impact !== "object" || Array.isArray(record.impact))
+    throw new Error("Malformed analysis report: impact must be an object.");
+  const nodes = record.nodes as unknown[];
+  const edges = record.edges as unknown[];
+  if (
+    nodes.some(
+      (node) =>
+        !node || typeof node !== "object" || typeof (node as { id?: unknown }).id !== "string"
+    )
+  )
+    throw new Error("Malformed analysis report: every node must have a string id.");
+  if (
+    edges.some(
+      (edge) =>
+        !edge ||
+        typeof edge !== "object" ||
+        typeof (edge as { from?: unknown }).from !== "string" ||
+        typeof (edge as { to?: unknown }).to !== "string"
+    )
+  )
+    throw new Error("Malformed analysis report: every edge must have string from and to fields.");
+  return sanitizeForBrowser(value) as AnalysisResult;
+}
+
+export function getAnalysisState(data: AnalysisResult): AnalysisState {
+  if (data.nodes.length === 0) return "empty";
+  if (
+    data.warnings.length ||
+    data.diagnostics?.length ||
+    data.nodes.some((node) => node.parseStatus === "partial" || node.parseStatus === "failed")
+  )
+    return "partial";
+  return "complete";
+}
+
+function sanitizeForBrowser<T>(value: T): T {
+  if (typeof value === "string") return sanitizeString(value) as T;
+  if (Array.isArray(value)) return value.map(sanitizeForBrowser) as T;
+  if (value && typeof value === "object") {
+    const safe = Object.create(null) as Record<string, unknown>;
+    for (const [key, child] of Object.entries(value as Record<string, unknown>)) {
+      if (["__proto__", "prototype", "constructor"].includes(key)) continue;
+      safe[key] = sanitizeForBrowser(child);
+    }
+    return safe as T;
   }
+  return value;
+}
 
-  return (await response.json()) as AnalysisResult;
+function sanitizeString(value: string): string {
+  return value
+    .replace(/(?:[A-Za-z]:[\\/]|\\\\)[^\r\n;"']+/g, "[local-path]")
+    .replace(/(^|[\s("'=])\/(?!\/)(?:[^/\s]+\/)+[^\s;,"')]+/g, "$1[local-path]");
+}
+
+export async function fetchAnalysis(): Promise<AnalysisResult> {
+  const response = await fetch("/api/analysis", { cache: "no-store" });
+  if (!response.ok)
+    throw new Error(`Failed to load analysis report (${response.status} ${response.statusText}).`);
+  let payload: unknown;
+  try {
+    payload = await response.json();
+  } catch {
+    throw new Error("Malformed analysis report: the response is not valid JSON.");
+  }
+  return validateAnalysis(payload);
 }

@@ -55,6 +55,15 @@ export default function MatrixView({ analysisData, onSelectNode }: MatrixViewPro
                   key={targetId}
                   className="p-2 border border-slate-800 bg-slate-950 text-slate-300 min-w-[100px] text-center sticky top-0 z-10 truncate cursor-pointer hover:text-cyan-300"
                   onClick={() => onSelectNode(targetId)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      onSelectNode(targetId);
+                    }
+                  }}
+                  tabIndex={0}
+                  role="button"
+                  aria-label={`Select target ${targetId}`}
                   title={targetId}
                 >
                   {targetId.split("/").pop()}
@@ -68,6 +77,15 @@ export default function MatrixView({ analysisData, onSelectNode }: MatrixViewPro
                 <td
                   className="p-2 border border-slate-800 bg-slate-950 text-slate-300 font-semibold sticky left-0 z-10 truncate cursor-pointer hover:text-cyan-300 max-w-[200px]"
                   onClick={() => onSelectNode(sourceId)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      onSelectNode(sourceId);
+                    }
+                  }}
+                  tabIndex={0}
+                  role="button"
+                  aria-label={`Select source ${sourceId}`}
                   title={sourceId}
                 >
                   {sourceId.split("/").pop()}
@@ -82,6 +100,15 @@ export default function MatrixView({ analysisData, onSelectNode }: MatrixViewPro
                       onMouseEnter={() => setHoveredCell({ from: sourceId, to: targetId })}
                       onMouseLeave={() => setHoveredCell(null)}
                       onClick={() => onSelectNode(sourceId)}
+                      onKeyDown={(event) => {
+                        if (event.key === "Enter" || event.key === " ") {
+                          event.preventDefault();
+                          onSelectNode(sourceId);
+                        }
+                      }}
+                      tabIndex={0}
+                      role="button"
+                      aria-label={`${sourceId} ${hasDependency ? "depends on" : "does not depend on"} ${targetId}. Select source.`}
                       className={`p-2 border border-slate-800 text-center transition-colors cursor-pointer ${
                         isSelf
                           ? "bg-slate-950/50 text-slate-700"

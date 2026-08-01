@@ -50,6 +50,7 @@ export default function ImpactPanel({
             type="button"
             onClick={onCloseMobile}
             className="xl:hidden absolute top-4 right-4 p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800"
+            aria-label="Close impact inspector"
           >
             <X className="w-4 h-4" />
           </button>
@@ -66,6 +67,20 @@ export default function ImpactPanel({
   }
 
   if (selectedEdge) {
+    const resolverPlugin = selectedEdge.resolverProvenance?.pluginId;
+    const plugin = analysisData?.pluginManifests?.find((item) => item.id === resolverPlugin);
+    const relationship =
+      selectedEdge.dependencyCategory ??
+      selectedEdge.edgeType ??
+      selectedEdge.importKind ??
+      selectedEdge.kind ??
+      "not supplied";
+    const unresolvedReason =
+      selectedEdge.resolutionStatus === "unresolved"
+        ? (selectedEdge.evidence?.[0] ??
+          selectedEdge.extractedText ??
+          "The resolver did not supply a reason.")
+        : null;
     return (
       <aside
         className="flex h-full w-80 shrink-0 flex-col overflow-auto border-l border-slate-800 bg-slate-950/95 p-4 text-slate-200"
@@ -81,16 +96,24 @@ export default function ImpactPanel({
         </div>
         <dl className="mt-4 space-y-3 text-xs">
           <div>
-            <dt className="text-slate-500">From</dt>
+            <dt className="text-slate-500">Source</dt>
             <dd className="break-all font-mono">{selectedEdge.from}</dd>
           </div>
           <div>
-            <dt className="text-slate-500">To</dt>
+            <dt className="text-slate-500">Target</dt>
             <dd className="break-all font-mono">{selectedEdge.to}</dd>
           </div>
           <div>
             <dt className="text-slate-500">Relationship</dt>
-            <dd>{selectedEdge.dependencyCategory ?? selectedEdge.kind}</dd>
+            <dd>{relationship}</dd>
+          </div>
+          <div>
+            <dt className="text-slate-500">Resolver / plugin</dt>
+            <dd>
+              {selectedEdge.resolverProvenance
+                ? `${selectedEdge.resolverProvenance.resolverId} / ${selectedEdge.resolverProvenance.pluginId}`
+                : "not supplied by this schema"}
+            </dd>
           </div>
           <div>
             <dt className="text-slate-500">Resolution</dt>
@@ -104,6 +127,18 @@ export default function ImpactPanel({
                 : `${Math.round(selectedEdge.confidence * 100)}%`}
             </dd>
           </div>
+          <div>
+            <dt className="text-slate-500">Analysis level</dt>
+            <dd>
+              {plugin?.analysisLevels.length ? plugin.analysisLevels.join(", ") : "not supplied"}
+            </dd>
+          </div>
+          {unresolvedReason && (
+            <div>
+              <dt className="text-slate-500">Unresolved reason</dt>
+              <dd>{unresolvedReason}</dd>
+            </div>
+          )}
         </dl>
         <h3 className="mt-5 text-xs font-semibold uppercase tracking-wide text-slate-400">
           Evidence

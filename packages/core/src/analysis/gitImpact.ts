@@ -95,7 +95,15 @@ function runGit(root: string, args: string[]): string {
   // global safe.directory setting when CI or a sandbox runs under another user.
   return execFileSync(
     "git",
-    ["-c", `safe.directory=${root.split(path.sep).join("/")}`, "-C", root, ...args],
+    [
+      "-c",
+      `safe.directory=${root.split(path.sep).join("/")}`,
+      "-c",
+      "core.hooksPath=",
+      "-C",
+      root,
+      ...args,
+    ],
     {
       encoding: "utf8",
       stdio: ["ignore", "pipe", "pipe"],
@@ -119,8 +127,8 @@ function readChangedFiles(
 ): GitChangedFile[] {
   const args =
     head === "WORKING_TREE"
-      ? ["diff", "--name-status", "-M", "-C", base]
-      : ["diff", "--name-status", "-M", "-C", base, head];
+      ? ["diff", "--no-ext-diff", "--no-textconv", "--name-status", "-M", "-C", base]
+      : ["diff", "--no-ext-diff", "--no-textconv", "--name-status", "-M", "-C", base, head];
   let output = "";
   try {
     output = runGit(root, args);
@@ -165,7 +173,9 @@ function readChangedFiles(
         files.push({ path: file, kind: "untracked", changedLines: [], symbols: [] });
   }
   const patchArgs =
-    head === "WORKING_TREE" ? ["diff", "--unified=0", base] : ["diff", "--unified=0", base, head];
+    head === "WORKING_TREE"
+      ? ["diff", "--no-ext-diff", "--no-textconv", "--unified=0", base]
+      : ["diff", "--no-ext-diff", "--no-textconv", "--unified=0", base, head];
   const patch = runGit(root, patchArgs);
   let current: GitChangedFile | undefined;
   for (const line of patch.split(/\r?\n/)) {
