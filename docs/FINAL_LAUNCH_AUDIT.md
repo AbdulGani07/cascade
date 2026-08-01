@@ -67,6 +67,10 @@ Observed failures, retained rather than hidden:
   directory without weakening symlink-escape rejection, and every Git-impact SARIF result carries a
   repository-relative location. Regression tests cover both cases; publication remains blocked
   until the corrected head passes the hosted rerun.
+- The corrected SARIF and macOS package checks then passed, but the PR workflow could not upload its
+  dot-prefixed `.cascade-artifacts` directory because current `upload-artifact` defaults exclude
+  hidden files. That exact upload now opts into hidden files while retaining `if-no-files-found:
+error`; no report validation or required check was suppressed.
 - A final `release:state` refresh reached npm and Git tag checks but GitHub's unauthenticated Releases
   endpoint returned HTTP 403 twice (including with an explicit User-Agent), consistent with a shared
   API rate limit. Earlier official API evidence in this audit succeeded; `release:validate` and
