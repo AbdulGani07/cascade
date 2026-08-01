@@ -1,0 +1,9 @@
+{
+  "entryPoints": ["src/app.ts"],
+  "ignore": ["**/node_modules/**", "**/dist/**"],
+  "selectedProjects": [],
+  "architectureGovernance": {
+    "version": "1",
+    "rules": []
+  }
+}

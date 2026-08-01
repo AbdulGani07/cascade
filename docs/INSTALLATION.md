@@ -5,19 +5,19 @@
 - Node.js 22.13 or newer
 - Git for change-impact commands
 
-## Public prerelease
+## Stable packages
 
-Install the public prerelease from the `next` channel:
+Install the stable CLI from the `latest` channel:
 
 ```bash
-npm install --global @cascade-code/cli@next
+npm install --global @cascade-code/cli@latest
 cascade --version
 ```
 
-The expected prerelease version is:
+The release-candidate version is:
 
 ```text
-3.3.1-next.0
+3.3.1
 ```
 
 ## Repository installation

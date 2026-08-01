@@ -143,7 +143,7 @@ The dashboard binds to `127.0.0.1`, uses a random local session token, and does
 not intentionally send source code to a remote service.
 
 ```yaml
-- uses: AbdulGani07/cascade@v3.3.0
+- uses: AbdulGani07/cascade@v3.3.1
   with:
     base: ${{ github.event.pull_request.base.sha }}
     head: ${{ github.event.pull_request.head.sha }}

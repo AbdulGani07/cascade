@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
+  <title id="title">Cascade dependency graph</title>
+  <desc id="desc">Three connected analysis layers descending from left to right.</desc>
+  <defs>
+    <linearGradient id="background" x1="16" y1="12" x2="112" y2="116" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#10243E"/>
+      <stop offset="1" stop-color="#07111F"/>
+    </linearGradient>
+    <linearGradient id="cascade" x1="31" y1="27" x2="98" y2="101" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#67E8F9"/>
+      <stop offset="1" stop-color="#22C55E"/>
+    </linearGradient>
+  </defs>
+  <rect x="4" y="4" width="120" height="120" rx="28" fill="url(#background)"/>
+  <path d="M33 34h29M62 34v30M62 64h31M93 64v30M62 64 33 94"
+        fill="none" stroke="url(#cascade)" stroke-width="9" stroke-linecap="round"
+        stroke-linejoin="round"/>
+  <circle cx="33" cy="34" r="13" fill="#0E7490" stroke="#A5F3FC" stroke-width="5"/>
+  <circle cx="62" cy="64" r="13" fill="#0891B2" stroke="#CFFAFE" stroke-width="5"/>
+  <circle cx="33" cy="94" r="13" fill="#0F766E" stroke="#99F6E4" stroke-width="5"/>
+  <circle cx="93" cy="94" r="13" fill="#15803D" stroke="#BBF7D0" stroke-width="5"/>
+</svg>

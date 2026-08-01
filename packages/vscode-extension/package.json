@@ -2,9 +2,10 @@
   "name": "cascade-code-intelligence",
   "displayName": "Cascade Code Intelligence",
   "description": "Local dependency, impact, cycle, and architecture intelligence powered by Cascade",
-  "version": "3.3.0",
+  "version": "3.3.1",
   "publisher": "cascade-code",
   "private": true,
+  "icon": "media/icon.png",
   "license": "MIT",
   "homepage": "https://github.com/AbdulGani07/cascade#readme",
   "bugs": {
@@ -14,6 +15,15 @@
   "engines": {
     "vscode": "^1.96.0",
     "node": ">=22.13.0"
+  },
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": true,
+      "restrictedConfigurations": [
+        "cascade.servicePath",
+        "cascade.cliPath"
+      ]
+    }
   },
   "categories": [
     "Programming Languages",
@@ -119,8 +129,11 @@
     "build": "tsc -b tsconfig.json --force",
     "typecheck": "tsc --noEmit",
     "package:validate": "node scripts/package.mjs --validate",
-    "package": "pnpm run build && node scripts/package.mjs --package",
-    "package:prerelease": "pnpm run build && node scripts/package.mjs --package --pre-release",
+    "package": "node ../../scripts/validate-version-state.mjs --channel stable && pnpm run build && node scripts/package.mjs --package",
+    "package:prerelease": "node ../../scripts/validate-version-state.mjs --channel prerelease && pnpm run build && node scripts/package.mjs --package --pre-release",
+    "package:all-targets": "node ../../scripts/validate-version-state.mjs --channel prerelease && pnpm run build && node scripts/package-all-targets.mjs --pre-release",
+    "package:all-targets:stable": "node ../../scripts/validate-version-state.mjs --channel stable && pnpm run build && node scripts/package-all-targets.mjs",
+    "package:size": "node ../../scripts/check-vsix-size.mjs",
     "package:contents": "node scripts/package.mjs --list",
     "clean": "node scripts/package.mjs --clean"
   },

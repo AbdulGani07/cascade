@@ -49,6 +49,10 @@ jobs:
       - name: Validate documentation
         run: pnpm run test:docs
 
+      - name: Validate release version state
+        if: matrix.node-version == 22
+        run: pnpm run release:validate-version-state
+
       - name: Verify reproducible product demo
         if: matrix.node-version == 22
         run: pnpm run demo:setup && pnpm run demo:verify
@@ -56,3 +60,37 @@ jobs:
       - name: Stable graph performance regression
         if: matrix.node-version == 22
         run: pnpm run benchmark:regression
+
+  vscode-package:
+    name: VSIX (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+
+      - uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v4.4.0
+        with:
+          version: 9.15.0
+
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version: 22.13.0
+          cache: pnpm
+          package-manager-cache: false
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm run build
+      - run: pnpm --filter "cascade-code-intelligence" run package:validate
+
+      - name: Package Marketplace prerelease
+        if: hashFiles('.changeset/pre.json') != ''
+        run: pnpm --filter "cascade-code-intelligence" run package:prerelease
+
+      - name: Package stable Marketplace release
+        if: hashFiles('.changeset/pre.json') == ''
+        run: pnpm --filter "cascade-code-intelligence" run package
+      - run: pnpm --filter "cascade-code-intelligence" run package:size
