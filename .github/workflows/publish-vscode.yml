@@ -91,11 +91,63 @@ jobs:
           path: release-vsix
       - name: Revalidate immediately before publication
         run: node scripts/validate-vscode-publish.mjs --channel "${{ inputs.channel }}"
+      - name: Validate downloaded VSIX artifact
+        env:
+          CHANNEL: ${{ inputs.channel }}
+          VERSION: ${{ needs.build.outputs.version }}
+        run: |
+          set -euo pipefail
+          VSIX_DIR="${GITHUB_WORKSPACE}/release-vsix"
+          test -d "$VSIX_DIR"
+
+          mapfile -t VSIX_FILES < <(
+            find "$VSIX_DIR" -maxdepth 1 -type f -name '*.vsix' -print | sort
+          )
+          test "${#VSIX_FILES[@]}" -eq 6
+
+          TARGETS=(darwin-arm64 darwin-x64 linux-arm64 linux-x64 win32-arm64 win32-x64)
+          for TARGET in "${TARGETS[@]}"; do
+            SUFFIX=""
+            if [ "$CHANNEL" = prerelease ]; then SUFFIX="-prerelease"; fi
+            VSIX_FILE="${VSIX_DIR}/cascade-code-intelligence-${VERSION}-${TARGET}${SUFFIX}.vsix"
+            test -s "$VSIX_FILE"
+            unzip -tqq "$VSIX_FILE"
+
+            PACKAGE_JSON="$(unzip -p "$VSIX_FILE" extension/package.json)"
+            node -e '
+              const manifest = JSON.parse(process.argv[1]);
+              const version = process.argv[2];
+              if (
+                manifest.name !== "cascade-code-intelligence" ||
+                manifest.publisher !== "cascade-code" ||
+                manifest.version !== version
+              ) process.exit(1);
+            ' "$PACKAGE_JSON" "$VERSION"
+
+            VSIX_MANIFEST="$(unzip -p "$VSIX_FILE" extension.vsixmanifest)"
+            grep -Fq "Id=\"cascade-code-intelligence\"" <<<"$VSIX_MANIFEST"
+            grep -Fq "Version=\"${VERSION}\"" <<<"$VSIX_MANIFEST"
+            grep -Fq "Publisher=\"cascade-code\"" <<<"$VSIX_MANIFEST"
+            grep -Fq "TargetPlatform=\"${TARGET}\"" <<<"$VSIX_MANIFEST"
+            if [ "$CHANNEL" = prerelease ]; then
+              grep -Fq 'Microsoft.VisualStudio.Code.PreRelease" Value="true"' <<<"$VSIX_MANIFEST"
+            elif grep -Fq 'Microsoft.VisualStudio.Code.PreRelease' <<<"$VSIX_MANIFEST"; then
+              echo "::error file=${VSIX_FILE}::Stable VSIX unexpectedly has the prerelease property."
+              exit 1
+            fi
+          done
+
+          node scripts/check-vsix-size.mjs "${VSIX_FILES[@]}"
+          sha256sum "${VSIX_FILES[@]}"
       - name: Publish VSIX files to Marketplace
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
         run: |
-          mapfile -t VSIX_FILES < <(find release-vsix -maxdepth 1 -type f -name '*.vsix' -print | sort)
+          set -euo pipefail
+          VSIX_DIR="${GITHUB_WORKSPACE}/release-vsix"
+          mapfile -t VSIX_FILES < <(
+            find "$VSIX_DIR" -maxdepth 1 -type f -name '*.vsix' -print | sort
+          )
           test "${#VSIX_FILES[@]}" -eq 6
           EXTRA_ARGS=()
           if [ "${{ inputs.channel }}" = prerelease ]; then EXTRA_ARGS+=(--pre-release); fi
@@ -106,4 +158,4 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release view "v${{ needs.build.outputs.version }}"
-          gh release upload "v${{ needs.build.outputs.version }}" release-vsix/*.vsix
+          gh release upload "v${{ needs.build.outputs.version }}" "${GITHUB_WORKSPACE}"/release-vsix/*.vsix
