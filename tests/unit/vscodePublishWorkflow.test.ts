@@ -6,6 +6,7 @@ import { evaluatePublishPreconditions } from "../../scripts/validate-vscode-publ
 
 const root = path.resolve(import.meta.dirname, "../..");
 const workflow = readFileSync(path.join(root, ".github/workflows/publish-vscode.yml"), "utf8");
+const dryRun = readFileSync(path.join(root, "scripts/dry-run-vscode-release.mjs"), "utf8");
 
 describe("VS Code publication workflow", () => {
   it("is manually dispatched, main-only, dry by default, and pins every action", () => {
@@ -41,6 +42,14 @@ describe("VS Code publication workflow", () => {
       'pnpm --filter "cascade-code-intelligence" exec vsce publish --packagePath "${VSIX_FILES[@]}"'
     );
     expect(workflow).not.toContain("find release-vsix");
+  });
+
+  it("validates local dry runs against the same published release state as the workflow", () => {
+    expect(dryRun).toContain('process.env.CASCADE_RELEASE_CANDIDATE = "true"');
+    expect(dryRun).toContain(
+      '[path.join(root, "scripts", "validate-vscode-publish.mjs"), "--channel", channel]'
+    );
+    expect(dryRun).not.toContain('"--candidate"');
   });
 
   it("rejects an existing Marketplace prerelease", () => {

@@ -23,7 +23,7 @@ const run = (command, args, cwd = root) => {
 
 execFileSync(
   process.execPath,
-  [path.join(root, "scripts", "validate-vscode-publish.mjs"), "--channel", channel, "--candidate"],
+  [path.join(root, "scripts", "validate-vscode-publish.mjs"), "--channel", channel],
   {
     cwd: root,
     stdio: "inherit",
