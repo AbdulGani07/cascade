@@ -26,6 +26,23 @@ describe("VS Code publication workflow", () => {
     expect(workflow).not.toContain("--skip-duplicate");
   });
 
+  it("validates and publishes downloaded VSIX files through absolute workspace paths", () => {
+    expect(workflow).toContain('VSIX_DIR="${GITHUB_WORKSPACE}/release-vsix"');
+    expect(workflow).toContain(
+      "find \"$VSIX_DIR\" -maxdepth 1 -type f -name '*.vsix' -print | sort"
+    );
+    expect(workflow).toContain('test "${#VSIX_FILES[@]}" -eq 6');
+    expect(workflow).toContain(
+      "TARGETS=(darwin-arm64 darwin-x64 linux-arm64 linux-x64 win32-arm64 win32-x64)"
+    );
+    expect(workflow).toContain('unzip -tqq "$VSIX_FILE"');
+    expect(workflow).toContain('node scripts/check-vsix-size.mjs "${VSIX_FILES[@]}"');
+    expect(workflow).toContain(
+      'pnpm --filter "cascade-code-intelligence" exec vsce publish --packagePath "${VSIX_FILES[@]}"'
+    );
+    expect(workflow).not.toContain("find release-vsix");
+  });
+
   it("rejects an existing Marketplace prerelease", () => {
     const npmTags = Object.fromEntries(
       PUBLIC_PACKAGE_NAMES.map((name) => [name, { next: "3.3.1-next.0" }])
