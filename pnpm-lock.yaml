@@ -203,8 +203,8 @@ importers:
         specifier: ^0.22.4
         version: 0.22.4
       tree-sitter-c:
-        specifier: 0.23.6
-        version: 0.23.6(tree-sitter@0.22.4)
+        specifier: 0.24.1
+        version: 0.24.1(tree-sitter@0.22.4)
 
   packages/language-cpp:
     dependencies:
@@ -2198,6 +2198,10 @@ packages:
     resolution: {integrity: sha512-ekZMeaaIzSQTSpr7X2X3iJM7lTzgnx8ahAG9pJfT/7+14mlEM8ZYQ9cgCDvSSRbReFK0oHli3WrZdCiRsgAT9Q==}
     engines: {node: ^18 || ^20 || >= 21}
 
+  node-addon-api@8.9.1:
+    resolution: {integrity: sha512-4eUQWVPCUUUiBjLnHS3cXWeC6ryoPUc0U3rP7IuzapoGbzMqd/r6KKO0clr0b+snQhsrueFEhCZDdK+LK7hxKg==}
+    engines: {node: ^18 || ^20 || >= 21}
+
   node-gyp-build@4.8.4:
     resolution: {integrity: sha512-LA4ZjwlnUblHVgq0oBF3Jl/6h/Nvs5fzBLwdEF4nuxnFdsfajde4WfxtJr3CaiH+F6ewcIB/q4jQ4UzPyid+CQ==}
     hasBin: true
@@ -2664,10 +2668,10 @@ packages:
       tree-sitter:
         optional: true
 
-  tree-sitter-c@0.23.6:
-    resolution: {integrity: sha512-0dxXKznVyUA0s6PjNolJNs2yF87O5aL538A/eR6njA5oqX3C3vH4vnx3QdOKwuUdpKEcFdHuiDpRKLLCA/tjvQ==}
+  tree-sitter-c@0.24.1:
+    resolution: {integrity: sha512-lkYwWN3SRecpvaeqmFKkuPNR3ZbtnvHU+4XAEEkJdrp3JfSp2pBrhXOtvfsENUneye76g889Y0ddF2DM0gEDpA==}
     peerDependencies:
-      tree-sitter: ^0.22.1
+      tree-sitter: ^0.22.4
     peerDependenciesMeta:
       tree-sitter:
         optional: true
@@ -4991,6 +4995,8 @@ snapshots:
 
   node-addon-api@8.9.0: {}
 
+  node-addon-api@8.9.1: {}
+
   node-gyp-build@4.8.4: {}
 
   node-sarif-builder@3.4.0:
@@ -5494,9 +5500,9 @@ snapshots:
     optionalDependencies:
       tree-sitter: 0.21.1
 
-  tree-sitter-c@0.23.6(tree-sitter@0.22.4):
+  tree-sitter-c@0.24.1(tree-sitter@0.22.4):
     dependencies:
-      node-addon-api: 8.9.0
+      node-addon-api: 8.9.1
       node-gyp-build: 4.8.4
     optionalDependencies:
       tree-sitter: 0.22.4
