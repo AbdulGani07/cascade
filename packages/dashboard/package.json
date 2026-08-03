@@ -23,7 +23,7 @@
   "license": "MIT",
   "dependencies": {
     "dagre": "^0.8.5",
-    "lucide-react": "^1.27.0",
+    "lucide-react": "^1.28.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",
     "reactflow": "^11.11.4"
