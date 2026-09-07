@@ -20,7 +20,7 @@
     "@cascade-code/plugin-api": "workspace:^"
   },
   "devDependencies": {
-    "@types/node": "^26.1.1",
+    "@types/node": "^26.4.1",
     "typescript": "^5.9.3"
   },
   "engines": {
