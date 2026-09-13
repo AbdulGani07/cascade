@@ -62,7 +62,7 @@
     "eslint": "^10.8.0",
     "prettier": "^3.9.6",
     "typescript": "^5.0.0",
-    "vitest": "^4.1.10",
+    "vitest": "^5.0.0",
     "@changesets/cli": "^2.29.7"
   },
   "dependencies": {
