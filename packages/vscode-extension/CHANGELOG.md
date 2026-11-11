@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.3.3
+
+- Bundle the Cascade editor service with updated production dependencies.
+
 ## 3.3.1
 
 - Add an original Cascade dependency-graph icon in editable SVG and Marketplace PNG formats.

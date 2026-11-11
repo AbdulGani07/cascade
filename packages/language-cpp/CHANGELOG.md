@@ -1,5 +1,12 @@
 # @cascade-code/language-cpp
 
+## 3.3.3
+
+### Patch Changes
+
+- @cascade-code/language-c@3.3.3
+- @cascade-code/plugin-api@3.3.3
+
 ## 3.3.1
 
 ### Patch Changes
