@@ -4,6 +4,8 @@
 
 ### Patch Changes
 
+- Report the installed package version in `cascade --version`.
+
 - Updated dependencies
   - @cascade-code/core@3.3.3
   - @cascade-code/config@3.3.3

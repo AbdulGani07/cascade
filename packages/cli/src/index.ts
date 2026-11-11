@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import { createRequire } from "node:module";
 import { Command } from "commander";
 import { registerAnalyzeCommand } from "./commands/analyze.js";
 import { registerGraphCommand } from "./commands/graph.js";
@@ -18,12 +19,13 @@ import { registerPlatformCommands } from "./commands/platform.js";
  * and executes the command provided through process.argv.
  */
 
+const { version } = createRequire(import.meta.url)("../package.json") as { version: string };
 const program = new Command();
 
 program
   .name("cascade")
   .description("Fast, evidence-based dependency intelligence for codebases and monorepos.")
-  .version("3.3.1")
+  .version(version)
   .option("--quiet", "suppress non-essential terminal output")
   .option("--verbose", "show additional diagnostic detail")
   .option("--debug", "show stack traces for command failures")
