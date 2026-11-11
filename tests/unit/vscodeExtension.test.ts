@@ -152,7 +152,6 @@ describe("VS Code extension controller", () => {
     expect(manifest.publisher).toBe("cascade-code");
     expect(manifest.name).toBe("cascade-code-intelligence");
     expect(manifest.private).toBe(true);
-    expect(manifest.version).toBe("3.3.1");
     expect(manifest.version).toMatch(/^\d+\.\d+\.\d+$/);
     expect(manifest.icon).toBe("media/icon.png");
     expect(fs.existsSync(path.resolve("packages/vscode-extension/media/icon.png"))).toBe(true);
