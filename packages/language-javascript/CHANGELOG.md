@@ -1,5 +1,11 @@
 # @cascade-code/language-javascript
 
+## 3.3.3
+
+### Patch Changes
+
+- @cascade-code/plugin-api@3.3.3
+
 ## 3.3.1
 
 ### Patch Changes

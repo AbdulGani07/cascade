@@ -1,5 +1,12 @@
 # @cascade-code/language-typescript
 
+## 3.3.3
+
+### Patch Changes
+
+- @cascade-code/language-javascript@3.3.3
+- @cascade-code/plugin-api@3.3.3
+
 ## 3.3.1
 
 ### Patch Changes

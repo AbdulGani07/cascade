@@ -1,5 +1,15 @@
 # @cascade-code/cli
 
+## 3.3.3
+
+### Patch Changes
+
+- Updated dependencies
+  - @cascade-code/core@3.3.3
+  - @cascade-code/config@3.3.3
+  - @cascade-code/plugin-api@3.3.3
+  - @cascade-code/reporters@3.3.3
+
 ## 3.3.1
 
 ### Patch Changes
